@@ -44,7 +44,9 @@ For an oversampling rate of 2 (os02), a block size of 31 and search radius of 6 
 python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 5
 ```
 
-4. **Timing.** Additional tests are necessary to evaluate the block matching with varying parameters. This is just a first-order summary.
+![Example output with an oversampling factor 2, a tile size of 4096, a block size of 31 and a search radius of 6.](figures/20130820_20240420_os02_merged_tiles.png)
+
+4. **Timing.** Additional tests are necessary to evaluate the block matching with varying parameters. This is just a first-order summary (os - oversampling, bs - block size, sr - search radius).
 
 Parameters | Tile size | Nr. of tiles | Timing for one tile (minutes)|
 ---|---|---|---|
@@ -52,16 +54,18 @@ os01, bs21, sr5 | 8192 | 4 | 4.27 (Tesla V100, aconcagua), 17.37 (Tesla P40, kai
 os01, bs21, sr5 | 4096 | 16 | 1.08 (Tesla V100, aconcagua), 4.42 (Tesla P40, kailash), 9.71 (Quadro P4000, pcpool)
 os01, bs21, sr3 | 4096 | 16 | 0.44 (Tesla V100, aconcagua), 3.75 (Quadro P4000, pcpool), 1.66 (Quadro RTX 5000, pcpool), 2.44 (Quadro P5000, pcpool)
 os02, bs31, sr11 | 8192 | 16 | 58.88 (aconcagua), 238.63 (kailash), 549.32 (pc pool)
-os02, bs31, sr06 | 4096 | 49 | 4.90 (aconcagua), 21.28 (Tesla P40, kailash), 18.73 (RTX 5000 pc pool), 11.56 (A40, sonnblick)
+os02, bs31, sr06 | 4096 | 49 | 4.90 (aconcagua), 21.28 (Tesla P40, kailash), 45.22 (Quadro P4000, pcpool) 18.73 (RTX 5000, pc pool), 11.56 (A40, sonnblick)
 os05, bs81, sr31 | 8192 | 80 | > 24 hours (not finished)
 
 **It looks like as if a full size Landsat scene with no oversampling (os=01) tiled into 4096x4096 pixels (16 tiles) and block size window 21 with a search radius of 3 or 5 pixels will run fast (~2 minutes for search radius 3 and 5 minutes for search radius 5).**
 
-**An oversampling factor of 2 with 49 tiles (4096x4096) and with a blocksize of 31 and a search radius of 06 (3 Landsat pixels) will take 18-25 minutes. 38 jobs can be submitted at once. After less than 1 hour, the entire Landsat tile has been processed.**
+**An oversampling factor of 2 with 49 tiles (4096x4096) and with a blocksize of 31 and a search radius of 06 (3 Landsat pixels) will take 19-45 minutes. 38 jobs can be submitted at once. After less than 1 hour, the entire Landsat tile has been processed.**
 
 Higher oversampling factors will be much slower and a skip step approach is required.
 
 5. **Steps to do**
   - use a skip-step factor for calculating block matching for high oversampling rates
   - Combine different oversampling rates
-  - optimize stacking and 
+  - optimize stacking
+  - create geotiffs from overampled data (need new geotransform)
+  - optimize tile merging (there is still a blank pixel in between)
