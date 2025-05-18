@@ -1,16 +1,12 @@
 import numpy as np
-import glob, os, tqdm, logging, os, sys
+import glob, tqdm, logging, os, sys
 from osgeo import gdal
 from matplotlib import pyplot as plt
-import matplotlib.ticker as plticker
-import matplotlib.cm as cm
-import matplotlib.patches as patches
 from scipy.ndimage import zoom
 
 # from cupyx.scipy import ndimage
 
 gdal.UseExceptions()
-
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)-8s %(message)s",
@@ -70,7 +66,7 @@ def patchify_with_overlap(x, tile_size=4096, overlap=32):
     )
 
 
-def plot_patches(x, savepng_tiles_output_file, title, oversampling):
+def plot_patches(x, savepng_tiles_output_file, title, oversampling, tile_size):
     # plot all patches
     nr_patches = x.shape[0]
     nr_rows = 4
@@ -84,7 +80,7 @@ def plot_patches(x, savepng_tiles_output_file, title, oversampling):
         if nr_of_pages > 0:
             csavepng_tiles_output_file = savepng_tiles_output_file[
                 :-4
-            ] + "_os%02d_page%02d.png" % (oversampling, pagenr)
+            ] + "_%02d_os%02d_page%02d.png" % (tile_size, oversampling, pagenr)
         fig, ax = plt.subplots(nr_rows, nr_cols, figsize=(16, 9), dpi=300)
         plotx, ploty = 0, 0
         if pagenr == 0:
@@ -129,16 +125,20 @@ def plot_patches(x, savepng_tiles_output_file, title, oversampling):
         plt.close()
 
 
-def write_patches_npy(x, dirname, name, oversampling):
+def write_patches_npy(x, dirname, name, oversampling, tile_size):
     # logging.info("Save %02d patches to npy files" % x.shape[0])
     for i in range(x.shape[0]):
         cpatch = x[i, :, :]
-        fname = os.path.join(dirname, name + "_os%02d_%02d.npy" % (oversampling, i))
+        fname = os.path.join(
+            dirname, name + "_%04d_os%02d_%02d.npy" % (tile_size, oversampling, i)
+        )
         np.save(fname, cpatch)
 
 
 def write_patch_info_npy(x, dirname, name, oversampling):
-    fname = os.path.join(dirname, name + "_tileinfo_os%02d.npy" % (oversampling))
+    fname = os.path.join(
+        dirname, name + "_tileinfo_%04d_os%02d.npy" % (tile_size, oversampling)
+    )
     np.save(fname, x)
 
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
             #    .astype(np.float32)
             # )
 
-        logging.info("%d/%d: Patchify array" % (i + 1, len(fnames)))
+        logging.info("%d/%d: Tile array" % (i + 1, len(fnames)))
         (
             iheight,
             iwidth,
@@ -212,16 +212,17 @@ if __name__ == "__main__":
             dim2,
             Landsat_B8_patches,
         ) = patchify_with_overlap(Landsat_B8, tile_size=tile_size, overlap=overlap)
-        logging.info("%d/%d: Plot patches" % (i + 1, len(fnames)))
+        logging.info("%d/%d: Plot tiles" % (i + 1, len(fnames)))
         plot_patches(
             Landsat_B8_patches,
             os.path.join(dirname, name_rowcol, name),
             name_year,
             oversampling,
+            tile_size,
         )
 
         logging.info(
-            "%d/%d: Save %d patches to npy"
+            "%d/%d: Save %d tiles to npy"
             % (i + 1, len(fnames), Landsat_B8_patches.shape[0])
         )
         write_patches_npy(
@@ -229,6 +230,7 @@ if __name__ == "__main__":
             dirname=name_year_dir,
             name=name,
             oversampling=oversampling,
+            tile_size=tile_size,
         )
 
         logging.info("%d/%d: Save tile information to npy" % (i + 1, len(fnames)))
@@ -243,6 +245,7 @@ if __name__ == "__main__":
                 dim1,
                 dim2,
                 overlap,
+                tile_size,
             ],
             dirname=name_year_dir,
             name=name,

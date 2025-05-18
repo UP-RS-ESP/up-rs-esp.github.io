@@ -10,22 +10,22 @@ python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | te
 python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
 python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_128_1.log
 python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log
+python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 64 2 2>&1 | tee log/create_Landsat_tiles_4096_64_2.log
 ```
 This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well factors low oversampling rates. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. The detailed parameters for higher oversampling rates still have to be determined.
 The python-based code `create_Landsat_tiles.py` will convert all *.TIF files in a directory (argv[1]) into tiles. Padding will be done according to overlap and tile size. Standard naming scheme of USGS Earth Explorer Filenames is expected.
 
 An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversampling factors will generate several pages.
 
-![figures/LC08_L1TP_231077_20130820_20200913_02_T_os01_page00.png](Example of a original size (oversampling 01) Landsat image that is tiled into four 8192x8192 tiles.)
-
-![figures/LC08_L1TP_231077_20130820_20200913_02_T_os02_page00.png](Example of an oversampling factor 2 Landsat image (16 x 8192x8192 tiles).)
+![Example of a original size (oversampling 01) Landsat image that is tiled into four 8192x8192 tiles.](figures/LC08_L1TP_231077_20130820_20200913_02_T_os01_page00.png)
+![Example of an oversampling factor 2 Landsat image (16 x 8192x8192 tiles).](figures/LC08_L1TP_231077_20130820_20200913_02_T_os02_page00.png)
 
 2. **Submitting tiles to the queue.** Submit the tiles separately to each node in the cluster. This is best done through a `bash` script: 
 ```bash
 ./block_matching_slurm.bash /raid2-gpu2/bodo/Landsat-test/231077/ \
   /raid2-gpu2/bodo/Landsat-test/231077/20130820_os01 \
  /raid2-gpu2/bodo/Landsat-test/231077/20240420_os01 \
-  21 5
+  8192 21 5
 ```
 The bash script will submit all tiles in argv[2] and argv[3] and run block matching with the given block size and search window. For original sizes Landsat images (overampling os01), a good block size is 21 and a search radius is 5 (allowing a maximum offset of 5 pixels).
 
@@ -49,6 +49,8 @@ python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 819
 Parameters | Tile size | Nr. of tiles | Timing for one tile (minutes)|
 ---|---|---|---|
 os01, bs21, sr5 | 8192 | 4 | 4.27 (aconcagua), 17.37 (kailash)
-os01, bs21, sr3 | 4096 | 4 | 4.27 (aconcagua), 17.37 (kailash)
+os01, bs21, sr5 | 4096 | 16 | 1.08 (Tesla V100, aconcagua), 4.42 (Tesla P40, kailash), 9.71 (Quadro P4000, pcpool)
+os01, bs21, sr3 | 4096 | 16 | 0.44 (Tesla V100, aconcagua), 3.75 (Quadro P4000, pcpool), 1.66 (Quadro RTX 5000, pcpool), 2.44 (Quadro P5000, pcpool)
 os02, bs31, sr11 | 8192 | 16 | 58.88 (aconcagua), 238.63 (kailash), 549.32 (pc pool)
+os02, bs31, sr06 | 4096 | 64 | (aconcagua), (kailash), (pc pool)
 os05, bs81, sr31 | 8192 | > 24 hours (not finished)
