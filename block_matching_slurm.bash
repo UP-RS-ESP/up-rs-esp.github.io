@@ -38,6 +38,7 @@ if [ ! -d "slurm.bash" ]; then
 	mkdir slurm.bash
 fi
 
+echo -n "--dependency=afterok:" >block_matching_slurm_ids.txt
 submit_slurm_block_matching_ids=()
 for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 	reffile_basename=$(basename $reffile)
@@ -45,7 +46,7 @@ for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 	tilenr=${reffile_basename:54:2}
 	os=${reffile_basename:49:4}
 	refyear=${reffile_basename:17:8}
-	secfile=$(ls -1 $secdir/*os*_${tilenr}.npy)
+	secfile=$(ls -1 $secdir/*_${tilesize}_${os}_${tilenr}.npy)
 	secfile_basename=$(basename $secfile)
 	secyear=${secfile_basename:17:8}
 	file2process=${basedir}/slurm.bash/${refyear}_${secyear}_${os}_${tilenr}_bs${blocksize}_sr${searchradius}.bash
@@ -53,7 +54,7 @@ for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 	errfile=$basedir/log/${refyear}_${secyear}_${tilesize}_${os}_${tilenr}_bs${blocksize}_sr${searchradius}.bash.err
 
 	# create bash file with commands to be passed on to slurm
-	echo "python $toolpath/run_block_matching.py $reffile $secfile $blocksize $searchradius" >$file2process
+	echo "python $toolpath/run_block_matching.py $reffile $secfile $tilesize $blocksize $searchradius" >$file2process
 	sed -i '1i #!/usr/bin/env bash ' $file2process
 	sed -i '2i echo "HOSTNAME: `hostname`"' $file2process
 	sed -i '3i source /raid-everest/conda/miniconda3/etc/profile.d/conda.sh' $file2process
@@ -65,7 +66,7 @@ for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 		sbatch --parsable -G=1 --mem-per-gpu=2G --partition=gpu_all --cpus-per-gpu=2 --time=24:00:00 --output=$logfile --error=$errfile $file2process
 	)
 	echo submitted ${refyear}_${secyear}_${tilenr}_${os}_bs${blocksize}_sr${searchradius}
-	#echo ${submit_slurm_block_matching_ids}
+	echo -n "${submit_slurm_block_matching_ids}," >>block_matching_slurm_ids.txt
 done
 
 # hack to get process ids from slurm queue
@@ -74,6 +75,6 @@ done
 #read -ra foo <<<${submit_slurm_block_matching_ids}
 #submit_slurm_block_matching_pid=${foo[3]}
 #echo ${submit_slurm_block_matching_pid[@]} >block_matching_slurm_ids.txt
-echo ${submit_slurm_block_matching_ids}
+#echo ${submit_slurm_block_matching_ids}
 #sed -i 's# #:#g' submit_slurm_block_matching_ids.txt
 #sed -i '1s/^/--dependency=afterok:/' submit_slurm_block_matching_ids.txt

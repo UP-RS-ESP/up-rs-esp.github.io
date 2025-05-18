@@ -36,16 +36,18 @@ if __name__ == "__main__":
 
     fname1 = sys.argv[1]
     fname2 = sys.argv[2]
-    block_size = int(sys.argv[3])
-    search_radius = int(sys.argv[4])
+    tile_size = int(sys.argv[3])
+    block_size = int(sys.argv[4])
+    search_radius = int(sys.argv[5])
 
     # fname1 = "231077/20130820_os2/LC08_L1TP_231077_20130820_20200913_02_T1_B8_os2_00.npy"
     # fname2 = "231077/20240420_os2/LC09_L1TP_231077_20240420_20240420_02_T1_B8_os2_00.npy"
     # block_size = 9
     # search_radius = 4
+    # tile_size = 4096
     logging.info(
-        "Running block matching for %s and %s with block size: %02d and search radius %02d"
-        % (fname1, fname2, block_size, search_radius)
+        "Running block matching for %s and %s with tile size: %d, block size: %02d, and search radius %02d"
+        % (fname1, fname2, tile_size, block_size, search_radius)
     )
     p = np.load(fname1)
     q = np.load(fname2)
@@ -53,9 +55,10 @@ if __name__ == "__main__":
     year_name2 = os.path.basename(fname2).split("_")[3]
     patch_nr = os.path.basename(fname1).split("_")[-1].split(".")[0]
     oversampling = os.path.basename(fname1).split("_")[-2].split(".")[0]
-    fname = "%s_%s_%s_%s_bs%02d_sr%02d" % (
+    fname = "%s_%s_%04d_%s_%s_bs%02d_sr%02d" % (
         year_name1,
         year_name2,
+        tile_size,
         oversampling,
         patch_nr,
         block_size,
