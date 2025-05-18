@@ -2,13 +2,14 @@
 
 Requires the numba-based block matching code [https://github.com/UP-RS-ESP/numba_cuda_block_matching](https://github.com/UP-RS-ESP/numba_cuda_block_matching)
 
-1. Run the initial tile generation on the server where the data are stored. This is important, because there is large file i/o. The oversampling step is slow. It is not possible to run the scipy.ndimage.zoom via cupy [https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html](https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html) because memory will be exceeded for a full Landsat scene.
+1. **Generating tiles**. Run the initial tile generation on the server where the data are stored. This is important, because there is large file i/o. The oversampling step is slow. It is not possible to run the scipy.ndimage.zoom via cupy [https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html](https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html) because memory will be exceeded for a full Landsat scene.
 ```bash
 mkdir log
 python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 32 1 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
-python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
-python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
-python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
+python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | tee log/create_Landsat_tiles_8192_48_1.log
+python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
+python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_128_1.log
+python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log
 ```
 This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well factors low oversampling rates. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. The detailed parameters for higher oversampling rates still have to be determined.
 The python-based code `create_Landsat_tiles.py` will convert all *.TIF files in a directory (argv[1]) into tiles. Padding will be done according to overlap and tile size. Standard naming scheme of USGS Earth Explorer Filenames is expected.
@@ -19,7 +20,7 @@ An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversa
 
 ![figures/LC08_L1TP_231077_20130820_20200913_02_T_os02_page00.png](Example of an oversampling factor 2 Landsat image (16 x 8192x8192 tiles).)
 
-2. Submit the tiles separately to each node in the cluster. This is best done through a `bash` script: 
+2. **Submitting tiles to the queue.** Submit the tiles separately to each node in the cluster. This is best done through a `bash` script: 
 ```bash
 ./block_matching_slurm.bash /raid2-gpu2/bodo/Landsat-test/231077/ \
   /raid2-gpu2/bodo/Landsat-test/231077/20130820_os01 \
@@ -38,12 +39,16 @@ For an oversampling rate of 2 (os02), a block size of 31 and search radius of 11
   31 11
 ```
 
-3. Collect tiles (untile) using the tile structure created in (1). Best to run this on the node where the data are stored. It requires the directory with the output for each tile of the block matching. Also, the tile size (argv[3]), block size(argv[4]), and search radius (argv[5]) will be passed on:
+3. **Merge tiles.** Collect tiles (untile) using the tile structure created in (1). Best to run this on the node where the data are stored. It requires the directory with the output for each tile of the block matching. Also, the tile size (argv[3]), block size(argv[4]), and search radius (argv[5]) will be passed on:
 ```bash
 python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 5
 ```
 
+4. **Timing.** Additional tests are necessary to evaluate the block matching with varying parameters. This is just a first-order summary.
 
-Parameters | Nr. of tiles | Timing for one tile
----+---+---
-os01, bs21, sr5 | 4 | 
+Parameters | Tile size | Nr. of tiles | Timing for one tile (minutes)|
+---|---|---|---|
+os01, bs21, sr5 | 8192 | 4 | 4.27 (aconcagua), 17.37 (kailash)
+os01, bs21, sr3 | 4096 | 4 | 4.27 (aconcagua), 17.37 (kailash)
+os02, bs31, sr11 | 8192 | 16 | 58.88 (aconcagua), 238.63 (kailash), 549.32 (pc pool)
+os05, bs81, sr31 | 8192 | > 24 hours (not finished)
