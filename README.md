@@ -20,7 +20,7 @@ An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversa
 ![Example of a original size (oversampling 01) Landsat image that is tiled into four 8192x8192 tiles.](figures/LC08_L1TP_231077_20130820_20200913_02_T_os01_page00.png)
 ![Example of an oversampling factor 2 Landsat image (16 x 8192x8192 tiles).](figures/LC08_L1TP_231077_20130820_20200913_02_T_os02_page00.png)
 
-2. **Submitting tiles to the queue.** Submit the tiles separately to each node in the cluster. This is best done through a `bash` script: 
+2. **Submitting tiles to the slurm queue.** Submit the tiles separately to each node in the cluster. This is best done through a `bash` script: 
 ```bash
 ./block_matching_slurm.bash /raid2-gpu2/bodo/Landsat-test/231077/ \
   /raid2-gpu2/bodo/Landsat-test/231077/20130820_os01 \
@@ -53,4 +53,4 @@ os01, bs21, sr5 | 4096 | 16 | 1.08 (Tesla V100, aconcagua), 4.42 (Tesla P40, kai
 os01, bs21, sr3 | 4096 | 16 | 0.44 (Tesla V100, aconcagua), 3.75 (Quadro P4000, pcpool), 1.66 (Quadro RTX 5000, pcpool), 2.44 (Quadro P5000, pcpool)
 os02, bs31, sr11 | 8192 | 16 | 58.88 (aconcagua), 238.63 (kailash), 549.32 (pc pool)
 os02, bs31, sr06 | 4096 | 64 | (aconcagua), (kailash), (pc pool)
-os05, bs81, sr31 | 8192 | > 24 hours (not finished)
+os05, bs81, sr31 | 8192 | 80 | > 24 hours (not finished)
