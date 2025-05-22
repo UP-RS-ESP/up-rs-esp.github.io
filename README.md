@@ -4,20 +4,20 @@ Requires the numba-based block matching code [https://github.com/UP-RS-ESP/numba
 
 1. **Generating tiles**. Run the initial tile generation on the server where the data are stored. This is important, because there is large file i/o. The oversampling step is slow. It is not possible to run the scipy.ndimage.zoom via cupy [https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html](https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html) because memory will be exceeded for a full Landsat scene.
 
-  It may be more useful to use `gdalwarp` to resample Landsat images - this will allow to have a proper geotransform and coordinates.
-  ```bash
-  mkdir log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 32 1 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | tee log/create_Landsat_tiles_8192_48_1.log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_128_1.log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log
-  python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 64 2 2>&1 | tee log/create_Landsat_tiles_4096_64_2.log
-  ```
-This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well factors low oversampling rates. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. The detailed parameters for higher oversampling rates still have to be determined.
-The python-based code `create_Landsat_tiles.py` will convert all *.TIF files in a directory (argv[1]) into tiles. Padding will be done according to overlap and tile size. Standard naming scheme of USGS Earth Explorer Filenames is expected.
+    It may be more useful to use `gdalwarp` to resample Landsat images - this will allow to have a proper geotransform and coordinates.
+    ```bash
+    mkdir log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 32 1 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | tee log/create_Landsat_tiles_8192_48_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_128_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 64 2 2>&1 | tee log/create_Landsat_tiles_4096_64_2.log
+    ```
+    This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well factors low oversampling rates. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. The detailed parameters for higher oversampling rates still have to be determined.
+    The python-based code `create_Landsat_tiles.py` will convert all *.TIF files in a directory (argv[1]) into tiles. Padding will be done according to overlap and tile size. Standard naming scheme of USGS Earth Explorer Filenames is expected.
 
-An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversampling factors will generate several pages.
+    An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversampling factors will generate several pages.
 
 ![Example of a original size (oversampling 01) Landsat image that is tiled into four 8192x8192 tiles.](figures/LC08_L1TP_231077_20130820_20200913_02_T_os01_page00.png)
 ![Example of an oversampling factor 2 Landsat image (16 x 8192x8192 tiles).](figures/LC08_L1TP_231077_20130820_20200913_02_T_os02_page00.png)
