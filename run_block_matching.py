@@ -40,8 +40,8 @@ if __name__ == "__main__":
     block_size = int(sys.argv[4])
     search_radius = int(sys.argv[5])
 
-    # fname1 = "231077/20130820_os2/LC08_L1TP_231077_20130820_20200913_02_T1_B8_os2_00.npy"
-    # fname2 = "231077/20240420_os2/LC09_L1TP_231077_20240420_20240420_02_T1_B8_os2_00.npy"
+    # fname1 = "231077/20130820_os02/LC08_L1TP_231077_20130820_20200913_02_T1_B8_4096_os02_00.npy"
+    # fname2 = "231077/20240420_os02/LC09_L1TP_231077_20240420_20240420_02_T1_B8_4096_os02_00.npy"
     # block_size = 9
     # search_radius = 4
     # tile_size = 4096
@@ -73,5 +73,12 @@ if __name__ == "__main__":
     end = time.time()
     length_s = end - start
     logging.info("Tile took %d seconds or %2.2f minutes" % (length_s, length_s / 60))
-    write_patch_correlation_npy(u, v, block_sizes, correlation, dirname, fname)
+    write_patch_correlation_npy(
+        np.int8(u),
+        np.int8(v),
+        np.uint8(block_sizes),
+        np.float32(correlation),
+        dirname,
+        fname,
+    )
     logging.info("Wrote u, v, block sizes and correlation files for %s" % fname)
