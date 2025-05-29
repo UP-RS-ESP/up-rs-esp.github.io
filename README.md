@@ -2,19 +2,17 @@
 
 Requires the numba-based block matching code [https://github.com/UP-RS-ESP/numba_cuda_block_matching](https://github.com/UP-RS-ESP/numba_cuda_block_matching)
 
-1. **Generating tiles**. Run the initial tile generation on the server where the data are stored. This is important, because there is large file i/o. The oversampling step is slow. It is not possible to run the scipy.ndimage.zoom via cupy [https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html](https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html) because memory will be exceeded for a full Landsat scene.
+We require, conda, numba, and several other packages. These are included in the tensorflow environment. Start with `conda activate tensorflow`.
 
-    It may be more useful to use `gdalwarp` to resample Landsat images - this will allow to have a proper geotransform and coordinates.
+1. **Generating tiles**. Run the initial tile generation on the server where the data are stored. This is important, because there is large file i/o. The oversampling step is slow. It is not possible to run the scipy.ndimage.zoom via cupy [https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html](https://docs.cupy.dev/en/latest/reference/generated/cupyx.scipy.ndimage.zoom.html) because memory will be exceeded for a full Landsat scene. We suggest to use gdalwarp for creating oversampled geotiffs, e.g. `gdalwarp -tr 5 5 -r bilinear -co COMPRESS=DEFLATE -co ZLEVEL=7 LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF LC08_L1TP_231077_20130820_20200913_02_T1_B8_os3.TIF`. The `gdalwarp` approach will allow to have a proper geotransform and coordinates.
+
     ```bash
     mkdir log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 32 1 2>&1 | tee log/create_Landsat_tiles_8192_32_1.log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 48 2 2>&1 | tee log/create_Landsat_tiles_8192_48_1.log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 5 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 128 8 2>&1 | tee log/create_Landsat_tiles_8192_128_1.log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log
-    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 64 2 2>&1 | tee log/create_Landsat_tiles_4096_64_2.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 8192 64 1 2>&1 | tee log/create_Landsat_tiles_8192_64_1.log
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/Landsat-test 4096 32 1 2>&1 | tee log/create_Landsat_tiles_4096_32_1.log # for higher oversampling rates
+    python create_Landsat_tiles.py /raid2-gpu2/bodo/LANDSAT/P232R077/CROP 8192 64 1 2>&1 | tee log/create_Landsat_tiles_P232R077_8192_64_1.log
     ```
-    This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well factors low oversampling rates. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. The detailed parameters for higher oversampling rates still have to be determined.
+    This will generate several tiles with oversampling factors of 1, 2, 5, and 8. The overlap size will need to be adjusted according to the window (or kernel) size used for block matching. The tile size of 8192 has been found to work well with low oversampling factors. For higher oversampling rates (>5), a lower tile size may be necessary, because the window size will be larger. We suggest to use 4096. The detailed parameters for higher oversampling rates still have to be determined.
     The python-based code `create_Landsat_tiles.py` will convert all *.TIF files in a directory (argv[1]) into tiles. Padding will be done according to overlap and tile size. Standard naming scheme of USGS Earth Explorer Filenames is expected.
 
     An overview PNG of each tile (4x4 tiles on one page) is generated. Larger oversampling factors will generate several pages.
@@ -27,7 +25,7 @@ Requires the numba-based block matching code [https://github.com/UP-RS-ESP/numba
     ./block_matching_slurm.bash /raid2-gpu2/bodo/Landsat-test/231077/ \
       /raid2-gpu2/bodo/Landsat-test/231077/20130820_os01 \
     /raid2-gpu2/bodo/Landsat-test/231077/20240420_os01 \
-      8192 21 5
+      8192 21 3
     ```
     The bash script will submit all tiles in argv[2] and argv[3] and run block matching with the given block size and search window. For original sizes Landsat images (overampling os01), a good block size is 21 and a search radius is 5 (allowing a maximum offset of 5 pixels).
 
@@ -41,9 +39,9 @@ Requires the numba-based block matching code [https://github.com/UP-RS-ESP/numba
       4096 31 6
     ```
 
-3. **Merge tiles.** Collect tiles (untile) using the tile structure created in (1). Best to run this on the node where the data are stored. It requires the directory with the output for each tile of the block matching. Also, the tile size (argv[3]), block size(argv[4]), and search radius (argv[5]) will be passed on:
+3. **Merge tiles.** Collect tiles (untile) using the tile structure created in (1). Best to run this on the node where the data are stored. It requires the directory with the output for each tile of the block matching. Also, the tile size (argv[3]), oversampling factor (argv[4]), block size (argv[5]), search radius (argv[6]), and source geotiff file for obtaining projection information (argv[7]) will be passed on:
     ```bash
-    python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 5
+    python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 6 LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF
     ```
 
 ![Example output with an oversampling factor 2, a tile size of 4096, a block size of 31 and a search radius of 6.](figures/20130820_20240420_os02_merged_tiles.png)

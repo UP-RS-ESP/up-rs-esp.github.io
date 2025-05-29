@@ -163,13 +163,13 @@ if __name__ == "__main__":
     source_geotiff_fn = sys.argv[7]
 
     # python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 9
-    dirname = "231077/20130820_20240420_os02/"
-    tileinfo_dirname = "231077/20130820_os02/"
-    tile_size = 4096
-    oversampling = 2
-    block_size = 31
-    search_radius = 6
-    source_geotiff_fn = ""
+    # dirname = "231077/20130820_20240420_os02/"
+    # tileinfo_dirname = "231077/20130820_os02/"
+    # tile_size = 4096
+    # oversampling = 2
+    # block_size = 31
+    # search_radius = 6
+    # source_geotiff_fn = "LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
 
     logging.info(
         "Merging tiles for %s with block size: %02d and search radius: %02d"
