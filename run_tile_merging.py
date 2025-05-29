@@ -156,7 +156,7 @@ def plot_merged_tiles(udata, vdata, correlationdata, bsdata, png_fn):
 if __name__ == "__main__":
     dirname = sys.argv[1]
     tileinfo_dirname = sys.argv[2]
-    tile_size = sys.argv[3]
+    tile_size = int(sys.argv[3])
     oversampling = sys.argv[4]
     block_size = int(sys.argv[5])
     search_radius = int(sys.argv[6])
