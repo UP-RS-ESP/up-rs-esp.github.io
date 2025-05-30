@@ -51,7 +51,7 @@ def patchify_with_overlap(x, tile_size=4096, overlap=32):
     assert x.shape[1] % patch_size == 0
 
     foo = np.lib.stride_tricks.sliding_window_view(x, (patch_size, patch_size))[
-        :: tile_size + overlap, :: tile_size + overlap
+        ::tile_size, ::tile_size
     ]
     return (
         iheight,
@@ -59,11 +59,46 @@ def patchify_with_overlap(x, tile_size=4096, overlap=32):
         pad_height,
         pad_width,
         patch_size,
+        x.shape[0],
+        x.shape[1],
         foo.shape[0],
         foo.shape[1],
         foo.shape[2],
         foo.reshape((foo.shape[0] * foo.shape[1], foo.shape[2], foo.shape[3])),
     )
+
+
+def combine_tiled_data(
+    tile_data, tile_size, iheight, iwidth, pad_height, pad_width, dim0, dim1
+):
+    # create large tile that contains full array and then place patches into the merged array
+    data_full = np.empty((iheight + pad_height, iwidth + pad_width), dtype=np.float32)
+    # data_full.fill(np.nan)
+    data_full.fill(-9999)
+    steps_dim0 = [tile_size * tiles for tiles in range(dim0)]
+    steps_dim1 = [tile_size * tiles for tiles in range(dim1)]
+    all_steps_dim0 = np.empty((dim0, dim1), dtype=np.int16)
+    all_steps_dim1 = np.empty((dim0, dim1), dtype=np.int16)
+    for j in range(len(all_steps_dim0)):
+        for k in range(len(all_steps_dim1)):
+            all_steps_dim0[j, k] = steps_dim0[j]
+            all_steps_dim1[j, k] = steps_dim1[k]
+
+    for i in tqdm.tqdm(range(tile_data.shape[0]), desc="Merging tiles"):
+        ctile_data = tile_data[i, :, :]
+        tile_data_clipped = ctile_data[
+            overlap : tile_size + overlap, overlap : tile_size + overlap
+        ]
+        start_tile_x = all_steps_dim0.ravel()[i]
+        start_tile_y = all_steps_dim1.ravel()[i]
+
+        data_full[
+            start_tile_x : start_tile_x + tile_size,
+            start_tile_y : start_tile_y + tile_size,
+        ] = tile_data_clipped[0:tile_size, 0:tile_size]
+
+    data_full = data_full[0:iheight, 0:iwidth]
+    return data_full
 
 
 def plot_patches(x, savepng_tiles_output_file, title, oversampling, tile_size):
@@ -151,9 +186,10 @@ if __name__ == "__main__":
     fnames = glob.glob(os.path.join(basedir, "*_B8.TIF"))
     # assume that all TIF files in that directory are correlated against each other
     # basedir = "/raid2-gpu2/bodo/Landsat-test/"
-    # tile_size = 8192
+    # basedir = "/home/bodo/Dropbox/foo/"
+    # tile_size = 4096
     # overlap = 32
-    # oversampling = 2
+    # oversampling = 1
     # fnames = glob.glob(os.path.join(basedir, "*_B8.TIF"))
 
     # Store GeoTransform and Projection information
@@ -200,6 +236,18 @@ if __name__ == "__main__":
             #    .astype(np.float32)
             # )
 
+            # Resampling with gdal
+            # from osgeo import gdal
+            # infn = '/path/to/source.tif'
+            # outfn = '/path/to/target.tif'
+
+            # xres=Landsat_ds_gt[1] / oversampling
+            # yres=Landsat_ds_gt[1] / oversampling
+            # resample_alg = 'bilinear'
+
+            # ds = gdal.Warp(outfn, infn, warpoptions=dict(xRes=xres, yRes=yres, resampleAlg=resample_alg), compressionOptions=: "COMPRESS=LZW",) )
+            # ds = None
+
         logging.info("%d/%d: Tile array" % (i + 1, len(fnames)))
         (
             iheight,
@@ -207,6 +255,8 @@ if __name__ == "__main__":
             pad_height,
             pad_width,
             patch_size,
+            oheight,
+            owidth,
             dim0,
             dim1,
             dim2,
@@ -220,6 +270,9 @@ if __name__ == "__main__":
             oversampling,
             tile_size,
         )
+
+        # testing
+        # L8_2013 = combine_tiled_data(Landsat_B8_patches, tile_size, iheight, iwidth, pad_height, pad_width, dim0, dim1)
 
         logging.info(
             "%d/%d: Save %d tiles to npy"

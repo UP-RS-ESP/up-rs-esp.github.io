@@ -40,11 +40,12 @@ if __name__ == "__main__":
     block_size = int(sys.argv[4])
     search_radius = int(sys.argv[5])
 
-    # fname1 = "231077/20130820_os02/LC08_L1TP_231077_20130820_20200913_02_T1_B8_4096_os02_00.npy"
-    # fname2 = "231077/20240420_os02/LC09_L1TP_231077_20240420_20240420_02_T1_B8_4096_os02_00.npy"
-    # block_size = 9
-    # search_radius = 4
-    # tile_size = 4096
+    fname1 = "231077/20130820_os01/LC08_L1TP_231077_20130820_20200913_02_T1_B8_8192_os01_01.npy"
+    fname2 = "231077/20240420_os01/LC09_L1TP_231077_20240420_20240420_02_T1_B8_8192_os01_01.npy"
+    block_size = 21
+    search_radius = 6
+    tile_size = 8192
+
     logging.info(
         "Running block matching for %s and %s with tile size: %d, block size: %02d, and search radius %02d"
         % (fname1, fname2, tile_size, block_size, search_radius)
@@ -74,10 +75,10 @@ if __name__ == "__main__":
     length_s = end - start
     logging.info("Tile took %d seconds or %2.2f minutes" % (length_s, length_s / 60))
     write_patch_correlation_npy(
-        np.int8(u),
-        np.int8(v),
-        np.uint8(block_sizes),
-        np.float32(correlation),
+        u,
+        v,
+        block_sizes,
+        correlation,
         dirname,
         fname,
     )
