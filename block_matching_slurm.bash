@@ -19,6 +19,7 @@ secdir=$3
 tilesize=$4
 blocksize=$5
 searchradius=$6
+matchingstep=$7
 
 #where we store all bash and python files - needs to be on NFS
 #basedir=/raid2-gpu2/bodo/Landsat-test/231077
@@ -54,7 +55,7 @@ for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 	errfile=$basedir/log/${refyear}_${secyear}_${tilesize}_${os}_${tilenr}_bs${blocksize}_sr${searchradius}.bash.err
 
 	# create bash file with commands to be passed on to slurm
-	echo "python $toolpath/run_block_matching.py $reffile $secfile $tilesize $blocksize $searchradius" >$file2process
+	echo "python $toolpath/run_block_matching.py $reffile $secfile $tilesize $blocksize $searchradius $matchingstep" >$file2process
 	sed -i '1i #!/usr/bin/env bash ' $file2process
 	sed -i '2i echo "HOSTNAME: `hostname`"' $file2process
 	sed -i '3i source /raid-everest/conda/miniconda3/etc/profile.d/conda.sh' $file2process

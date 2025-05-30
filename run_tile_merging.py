@@ -84,22 +84,9 @@ def read_tiled_data(tile_files):
         )  # tilenr from filename
         tile_data = np.load(tile_files[i])
 
-        if all_steps_dim0.ravel()[i] == 0 and all_steps_dim1.ravel()[i] == 0:
-            tile_data_clipped = tile_data[
-                overlap : patch_size - overlap, overlap : patch_size - overlap
-            ]
-        elif all_steps_dim0.ravel()[i] == 0 and all_steps_dim1.ravel()[i] > 0:
-            tile_data_clipped = tile_data[
-                overlap : patch_size - overlap, overlap : patch_size - overlap
-            ]
-        elif all_steps_dim0.ravel()[i] > 0 and all_steps_dim1.ravel()[i] == 0:
-            tile_data_clipped = tile_data[
-                0 : patch_size - overlap, overlap : patch_size - overlap
-            ]
-        else:
-            tile_data_clipped = tile_data[
-                0 : patch_size - overlap, 0 : patch_size - overlap
-            ]
+        tile_data_clipped = tile_data[
+            overlap : tile_size + overlap, overlap : tile_size + overlap
+        ]
 
         start_tile_x = all_steps_dim0.ravel()[
             i
@@ -163,11 +150,11 @@ if __name__ == "__main__":
     source_geotiff_fn = sys.argv[7]
 
     # python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 9
-    # dirname = "231077/20130820_20240420_os02/"
-    # tileinfo_dirname = "231077/20130820_os02/"
-    # tile_size = 4096
-    # oversampling = 2
-    # block_size = 31
+    # dirname = "231077/20130820_20240420_os01_tilesize32"
+    ##tileinfo_dirname = "231077/20130820_20240420_os01_tilesize32"
+    # tile_size = 8192
+    # oversampling = 1
+    # block_size = 21
     # search_radius = 6
     # source_geotiff_fn = "LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
 

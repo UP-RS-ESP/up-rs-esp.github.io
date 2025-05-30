@@ -25,7 +25,7 @@ We require, conda, numba, and several other packages. These are included in the 
     ./block_matching_slurm.bash /raid2-gpu2/bodo/Landsat-test/231077/ \
       /raid2-gpu2/bodo/Landsat-test/231077/20130820_os01 \
     /raid2-gpu2/bodo/Landsat-test/231077/20240420_os01 \
-      8192 21 3
+      8192 21 3 1
     ```
     The bash script will submit all tiles in argv[2] and argv[3] and run block matching with the given block size and search window. For original sizes Landsat images (overampling os01), a good block size is 21 and a search radius is 5 (allowing a maximum offset of 5 pixels).
 
@@ -41,7 +41,7 @@ We require, conda, numba, and several other packages. These are included in the 
 
 3. **Merge tiles.** Collect tiles (untile) using the tile structure created in (1). Best to run this on the node where the data are stored. It requires the directory with the output for each tile of the block matching. Also, the tile size (argv[3]), oversampling factor (argv[4]), block size (argv[5]), search radius (argv[6]), and source geotiff file for obtaining projection information (argv[7]) will be passed on:
     ```bash
-    python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 6 LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF
+    python run_tile_merging.py 231077/20130820_20240420_os01 231077/20130820_os01 8192 1 21 6 LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF
     ```
 
 ![Example output with an oversampling factor 2, a tile size of 4096, a block size of 31 and a search radius of 6.](figures/20130820_20240420_os02_merged_tiles.png)

@@ -39,12 +39,14 @@ if __name__ == "__main__":
     tile_size = int(sys.argv[3])
     block_size = int(sys.argv[4])
     search_radius = int(sys.argv[5])
+    matching_step = int(sys.argv[6])
 
-    fname1 = "231077/20130820_os01/LC08_L1TP_231077_20130820_20200913_02_T1_B8_8192_os01_01.npy"
-    fname2 = "231077/20240420_os01/LC09_L1TP_231077_20240420_20240420_02_T1_B8_8192_os01_01.npy"
-    block_size = 21
-    search_radius = 6
-    tile_size = 8192
+    # fname1 = "231077/20130820_os01/LC08_L1TP_231077_20130820_20200913_02_T1_B8_8192_os01_03.npy"
+    # fname2 = "231077/20240420_os01/LC09_L1TP_231077_20240420_20240420_02_T1_B8_8192_os01_03.npy"
+    # block_size = 21
+    # search_radius = 6
+    # tile_size = 8192
+    # matching_step = 1
 
     logging.info(
         "Running block matching for %s and %s with tile size: %d, block size: %02d, and search radius %02d"
@@ -70,7 +72,17 @@ if __name__ == "__main__":
         os.mkdir(dirname)
 
     start = time.time()
-    u, v, block_sizes, correlation = block_matching_ncc(p, q, block_size, search_radius)
+    if matching_step == 1:
+        u, v, block_sizes, correlation = block_matching_ncc(
+            p, q, block_size, search_radius
+        )
+    else:
+        # mask == 1 is masked out and will not be processed
+        mask = np.ones(p.shape, dtype=np.bool_)
+        mask[::matching_step, ::matching_step] = 0
+        u, v, block_sizes, correlation = block_matching_masked_ncc(
+            p, q, mask, block_size, search_radius
+        )
     end = time.time()
     length_s = end - start
     logging.info("Tile took %d seconds or %2.2f minutes" % (length_s, length_s / 60))
