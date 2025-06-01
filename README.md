@@ -199,6 +199,8 @@ rsync -az --info=progress2 bookhage@jlogin1.hpc.uni-potsdam.de:/work/bookhage/La
 3. Submit jobs with sbatch:
     ```bash
     cd /work/bookhage/Landsat/P232R077/
+    . ./sbatch.run.bash
+    #or separately:
     sbatch /work/bookhage/Landsat/P232R077/run_block_matching_232077_os03_bs61_sr10_ms15_job000.bash
     sbatch /work/bookhage/Landsat/P232R077/run_block_matching_232077_os03_bs61_sr10_ms15_job001.bash
     ```
