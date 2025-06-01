@@ -19,7 +19,8 @@ secdir=$3
 tilesize=$4
 blocksize=$5
 searchradius=$6
-matchingstep=$7
+oversampling=$7
+skipstep=$8
 
 #where we store all bash and python files - needs to be on NFS
 #basedir=/raid2-gpu2/bodo/Landsat-test/231077
@@ -42,10 +43,11 @@ fi
 echo -n "--dependency=afterok:" >block_matching_slurm_ids.txt
 submit_slurm_block_matching_ids=()
 for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
-	reffile_basename=$(basename $reffile)
+	reffile_basename=$(basename "$reffile")
 	#this is a cheap way of getting the tile number - will need to be adjusted of filelength changes
-	tilenr=${reffile_basename:54:2}
-	os=${reffile_basename:49:4}
+	tilenr=${reffile_basename:54:3}
+	#os=${reffile_basename:49:4}
+	os=$(printf "os%02d" "$oversampling")
 	refyear=${reffile_basename:17:8}
 	secfile=$(ls -1 $secdir/*_${tilesize}_${os}_${tilenr}.npy)
 	secfile_basename=$(basename $secfile)
@@ -55,7 +57,7 @@ for reffile in ${refdir}/*_${tilesize}_os??_*.npy; do
 	errfile=$basedir/log/${refyear}_${secyear}_${tilesize}_${os}_${tilenr}_bs${blocksize}_sr${searchradius}.bash.err
 
 	# create bash file with commands to be passed on to slurm
-	echo "python $toolpath/run_block_matching.py $reffile $secfile $tilesize $blocksize $searchradius $matchingstep" >$file2process
+	echo "python $toolpath/run_block_matching.py $reffile $secfile $tilesize $blocksize $searchradius $skipstep" >$file2process
 	sed -i '1i #!/usr/bin/env bash ' $file2process
 	sed -i '2i echo "HOSTNAME: `hostname`"' $file2process
 	sed -i '3i source /raid-everest/conda/miniconda3/etc/profile.d/conda.sh' $file2process

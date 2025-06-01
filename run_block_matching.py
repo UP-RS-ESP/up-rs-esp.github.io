@@ -43,10 +43,13 @@ if __name__ == "__main__":
 
     # fname1 = "231077/20130820_os01/LC08_L1TP_231077_20130820_20200913_02_T1_B8_8192_os01_03.npy"
     # fname2 = "231077/20240420_os01/LC09_L1TP_231077_20240420_20240420_02_T1_B8_8192_os01_03.npy"
-    # block_size = 21
-    # search_radius = 6
-    # tile_size = 8192
-    # matching_step = 1
+    # fname1 = "os05/231077/20130820_os05/LC08_L1TP_231077_20130820_20200913_02_T1_B8_4096_os05_003.npy"
+    # fname2 = "os05/231077/20240420_os05/LC09_L1TP_231077_20240420_20240420_02_T1_B8_4096_os05_003.npy"
+    # dirpath = '/raid2-gpu2/bodo/Landsat-test/os05/231077/'
+    # block_size = 61
+    # search_radius = 10
+    # tile_size = 4096
+    # matching_step = 5
 
     logging.info(
         "Running block matching for %s and %s with tile size: %d, block size: %02d, and search radius %02d"
@@ -67,7 +70,10 @@ if __name__ == "__main__":
         block_size,
         search_radius,
     )
-    dirname = "%s_%s_%s" % (year_name1, year_name2, oversampling)
+
+    # Path will need to be adjusted to make sure directory gets stored in proper location
+    dirname = "%s_%s_%s_ms%02d" % (year_name1, year_name2, oversampling, matching_step)
+    dirname = os.path.join(dirpath, dirname)
     if not os.path.exists(dirname):
         os.mkdir(dirname)
 

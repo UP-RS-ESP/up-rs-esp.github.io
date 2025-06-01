@@ -134,17 +134,17 @@ def plot_patches(x, savepng_tiles_output_file, title, oversampling, tile_size):
             if icounter >= nr_patches:
                 ax[plotx, ploty].axis("off")
                 continue
-            ax[plotx, ploty].imshow(x[cimage, :, :], cmap="gray")
+            ax[plotx, ploty].imshow(x[cimages_id[cimage], :, :], cmap="gray")
             ax[plotx, ploty].set_aspect("equal", "box")
             ax[plotx, ploty].set_title(
-                "%02d" % (cimage,),
+                "%03d" % (cimages_id[cimage]),
                 fontsize=8,
             )
             ax[plotx, ploty].axis("off")
             icounter += 1
 
         fig.suptitle(
-            "Page %d/%d: %s tile (%d x %d pixels with %d pixels overlap) %d x oversampling"
+            "Page %d/%d: %s tile (%d x %d pixels with %d pixels overlap and %d x oversampling)"
             % (
                 pagenr + 1,
                 nr_of_pages,
@@ -165,14 +165,14 @@ def write_patches_npy(x, dirname, name, oversampling, tile_size):
     for i in range(x.shape[0]):
         cpatch = x[i, :, :]
         fname = os.path.join(
-            dirname, name + "_%04d_os%02d_%02d.npy" % (tile_size, oversampling, i)
+            dirname, name + "_%04d_os%02d_%03d.npy" % (tile_size, oversampling, i)
         )
         np.save(fname, cpatch)
 
 
 def write_patch_info_npy(x, dirname, name, oversampling):
     fname = os.path.join(
-        dirname, name + "_tileinfo_%04d_os%02d.npy" % (tile_size, oversampling)
+        dirname, name + "_tileinfo_%04d_os%03d.npy" % (tile_size, oversampling)
     )
     np.save(fname, x)
 
@@ -182,14 +182,14 @@ if __name__ == "__main__":
     basedir = sys.argv[1]  # "/raid2-gpu2/bodo/Landsat-test/"
     tile_size = int(sys.argv[2])  # 8192
     overlap = int(sys.argv[3])  # 32
-    oversampling = int(sys.argv[4])  # 1, 2, 4-times oversampling
+    oversampling = int(sys.argv[4])  # 1, 3, 5-times oversampling
     fnames = glob.glob(os.path.join(basedir, "*_B8.TIF"))
     # assume that all TIF files in that directory are correlated against each other
-    # basedir = "/raid2-gpu2/bodo/Landsat-test/"
+    # basedir = "/raid2-gpu2/bodo/Landsat-test/os05"
     # basedir = "/home/bodo/Dropbox/foo/"
     # tile_size = 4096
-    # overlap = 32
-    # oversampling = 1
+    # overlap = 64
+    # oversampling = 5
     # fnames = glob.glob(os.path.join(basedir, "*_B8.TIF"))
 
     # Store GeoTransform and Projection information
@@ -214,39 +214,39 @@ if __name__ == "__main__":
         Landsat_B8, Landsat_ds_gt, Landsat_ds_proj = load_Landsat_tif(fname)
         Landsat_gt.append(Landsat_ds_gt)
         Landsat_proj.append(Landsat_ds_proj)
-        if oversampling > 1:
-            logging.info(
-                "%d/%d: Oversampling with factor %d"
-                % (i + 1, len(fnames), oversampling)
-            )
-            Landsat_B8 = zoom(
-                Landsat_B8, oversampling, mode="reflect", order=2, prefilter=False
-            )
-            # perform resampling on the CUDA - not working for large images
-            # Landsat_B8 = (
-            #    ndimage.zoom(
-            #        cp.array(Landsat_B8, dtype=cp.float32),
-            #        oversampling,
-            #        prefilter=False,
-            #        order=2,
-            #        mode="reflect",
-            #        output=cp.float32,
-            #    )
-            #    .get()
-            #    .astype(np.float32)
-            # )
+        # if oversampling > 1:
+        #    logging.info(
+        #        "%d/%d: Oversampling with factor %d"
+        # % (i + 1, len(fnames), oversampling)
+        #    )
+        #    Landsat_B8 = zoom(
+        #        Landsat_B8, oversampling, mode="reflect", order=2, prefilter=False
+        #    )
+        # perform resampling on the CUDA - not working for large images
+        # Landsat_B8 = (
+        #    ndimage.zoom(
+        #        cp.array(Landsat_B8, dtype=cp.float32),
+        #        oversampling,
+        #        prefilter=False,
+        #        order=2,
+        #        mode="reflect",
+        #        output=cp.float32,
+        #    )
+        #    .get()
+        #    .astype(np.float32)
+        # )
 
-            # Resampling with gdal
-            # from osgeo import gdal
-            # infn = '/path/to/source.tif'
-            # outfn = '/path/to/target.tif'
+        # Resampling with gdal
+        # from osgeo import gdal
+        # infn = '/path/to/source.tif'
+        # outfn = '/path/to/target.tif'
 
-            # xres=Landsat_ds_gt[1] / oversampling
-            # yres=Landsat_ds_gt[1] / oversampling
-            # resample_alg = 'bilinear'
+        # xres=Landsat_ds_gt[1] / oversampling
+        # yres=Landsat_ds_gt[1] / oversampling
+        # resample_alg = 'bilinear'
 
-            # ds = gdal.Warp(outfn, infn, warpoptions=dict(xRes=xres, yRes=yres, resampleAlg=resample_alg), compressionOptions=: "COMPRESS=LZW",) )
-            # ds = None
+        # ds = gdal.Warp(outfn, infn, warpoptions=dict(xRes=xres, yRes=yres, resampleAlg=resample_alg), compressionOptions=: "COMPRESS=LZW",) )
+        # ds = None
 
         logging.info("%d/%d: Tile array" % (i + 1, len(fnames)))
         (
@@ -275,7 +275,7 @@ if __name__ == "__main__":
         # L8_2013 = combine_tiled_data(Landsat_B8_patches, tile_size, iheight, iwidth, pad_height, pad_width, dim0, dim1)
 
         logging.info(
-            "%d/%d: Save %d tiles to npy"
+            "%d/%d: Save %03d tiles to npy"
             % (i + 1, len(fnames), Landsat_B8_patches.shape[0])
         )
         write_patches_npy(
@@ -294,6 +294,8 @@ if __name__ == "__main__":
                 pad_height,
                 pad_width,
                 patch_size,
+                oheight,
+                owidth,
                 dim0,
                 dim1,
                 dim2,

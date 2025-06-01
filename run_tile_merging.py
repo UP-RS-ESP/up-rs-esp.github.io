@@ -150,12 +150,12 @@ if __name__ == "__main__":
     source_geotiff_fn = sys.argv[7]
 
     # python run_tile_merging.py 231077/20130820_20240420_os01 231077/2130820_os01 8192 1 21 9
-    # dirname = "231077/20130820_20240420_os01_tilesize32"
-    ##tileinfo_dirname = "231077/20130820_20240420_os01_tilesize32"
+    # dirname = "231077/20130820_20240420_os01"
+    # tileinfo_dirname = "231077/20130820_os01"
     # tile_size = 8192
     # oversampling = 1
     # block_size = 21
-    # search_radius = 6
+    # search_radius = 3
     # source_geotiff_fn = "LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
 
     logging.info(
@@ -243,24 +243,27 @@ if __name__ == "__main__":
     bsdata = read_tiled_data(bsfiles)
     bsdata[bsdata == -9999] = np.nan
 
-    png_fn = dirname + "_merged_tiles.png"
+    png_fn = dirname + "_bs%02d_sr%02d_merged_tiles.png" % (block_size, search_radius)
     logging.info("Plotting u, v, correlation, and blocksize data to %s" % (png_fn))
     plot_merged_tiles(udata, vdata, correlationdata, bsdata, png_fn)
 
     logging.info("Extract geotiff information from %s" % (source_geotiff_fn))
     gt, proj, epsg_code, ys, xs = get_geotiff_info(source_geotiff_fn)
 
-    geotiff_fn = os.path.basename(dirname) + "_u_epsg%s.tif" % (epsg_code)
+    geotiff_fn = dirname + "_bs%02d_sr%02d_u.tif" % (block_size, search_radius)
     logging.info("Save geotiff to %s" % (geotiff_fn))
     save_geotiff(geotiff_fn, udata, int(epsg_code), geotransform=gt, nan_value=np.nan)
-    geotiff_fn = os.path.basename(dirname) + "_v_epsg%s.tif" % (epsg_code)
+    geotiff_fn = dirname + "_bs%02d_sr%02d_v.tif" % (block_size, search_radius)
     logging.info("Save geotiff to %s" % (geotiff_fn))
     save_geotiff(geotiff_fn, vdata, int(epsg_code), geotransform=gt, nan_value=np.nan)
-    geotiff_fn = os.path.basename(dirname) + "_correlation_epsg%s.tif" % (epsg_code)
+    geotiff_fn = dirname + "_bs%02d_sr%02d_correlation.tif" % (
+        block_size,
+        search_radius,
+    )
     logging.info("Save geotiff to %s" % (geotiff_fn))
     save_geotiff(
         geotiff_fn, correlationdata, int(epsg_code), geotransform=gt, nan_value=np.nan
     )
-    geotiff_fn = os.path.basename(dirname) + "_bs_epsg%s.tif" % (epsg_code)
+    geotiff_fn = dirname + "_bs%02d_sr%02d_bs.tif" % (block_size, search_radius)
     logging.info("Save geotiff to %s" % (geotiff_fn))
     save_geotiff(geotiff_fn, bsdata, int(epsg_code), geotransform=gt, nan_value=np.nan)
