@@ -633,19 +633,24 @@ def load_u_files(dirname, correlation_ar, height, width):
     return u_files, deltaT, u_ar
 
 
-def load_dem_aspect_slope_files():
+def load_dem_aspect_slope_files(dem_fname):
     logging.info("Loading DEM file %s" % dem_fname)
     dem, dem_gt, dem_proj, dem_epsg = load_Landsat_tif(dem_fname)
     # dem_slope, dem_aspect = np_slope_aspect(dem, dem_gt[1])
 
     # !gdaldem aspect COP15_DEM_NW_ARGENTINA_UTM20.tif COP15_DEM_NW_ARGENTINA_UTM20_aspect.tif -co COMPRESS=DEFLATE -co ZLEVEL=7
     # !gdaldem slope COP15_DEM_NW_ARGENTINA_UTM20.tif COP15_DEM_NW_ARGENTINA_UTM20_slope.tif -co COMPRESS=DEFLATE -co ZLEVEL=7
-    aspect_fname = "COP15_DEM_NW_ARGENTINA_UTM20_P231R077_aspect.tif"
+    dem_dir = os.path.dirname(dem_fname)
+    aspect_fname = os.path.join(
+        dem_dir, "COP15_DEM_NW_ARGENTINA_UTM20_P231R077_aspect.tif"
+    )
     logging.info("Loading DEM-aspect file %s" % aspect_fname)
     dem_aspect, aspect_gt, aspect_proj, aspect_epsg = load_Landsat_tif(aspect_fname)
     dem_aspect[dem_aspect < 0] = np.nan
 
-    slope_fname = "COP15_DEM_NW_ARGENTINA_UTM20_P231R077_slope.tif"
+    slope_fname = os.path.join(
+        dem_dir, "COP15_DEM_NW_ARGENTINA_UTM20_P231R077_slope.tif"
+    )
     logging.info("Loading DEM-slope file %s" % slope_fname)
     dem_slope, slope_gt, slope_proj, slope_epsg = load_Landsat_tif(slope_fname)
     dem_slope[dem_slope < 0] = np.nan
@@ -712,7 +717,7 @@ if __name__ == "__main__":
     # stepsize = int(sys.argv[2])
     geotiffn = sys.argv[3]
     dem_fname = sys.argv[4]
-    # python run_stack_block_matching_directory.py  \
+    # python run_stack_block_matching_fulldirectory.py  \
     # CORR_os05_bs61_sr06_ms05/ \
     # CORR_os01_bs11_sr03_ms01/ \
     # CORR_os05_bs61_sr06_ms05_ \
@@ -729,7 +734,7 @@ if __name__ == "__main__":
     # dem_fname = "COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
 
     dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope = (
-        load_dem_aspect_slope_files()
+        load_dem_aspect_slope_files(dem_fname)
     )
 
     height, width, ds_gt, epsg_code = get_file_dimensions(dirname_os01)
