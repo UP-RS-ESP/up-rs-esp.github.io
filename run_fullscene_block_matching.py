@@ -1,6 +1,6 @@
 import numpy as np
 import numba as nb
-from block_matching import block_matching_ncc, block_matching_masked_ncc
+from block_matching import block_matching_masked_ncc_uint_nonzero
 from numba import cuda
 from math import sqrt
 from osgeo import gdal
@@ -40,9 +40,7 @@ def load_Landsat_tif(fname):
     Landsat_ds_gt = Landsat_ds.GetGeoTransform()
     Landsat_ds_proj = Landsat_ds.GetProjection()
     epsg = osr.SpatialReference(wkt=Landsat_ds_proj).GetAttrValue("AUTHORITY", 1)
-    Landsat_B8 = np.array(Landsat_ds.GetRasterBand(1).ReadAsArray()).astype("float32")
-    # make sure that raster is properly pre-processed. Set 0 and -9999 to nan
-    Landsat_B8[Landsat_B8 == 0] = np.nan
+    Landsat_B8 = np.array(Landsat_ds.GetRasterBand(1).ReadAsArray()).astype("uint16")
     Landsat_ds = None
     return Landsat_B8, Landsat_ds_gt, Landsat_ds_proj, int(epsg)
 
@@ -90,13 +88,11 @@ def save_mask_geotiff(geotiff_fn, array, epsg_code, geotransform):
     del outband, outRaster, driver
 
 
-def save_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value):
+def save_c_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=0):
     xdim = array.shape[0]
     ydim = array.shape[1]
-
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(epsg_code)
-
     driver = gdal.GetDriverByName("GTiff")
     driver.Register()
     outRaster = driver.Create(
@@ -104,8 +100,8 @@ def save_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value):
         ydim,
         xdim,
         1,
-        gdal.GDT_Float32,
-        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=3"],
+        gdal.GDT_Byte,  # GDT_Byte is an 8 bit unsigned integer
+        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=2"],
     )
     outRaster.SetGeoTransform(geotransform)
     outRaster.SetProjection(srs.ExportToProj4())
@@ -118,55 +114,105 @@ def save_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value):
     del outband, outRaster, driver
 
 
-def save_all_geotiff():
-    geotiff_fn = os.path.basename(dirname) + "_bs%02d_sr%02d_ms%02d_u.tif" % (
-        block_size,
-        search_radius,
-        matching_step,
-    )
-    logging.info("Save geotiff to %s" % (geotiff_fn))
-    save_geotiff(
-        geotiff_fn, u, int(epsg_code), geotransform=Landsat_1_ds_gt, nan_value=np.nan
-    )
-    geotiff_fn = os.path.basename(dirname) + "_bs%02d_sr%02d_ms%02d_v.tif" % (
-        block_size,
-        search_radius,
-        matching_step,
-    )
-    logging.info("Save geotiff to %s" % (geotiff_fn))
-    save_geotiff(
-        geotiff_fn, v, int(epsg_code), geotransform=Landsat_1_ds_gt, nan_value=np.nan
-    )
-    geotiff_fn = os.path.basename(dirname) + "_bs%02d_sr%02d_ms%02d_blocksizes.tif" % (
-        block_size,
-        search_radius,
-        matching_step,
-    )
-    logging.info("Save geotiff to %s" % (geotiff_fn))
-    save_geotiff(
+def save_uv_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=-128):
+    xdim = array.shape[0]
+    ydim = array.shape[1]
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(epsg_code)
+    driver = gdal.GetDriverByName("GTiff")
+    driver.Register()
+    outRaster = driver.Create(
         geotiff_fn,
-        block_sizes,
+        ydim,
+        xdim,
+        1,
+        gdal.GDT_Int8,
+        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=2"],
+    )
+    outRaster.SetGeoTransform(geotransform)
+    outRaster.SetProjection(srs.ExportToProj4())
+    outband = outRaster.GetRasterBand(1)
+    outband.WriteArray(array, 0, 0)
+    outband.FlushCache()
+    outband.SetNoDataValue(nan_value)
+    outband.ComputeStatistics(0)
+    outband.FlushCache()
+    del outband, outRaster, driver
+
+
+def save_all_geotiff(tifdirname):
+    geotiff_fn = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_u.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
+    )
+    logging.info("Save geotiff to %s" % (geotiff_fn))
+    save_uv_geotiff(
+        geotiff_fn,
+        u,
         int(epsg_code),
         geotransform=Landsat_1_ds_gt,
-        nan_value=np.nan,
     )
-    geotiff_fn = os.path.basename(dirname) + "_bs%02d_sr%02d_ms%02d_correlation.tif" % (
-        block_size,
-        search_radius,
-        matching_step,
+    geotiff_fn = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_v.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
     )
     logging.info("Save geotiff to %s" % (geotiff_fn))
-    save_geotiff(
+    save_uv_geotiff(geotiff_fn, v, int(epsg_code), geotransform=Landsat_1_ds_gt)
+    # geotiff_fn = os.path.join(
+    #     tifdirname,
+    #     os.path.basename(dirname)
+    #     + "_bs%02d_sr%02d_ms%02d_blocksizes.tif"
+    #     % (
+    #         block_size,
+    #         search_radius,
+    #         matching_step,
+    #     ),
+    # )
+    # logging.info("Save geotiff to %s" % (geotiff_fn))
+    # save_geotiff(
+    #     geotiff_fn,
+    #     block_sizes,
+    #     int(epsg_code),
+    #     geotransform=Landsat_1_ds_gt,
+    # )
+    geotiff_fn = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_correlation.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
+    )
+    logging.info("Save geotiff to %s" % (geotiff_fn))
+    save_c_geotiff(
         geotiff_fn,
         correlation,
         int(epsg_code),
         geotransform=Landsat_1_ds_gt,
-        nan_value=np.nan,
     )
 
 
 if __name__ == "__main__":
 
+    # python run_fullscene_block_matching.py \
+    # CROP_os03/LC08_L1TP_232077_20130928_20200912_02_T1_B8.TIF \
+    # CROP_os03/LC09_L1TP_232077_20231002_20231002_02_T1_B8.TIF \
+    # 61 4 03 03 0 \
+    # /work/bookhage/Landsat/P232R077/CORR_os03_bs61_sr04_ms03
     fname1 = sys.argv[1]
     fname2 = sys.argv[2]
     block_size = int(sys.argv[3])
@@ -174,15 +220,19 @@ if __name__ == "__main__":
     oversampling = int(sys.argv[5])
     matching_step = int(sys.argv[6])
     cudadevice = int(sys.argv[7])
+    tifdirname = sys.argv[8]
 
-    # 20130928_20231002
-    # fname1 = "CROP_os03/LC08_L1TP_232077_20130928_20200912_02_T1_B8.TIF"  # os03/LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
-    # fname2 = "CROP_os03/LC09_L1TP_232077_20231002_20231002_02_T1_B8.TIF"  # s03/LC09_L1TP_231077_20240420_20240420_02_T1_B8.TIF"
+    # fname1 = "os03/LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
+    # fname2 = "os03/LC09_L1TP_231077_20240420_20240420_02_T1_B8.TIF"
+    # # 20130928_20231002
+    # fname1 = "os03/LC08_L1TP_231077_20130820_20200913_02_T1_B8.TIF"
+    # fname2 = "os03/LC09_L1TP_231077_20240420_20240420_02_T1_B8.TIF"
     # block_size = 61
-    # search_radius = 6
+    # search_radius = 3
     # cudadevice = 0
     # oversampling = 3
-    # matching_step = 6
+    # matching_step = 3
+    nthreads_exp = 9
 
     cuda.select_device(cudadevice)
     logging.info("Using CUDA Device %d" % cudadevice)
@@ -208,9 +258,55 @@ if __name__ == "__main__":
         search_radius,
         matching_step,
     )
+
     dirname = "%s_%s_os%02d" % (year_name1, year_name2, oversampling)
-    if not os.path.exists(dirname):
-        os.mkdir(dirname)
+    geotiff_fn_u = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_u.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
+    )
+    geotiff_fn_v = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_v.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
+    )
+    geotiff_fn_c = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_c.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
+    )
+
+    if (
+        os.path.exists(geotiff_fn_u)
+        and os.path.exists(geotiff_fn_v)
+        and os.path.exists(geotiff_fn_c)
+    ):
+        logging.info(
+            "Files exists: %s, %s, %s" % (geotiff_fn_u, geotiff_fn_v, geotiff_fn_c)
+        )
+        logging.info("exit")
+        exit()
+
+    if not os.path.exists(tifdirname):
+        os.mkdir(tifdirname)
+
+    # if not os.path.exists(dirname):
+    #     os.mkdir(dirname)
 
     # logging.info("Extract geotiff information from %s" % (fname1))
     # gt, proj, epsg_code, ys, xs = get_geotiff_info(fname1)
@@ -220,9 +316,17 @@ if __name__ == "__main__":
         # apply skip stepsize
         # find center point: matching_step = 3, one step in and then in 3 steps
         Landsat_B8_mask = np.ones(Landsat_B8_1.shape, dtype=np.bool_)
-        Landsat_B8_mask[1::matching_step, 1::matching_step] = 0
+        if matching_step == 3:
+            Landsat_B8_mask[1::matching_step, 1::matching_step] = 0
+        elif matching_step == 5:
+            Landsat_B8_mask[2::matching_step, 2::matching_step] = 0
+        elif matching_step == 7:
+            Landsat_B8_mask[3::matching_step, 3::matching_step] = 0
+        elif matching_step == 9:
+            Landsat_B8_mask[4::matching_step, 4::matching_step] = 0
+
         # make sure to mask out nan area surrounding Landsat image
-        Landsat_B8_mask[np.isnan(Landsat_B8_1)] = 1
+        Landsat_B8_mask[Landsat_B8_1 == 0] = 1
         nr_nan_pixels1 = len(np.where(Landsat_B8_mask == 1)[0])
         logging.info(
             "Masked %s nan pixels (%2.1f %%)"
@@ -234,7 +338,7 @@ if __name__ == "__main__":
     elif matching_step == 1:
         logging.info("Creating mask for nan areas")
         Landsat_B8_mask = np.ones(Landsat_B8_1.shape, dtype=np.bool_)
-        Landsat_B8_mask[~np.isnan(Landsat_B8_1)] = 0
+        Landsat_B8_mask[Landsat_B8_1 != 0] = 0
         nr_nan_pixels1 = len(np.where(Landsat_B8_mask == 1)[0])
         logging.info(
             "Masked %s nan pixels (%2.1f %%)"
@@ -255,10 +359,15 @@ if __name__ == "__main__":
         )
     )
 
-    geotiff_fn = os.path.basename(dirname) + "_bs%02d_sr%02d_ms%02d_mask.tif" % (
-        block_size,
-        search_radius,
-        matching_step,
+    geotiff_fn = os.path.join(
+        tifdirname,
+        os.path.basename(dirname)
+        + "_bs%02d_sr%02d_ms%02d_mask.tif"
+        % (
+            block_size,
+            search_radius,
+            matching_step,
+        ),
     )
     logging.info("Save geotiff to %s" % (geotiff_fn))
     save_mask_geotiff(
@@ -266,19 +375,25 @@ if __name__ == "__main__":
     )
 
     logging.info(
-        "Running block matching for %s and %s with block size: %02d and search radius %02d and matching step %02d"
-        % (fname1, fname2, block_size, search_radius, matching_step)
+        "Running block matching for %s and %s with block size: %02d and search radius %02d and matching step %02d and nthreads_exp %02d"
+        % (fname1, fname2, block_size, search_radius, matching_step, nthreads_exp)
     )
     start = time.time()
-    u, v, block_sizes, correlation = block_matching_masked_ncc(
-        Landsat_B8_1, Landsat_B8_2, Landsat_B8_mask, block_size, search_radius
+    # block_matching_masked_ncc_uint_nonzero(p, q, mask, block_size, search_radius, nthreads_exp=10)
+    u, v, correlation = block_matching_masked_ncc_uint_nonzero(
+        Landsat_B8_1,
+        Landsat_B8_2,
+        Landsat_B8_mask,
+        block_size,
+        search_radius,
+        nthreads_exp=nthreads_exp,
     )
     end = time.time()
     length_s = end - start
     logging.info("Tile took %d seconds or %2.2f minutes" % (length_s, length_s / 60))
 
     start = time.time()
-    save_all_geotiff()
+    save_all_geotiff(tifdirname)
     end = time.time()
     length_s = end - start
     logging.info(

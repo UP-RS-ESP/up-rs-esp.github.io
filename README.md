@@ -25,8 +25,8 @@ rsync -az --info=progress2 bookhage@jlogin1.hpc.uni-potsdam.de:/work/bookhage/La
 
     A bash script performing the oversampling for all files in a directory and writing the output to the *_os03:
     ```bash
-    indir=/raid2-gpu2/bodo/LANDSAT/P232R077/CROP
-    outdir=/raid2-gpu2/bodo/LANDSAT/P232R077/CROP_os03
+    indir=CROP
+    outdir=CROP_os03
     if [ ! -d $outdir ]; then
       mkdir $outdir
     fi
@@ -34,8 +34,12 @@ rsync -az --info=progress2 bookhage@jlogin1.hpc.uni-potsdam.de:/work/bookhage/La
     for file in $indir/*_B8.TIF; do
       infile=$(basename "$file")
       outfile=$outdir/$infile
-      echo "gdalwarp -tr 5 5 -r cubic -multi -srcnodata 0 -dstnodata 0 -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile"
-      gdalwarp -tr 5 5 -r cubic -multi -srcnodata 0 -dstnodata 0 -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile
+      if [ -f $outfile ]; then
+        echo $outfile exists
+      else
+        echo "gdalwarp -tr 5 5 -r cubic -multi -srcnodata 0 -dstnodata 0 -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile"
+        gdalwarp -tr 5 5 -r cubic -multi -srcnodata 0 -dstnodata 0 -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile
+      fi
     done
     ```
 
@@ -50,8 +54,12 @@ rsync -az --info=progress2 bookhage@jlogin1.hpc.uni-potsdam.de:/work/bookhage/La
     for file in $indir/*_B8.TIF; do
       infile=$(basename "$file")
       outfile=$outdir/$infile
-      echo "gdalwarp -tr 3 3 -r cubic -multi -srcnodata 0 -dstnodata 0 -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile"
-      gdalwarp -tr 3 3 -r cubic -multi -srcnodata 0 -dstnodata 0 -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile
+      if [ -f $outfile ]; then
+        echo $outfile exists
+      else
+        echo "gdalwarp -tr 3 3 -r cubic -multi -srcnodata 0 -dstnodata 0 -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile"
+        gdalwarp -tr 3 3 -r cubic -multi -srcnodata 0 -dstnodata 0 -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=7 $file $outfile
+      fi
     done
     ```
 

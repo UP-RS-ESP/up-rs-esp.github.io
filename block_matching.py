@@ -3,7 +3,7 @@ from math import sqrt
 from numba import cuda
 
 
-@cuda.jit("float32[:, :], float32[:, :], float32[:, :], float32[:, :], float32[:, :], float32[:, :], int64, int64, int64, int64")
+@cuda.jit("int32[:, :], int32[:, :], int32[:, :], int32[:, :], float32[:, :], float32[:, :], int64, int64, int64, int64")
 def cuda_kern_block_matching_ncc(u, v, w, c, p, q, ys, xs, bs, sr):
     b = bs // 2
     bb = b + b + 1
@@ -11,10 +11,10 @@ def cuda_kern_block_matching_ncc(u, v, w, c, p, q, ys, xs, bs, sr):
     # image pixel coordinates (i, j)
     i, j = cuda.grid(2)
     if i < ys and j < xs:
-        c[i, j] = np.nan
-        u[i, j] = np.nan
-        v[i, j] = np.nan
-        w[i, j] = np.nan
+        c[i, j] = -999
+        u[i, j] = -999
+        v[i, j] = -999
+        w[i, j] = -999
     if ofs <= i and i < ys - ofs and ofs <= j and j < xs - ofs:
         cmax = -10
         # find best correlation with varying block sizes
@@ -51,7 +51,7 @@ def cuda_kern_block_matching_ncc(u, v, w, c, p, q, ys, xs, bs, sr):
                         nmax = n
                         mmax = m
                         wmax = bi + bi + 1
-        c[i, j] = cmax
+        c[i, j] = int(1000 * cmax)
         u[i, j] = nmax
         v[i, j] = mmax
         w[i, j] = wmax
@@ -66,10 +66,10 @@ def block_matching_ncc(p, q, block_size, search_radius):
     assert block_size > 8
     d_p = cuda.to_device(p.astype("float32"))
     d_q = cuda.to_device(q.astype("float32"))
-    d_u = cuda.device_array((ys, xs), np.float32)
-    d_v = cuda.device_array((ys, xs), np.float32)
-    d_w = cuda.device_array((ys, xs), np.float32)
-    d_c = cuda.device_array((ys, xs), np.float32)
+    d_u = cuda.device_array((ys, xs), np.int32)
+    d_v = cuda.device_array((ys, xs), np.int32)
+    d_w = cuda.device_array((ys, xs), np.int32)
+    d_c = cuda.device_array((ys, xs), np.int32)
     # adjust to your GPU
     nthreads = (16, 16)
     nblocksy = ys // nthreads[0] + 1
@@ -81,10 +81,10 @@ def block_matching_ncc(p, q, block_size, search_radius):
     v = d_v.copy_to_host()
     w = d_w.copy_to_host()
     mask = np.isnan(p) + np.isnan(q)
-    u[mask] = np.nan
-    v[mask] = np.nan
-    w[mask] = np.nan
-    c[mask] = np.nan
+    u[mask] = -999
+    v[mask] = -999
+    w[mask] = -999
+    c[mask] = -999
     return (u, v, w, c)
 
 
@@ -182,4 +182,106 @@ def block_matching_masked_ncc(p, q, mask, block_size, search_radius):
     w[ms] = np.nan
     c[ms] = np.nan
     return (u, v, w, c)
+
+
+@cuda.jit("int8[:, :], int8[:, :], uint8[:, :], uint16[:, :], uint16[:, :], uint64[:], uint64[:], uint64, int64, int64")
+def cuda_kern_block_matching_masked_ncc_uint_nonzero(u, v, c, p, q, ir, jr, nn, bs, sr):
+    b = bs // 2
+    bb = b + b + 1
+    ofs = b + sr
+    # image pixel coordinates (i, j) via (ir[k], jr[k])
+    k = cuda.grid(1)
+    if k < nn:
+        i = ir[k]
+        j = jr[k]
+        cmax = -1.0
+        src = p[i - b:i + b + 1, j - b:j + b + 1]
+        # brute force search with search radius (sr)
+        for n in range(-sr, sr + 1):
+            jn = j + n
+            for m in range(-sr, sr + 1):
+                im = i + m
+                tar = q[im - b:im + b + 1, jn - b:jn + b + 1]
+                # cost func (ncc)
+                smean = 0.0
+                tmean = 0.0
+                sn = 0
+                tn = 0
+                # masking out zeros (NaNs)
+                for ii in range(bb):
+                    for jj in range(bb):
+                        if src[ii, jj]:
+                            smean += src[ii, jj]
+                            sn += 1
+                        if tar[ii, jj]:
+                            tmean += tar[ii, jj]
+                            tn += 1
+                smean /= sn
+                tmean /= tn
+                cf = 0.0
+                sstdev = 0.0
+                tstdev = 0.0
+                for ii in range(bb):
+                    for jj in range(bb):
+                        if src[ii, jj] and tar[ii, jj]:
+                            cf += (src[ii, jj] - smean) * (tar[ii, jj] - tmean)
+                            sstdev += (src[ii, jj] - smean) * (src[ii, jj] - smean)
+                            tstdev += (tar[ii, jj] - tmean) * (tar[ii, jj] - tmean)
+                cf /= sqrt(sstdev)
+                cf /= sqrt(tstdev)
+                if cf > cmax:
+                    cmax = cf
+                    nmax = n
+                    mmax = m
+        c[i, j] = int(255 * cmax)
+        u[i, j] = nmax
+        v[i, j] = mmax
+
+
+def block_matching_masked_ncc_uint_nonzero(p, q, mask, block_size, search_radius, nthreads_exp=10):
+    ys, xs = p.shape
+
+    # image dimensions have to match
+    assert ys == q.shape[0]
+    assert xs == q.shape[1]
+
+    # mask dimensions have to match
+    assert ys == mask.shape[0]
+    assert xs == mask.shape[1]
+
+    # mask layout
+    ms = mask.astype(np.bool).copy()
+    offset = block_size // 2 + search_radius
+    ms[:offset, :] = True
+    ms[:, :offset] = True
+    ms[-offset:, :] = True
+    ms[:, -offset:] = True
+    ms += (p == 0)
+    ms += (q == 0)
+    ir, jr = np.nonzero(~ms)
+
+    # cuda device arrays
+    d_ir = cuda.to_device(ir.astype(np.uint64))
+    d_jr = cuda.to_device(jr.astype(np.uint64))
+    d_p = cuda.to_device(p.astype(np.uint16))
+    d_q = cuda.to_device(q.astype(np.uint16))
+    d_u = cuda.device_array((ys, xs), np.int8)
+    d_v = cuda.device_array((ys, xs), np.int8)
+    d_c = cuda.device_array((ys, xs), np.uint8)
+
+    # GPU thread layout (adjust to your GPU)
+    nthreads = 2**nthreads_exp
+    nblocks = (len(ir) // nthreads) + 1
+
+    cuda_kern_block_matching_masked_ncc_uint_nonzero[nblocks, nthreads](d_u, d_v, d_c,
+        d_p, d_q, d_ir, d_jr, len(ir), block_size, search_radius)
+    c = d_c.copy_to_host()
+    u = d_u.copy_to_host()
+    v = d_v.copy_to_host()
+
+    # NaN
+    u[ms] = -128
+    v[ms] = -128
+    c[ms] = 0
+    return (u, v, c)
 

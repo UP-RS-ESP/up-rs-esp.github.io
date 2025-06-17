@@ -8,18 +8,18 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
 )
-
+# maybe add #SBATCH --nodelist=hgc02 for large GPU memory node
 JOBHEADER = """#!/bin/bash
 
 #SBATCH --partition=gpu              # on the partition "gpu"
 #SBATCH --nodes=1                    # on a single node
 #SBATCH --ntasks=1                   # with a single task (this should always be 1, apart from special cases)
 #SBATCH --cpus-per-task=2            # with that many cpu cores
-#SBATCH --mem=256GB                  # will require that amount of RAM at maximum (if the process takes more it gets killed)
+#SBATCH --mem=512GB                  # will require that amount of RAM at maximum (if the process takes more it gets killed)
 #SBATCH --gres=gpu:2                 # get both GPUs on node
-#SBATCH --time=0-08:00               # maximum runtime of the job as "d-hh:mm"
-#SBATCH --chdir=/work/bookhage/Landsat/P232R077   # working directory of the job
-#SBATCH --mail-type=ALL              # always get mail notifications
+#SBATCH --time=0-03:00               # maximum runtime of the job as "d-hh:mm"
+#SBATCH --chdir=/work/bookhage/Landsat/P001R077   # working directory of the job
+#SBATCH --mail-type=FAIL             # always get mail notifications
 #SBATCH --output=slurm-%j.out        # standard out of the job into this file (also stderr)
 
 echo HOSTNAME: `hostname`
@@ -35,6 +35,12 @@ if __name__ == "__main__":
     # /work/bookhage/Landsat/P001R077/corr_dates_sd1_cc23 \
     # /work/bookhage/Landsat/P001R077/run_block_matching_001077_os01_bs31_sr03_ms01.bash \
     # 001077 31 3 1 1 10
+    #
+    # python create_runfile_fullscene_blockmatching.py \
+    # /work/bookhage/Landsat/P001R077/corr_dates_sd1_cc23 \
+    # /work/bookhage/Landsat/P001R077/run_block_matching_001077_os01_bs31_sr03_ms01.bash \
+    # 001077 31 3 1 1 10
+
     csv_fname = sys.argv[1]
     runfile_out = sys.argv[2]
     pathrow = sys.argv[3]
@@ -43,6 +49,7 @@ if __name__ == "__main__":
     oversampling = int(sys.argv[6])
     matching_step = int(sys.argv[7])
     nr_jobs_per_cuda = int(sys.argv[8])
+    tifdirname = sys.argv[9]
     cudadevice = 0
 
     # csv_fname = "/work/bookhage/Landsat/P001R077/corr_dates_sd1_cc23"
@@ -56,7 +63,10 @@ if __name__ == "__main__":
 
     date_pairs = np.genfromtxt(csv_fname, delimiter=",")
     data_dir = os.path.dirname(csv_fname)
-    data_dir = os.path.join(data_dir, "CROP_os03")
+    if oversampling > 1:
+        data_dir = os.path.join(data_dir, "CROP_os%02d" % oversampling)
+    else:
+        data_dir = os.path.join(data_dir, "CROP")
     logging.info("Data directory is %s" % (data_dir))
     commands = []
     sbatch_commands = []
@@ -71,7 +81,7 @@ if __name__ == "__main__":
             os.path.join(data_dir, "LC*_L1TP_%s_%d*.TIF" % (pathrow, date_pairs[i, 1]))
         )
         commands.append(
-            "python /work/bookhage/Landsat/code/slurm_blockmatching/run_fullscene_block_matching.py %s %s %d %d %d %d %d 2>&1 | tee log/run_fullscene_block_matching_%s_os%02d_bs%02d_sr%02d_ms%02d_%d_%d_cudadevice%d.log &"
+            "python /work/bookhage/Landsat/code/slurm_blockmatching/run_fullscene_block_matching.py %s %s %d %d %d %d %d %s 2>&1 | tee log/run_fullscene_block_matching_%s_os%02d_bs%02d_sr%02d_ms%02d_%d_%d_cudadevice%d.log &"
             % (
                 fname1[0],
                 fname2[0],
@@ -80,6 +90,7 @@ if __name__ == "__main__":
                 oversampling,
                 matching_step,
                 cudadevice,
+                tifdirname,
                 pathrow,
                 oversampling,
                 block_size,
@@ -90,6 +101,8 @@ if __name__ == "__main__":
                 int(cudadevice),
             )
         )
+        commands.append("sleep 30s")
+
         if cudadevice == 0:
             cudadevice = 1
         else:
@@ -110,6 +123,7 @@ if __name__ == "__main__":
             counter = 0
             jobcounter += 1
             sbatch_commands.append("sbatch %s" % runfile_out_jobfn)
+            # sbatch_commands.append("sleep 30s")
 
         if i == len(date_pairs) - 1:
             # last iteration in for loop - write file
@@ -124,8 +138,15 @@ if __name__ == "__main__":
             commands = []
             sbatch_commands.append("sbatch %s" % runfile_out_jobfn)
 
-    logging.info("Writing to sbatch command file sbatch.run.bash")
-    logging.info("Run with: . ./sbatch.run.bash")
-    with open("sbatch.run.bash", "w") as f:
+    sbatch_fname = "run_sbatch_%s_os%02d_bs%02d_sr%02d_ms%02d.bash" % (
+        pathrow,
+        oversampling,
+        block_size,
+        search_radius,
+        matching_step,
+    )
+    logging.info("Writing to sbatch command file %s" % sbatch_fname)
+    logging.info("Run with: \n. ./%s" % sbatch_fname)
+    with open(sbatch_fname, "w") as f:
         for line in sbatch_commands:
             f.write(f"{line}\n")
