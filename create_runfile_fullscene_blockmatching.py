@@ -18,7 +18,7 @@ JOBHEADER = """#!/bin/bash
 #SBATCH --mem=512GB                  # will require that amount of RAM at maximum (if the process takes more it gets killed)
 #SBATCH --gres=gpu:2                 # get both GPUs on node
 #SBATCH --time=0-03:00               # maximum runtime of the job as "d-hh:mm"
-#SBATCH --chdir=/work/bookhage/Landsat/P001R077   # working directory of the job
+#SBATCH --chdir=/work/bookhage/Landsat/P231R077   # working directory of the job
 #SBATCH --mail-type=FAIL             # always get mail notifications
 #SBATCH --output=slurm-%j.out        # standard out of the job into this file (also stderr)
 
@@ -74,12 +74,72 @@ if __name__ == "__main__":
     jobcounter = 0
     # Create jobs that submit the block matching to each cudedevice. There are two cuda devices on the HPC nodes
     for i in range(len(date_pairs)):
+        outpath = "CORR_os%02d_bs%02d_sr%02d_ms%02d" % (
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfname_correlation = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_correlation.tif" % (
+            date_pairs[i, 0],
+            date_pairs[i, 1],
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfile_correlation = os.path.join(outpath, outfname_correlation)
+        outfname_mask = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_mask.tif" % (
+            date_pairs[i, 0],
+            date_pairs[i, 1],
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfile_mask = os.path.join(outpath, outfname_mask)
+        outfname_u = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_u.tif" % (
+            date_pairs[i, 0],
+            date_pairs[i, 1],
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfile_u = os.path.join(outpath, outfname_u)
+        outfname_v = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_v.tif" % (
+            date_pairs[i, 0],
+            date_pairs[i, 1],
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfile_v = os.path.join(outpath, outfname_v)
+        if (
+            os.path.exists(outfile_correlation)
+            and os.path.exists(outfile_mask)
+            and os.path.exists(outfile_u)
+            and os.path.exists(outfile_v)
+        ):
+            logging.info(
+                "Output files %s exists, continuing to next file." % outfile_mask
+            )
+            continue
+
         fname1 = glob.glob(
-            os.path.join(data_dir, "LC*_L1TP_%s_%d*.TIF" % (pathrow, date_pairs[i, 0]))
+            os.path.join(data_dir, "L*_L1TP_%s_%d_*.TIF" % (pathrow, date_pairs[i, 0]))
         )
+        if fname1 == []:
+            logging.info("fname1 could not be found for date %d" % date_pairs[i, 0])
+            continue
         fname2 = glob.glob(
-            os.path.join(data_dir, "LC*_L1TP_%s_%d*.TIF" % (pathrow, date_pairs[i, 1]))
+            os.path.join(data_dir, "L*_L1TP_%s_%d_*.TIF" % (pathrow, date_pairs[i, 1]))
         )
+        if fname2 == []:
+            logging.info("fname2 could not be found for date %d" % date_pairs[i, 1])
+            continue
+
         commands.append(
             "python /work/bookhage/Landsat/code/slurm_blockmatching/run_fullscene_block_matching.py %s %s %d %d %d %d %d %s 2>&1 | tee log/run_fullscene_block_matching_%s_os%02d_bs%02d_sr%02d_ms%02d_%d_%d_cudadevice%d.log &"
             % (
