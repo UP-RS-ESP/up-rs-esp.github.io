@@ -170,6 +170,32 @@ def save_geotiff_8bit(geotiff_fn, array, epsg_code, geotransform, nan_value=255)
     del outband, outRaster, driver
 
 
+def save_geotiff_16bit(geotiff_fn, array, epsg_code, geotransform, nan_value=255):
+    xdim = array.shape[0]
+    ydim = array.shape[1]
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(epsg_code)
+    driver = gdal.GetDriverByName("GTiff")
+    driver.Register()
+    outRaster = driver.Create(
+        geotiff_fn,
+        ydim,
+        xdim,
+        1,
+        gdal.GDT_UInt16,
+        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=1"],
+    )
+    outRaster.SetGeoTransform(geotransform)
+    outRaster.SetProjection(srs.ExportToProj4())
+    outband = outRaster.GetRasterBand(1)
+    outband.WriteArray(array, 0, 0)
+    outband.FlushCache()
+    outband.SetNoDataValue(nan_value)
+    outband.ComputeStatistics(0)
+    outband.FlushCache()
+    del outband, outRaster, driver
+
+
 def save_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value):
     xdim = array.shape[0]
     ydim = array.shape[1]
@@ -214,120 +240,162 @@ def calc_dir_mag(v_ar, u_ar, deltaT_y, stepsize):
         )
     return uv_dir, uv_mag
 
-
-def plot_single_4panel_u_v_my(
-    u_ar,
-    v_ar,
-    u_ar_gf,
-    v_ar_gf,
-    dem_hs,
+def plot_single_3panel_nre(
+    velocity_nrm, nrm_before_aspect,
+    dem_hillshade,
     pngfn,
+    fig_title,
 ):
     fig, ax = plt.subplots(
-        nrows=2, ncols=2, figsize=(9, 9), dpi=300, layout="constrained"
+        nrows=1, ncols=3, figsize=(16, 10), dpi=300, layout="constrained"
     )
-    im0 = ax[0, 0].imshow(u_ar, vmin=-0.5, vmax=0.5, cmap="PiYG")
-    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[0, 0].get_xaxis().set_ticks([])
-    ax[0, 0].get_yaxis().set_ticks([])
-    ax[0, 0].set_title("u masked")
-    im1 = ax[1, 0].imshow(v_ar, vmin=-0.5, vmax=0.5, cmap="PiYG")
-    im1b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[1, 0].get_xaxis().set_ticks([])
-    ax[1, 0].get_yaxis().set_ticks([])
-    ax[1, 0].set_title("v masked")
-    im4 = ax[0, 1].imshow(u_ar_gf, vmin=-0.5, vmax=0.5, cmap="PiYG")
-    im4b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[0, 1].get_xaxis().set_ticks([])
-    ax[0, 1].get_yaxis().set_ticks([])
-    ax[0, 1].set_title("u GaussianF")
-    im5 = ax[1, 1].imshow(v_ar_gf, vmin=-0.5, vmax=0.5, cmap="PiYG")
-    im5b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[1, 1].get_xaxis().set_ticks([])
-    ax[1, 1].get_yaxis().set_ticks([])
-    ax[1, 1].set_title("v GaussianF")
-    h = plt.colorbar(im1, ax=ax[0, :], orientation="horizontal", shrink=0.7)
-    h.set_label("u (m/y)")
-    h2 = plt.colorbar(im4, ax=ax[1, :], orientation="horizontal", shrink=0.7)
-    h2.set_label("v (m/y)")
-    fig.suptitle("%s" % (pngfn.split(".")[0]))
+
+    nrm_before_aspect2 = np.float32(nrm_before_aspect).copy()
+    nrm_before_aspect2[nrm_before_aspect == 9999] = np.nan
+    im0 = ax[0].imshow(
+        nrm_before_aspect2,
+        vmin=np.nanpercentile(nrm_before_aspect2, 2),
+        vmax=np.nanpercentile(nrm_before_aspect2, 98),
+        cmap="magma",
+    )
+    im0b = ax[0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    # h = plt.colorbar(im0, ax=ax[0], orientation="horizontal", shrink=0.8)
+    # h.set_label("Number of measurements", fontsize=14)
+    ax[0].get_xaxis().set_ticks([])
+    ax[0].get_yaxis().set_ticks([])
+    ax[0].set_title('Before aspect filtering')
+
+    velocity_nrm2 = np.float32(velocity_nrm).copy()
+    velocity_nrm2[velocity_nrm == 9999] = np.nan
+    im1 = ax[1].imshow(
+        velocity_nrm2,
+        vmin=np.nanpercentile(nrm_before_aspect2, 2),
+        vmax=np.nanpercentile(nrm_before_aspect2, 98),
+        cmap="magma",
+    )
+    im1b = ax[1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im1, ax=ax[0:2], orientation="horizontal", shrink=0.8)
+    h.set_label("Number of measurements", fontsize=14)
+    ax[1].get_xaxis().set_ticks([])
+    ax[1].get_yaxis().set_ticks([])
+    ax[1].set_title('After aspect filtering')
+
+    im2 = ax[2].imshow(
+        nrm_before_aspect2-velocity_nrm2,
+        cmap="viridis",
+    )
+    im2b = ax[2].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[2], orientation="horizontal", shrink=0.8)
+    h.set_label("Nr. of meas. difference", fontsize=14)
+    ax[2].get_xaxis().set_ticks([])
+    ax[2].get_yaxis().set_ticks([])
+    ax[2].set_title('Difference')
+    del velocity_nrm2
+    del nrm_before_aspect2
+
+    fig.suptitle("%s" % (fig_title), fontsize=16)
     fig.savefig(pngfn, dpi=300)
     plt.close()
 
 
-def plot_single_4panel_vel_my(
-    ar_vel,
-    ar_gf_vel,
-    stack_vel,
-    stack_gf_vel,
-    stack_nrm,
-    dem_hs,
+def plot_single_4panel_dir_vel_my(
+    velocity_direction,
+    velocity_magnitude,
+    velocity_magnitude_gf,
+    velocity_nrm,
+    dem_hillshade,
     pngfn,
+    fig_title,
+    x_rectangle_start=0,
+    y_rectangle_start=0,
+    rectangle_width=0,
+    rectangle_height=0,
 ):
     fig, ax = plt.subplots(
-        nrows=2, ncols=3, figsize=(12, 9), dpi=300, layout="constrained"
+        nrows=2, ncols=2, figsize=(16, 16), dpi=300, layout="constrained"
     )
-    im0 = ax[0, 0].imshow(ar_vel, vmin=0.1, vmax=1.5, cmap="magma")
-    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    im0 = ax[0, 0].imshow(
+        velocity_magnitude,
+        cmap="viridis",
+        norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=2),
+    )
+    im0b = ax[0, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="horizontal", shrink=0.8)
+    h.set_label("velocity (m/y)", fontsize=14)
     ax[0, 0].get_xaxis().set_ticks([])
     ax[0, 0].get_yaxis().set_ticks([])
-    ax[0, 0].set_title("velocity")
-    im1 = ax[0, 1].imshow(
-        ar_gf_vel,
-        vmin=0.1,
-        vmax=1.5,
-        cmap="magma",
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
     )
-    im1b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 0].add_patch(rect)
+    im1 = ax[0, 1].imshow(
+        velocity_magnitude_gf,
+        cmap="viridis",
+        norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=2),
+    )
+    im1b = ax[0, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="horizontal", shrink=0.8)
+    h.set_label("velocity GaussianFilter (m/y)", fontsize=14)
     ax[0, 1].get_xaxis().set_ticks([])
     ax[0, 1].get_yaxis().set_ticks([])
-    ax[0, 1].set_title("velocity GaussianF")
-    im2 = ax[1, 0].imshow(
-        stack_vel,
-        vmin=0.1,
-        vmax=1.5,
-        cmap="magma",
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
     )
-    im2b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 1].add_patch(rect)
+    im2 = ax[1, 0].imshow(
+        velocity_direction,
+        vmin=0,
+        vmax=360,
+        cmap="hsv",
+    )
+    im2b = ax[1, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[1, 0], orientation="horizontal", shrink=0.8)
+    h.set_label("direction for v > 0 (degree)", fontsize=14)
     ax[1, 0].get_xaxis().set_ticks([])
     ax[1, 0].get_yaxis().set_ticks([])
-    ax[1, 0].set_title("stack velocity")
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 0].add_patch(rect)
+    velocity_nrm2 = np.float32(velocity_nrm).copy()
+    velocity_nrm2[velocity_nrm == 9999] = np.nan
     im3 = ax[1, 1].imshow(
-        stack_gf_vel,
-        vmin=0.1,
-        vmax=1.5,
+        velocity_nrm2,
+        vmin=np.nanpercentile(velocity_nrm2, 2),
+        vmax=np.nanpercentile(velocity_nrm2, 98),
         cmap="magma",
     )
-    im3b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    del velocity_nrm2
+    im3b = ax[1, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im3, ax=ax[1, 1], orientation="horizontal", shrink=0.8)
+    h.set_label("Number of measurements", fontsize=14)
     ax[1, 1].get_xaxis().set_ticks([])
     ax[1, 1].get_yaxis().set_ticks([])
-    ax[1, 1].set_title("stack velocity GaussianF")
-    im4 = ax[0, 2].imshow(
-        stack_gf_vel,
-        vmin=0.1,
-        vmax=1.5,
-        cmap="magma",
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
     )
-    im4b = ax[0, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[0, 2].get_xaxis().set_ticks([])
-    ax[0, 2].get_yaxis().set_ticks([])
-    ax[0, 2].set_title("velocity GaussianF")
-    im5 = ax[1, 2].imshow(
-        stack_nrm,
-        vmin=50,
-        vmax=210,
-        cmap="plasma",
-    )
-    im5b = ax[1, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
-    ax[1, 2].get_xaxis().set_ticks([])
-    ax[1, 2].get_yaxis().set_ticks([])
-    h = plt.colorbar(im0, ax=ax[0, :], orientation="horizontal", shrink=0.7)
-    h.set_label("velocity (m/y)")
-    h = plt.colorbar(im3, ax=ax[1, 0:2], orientation="horizontal", shrink=0.7)
-    h.set_label("velocity (m/y)")
-    h = plt.colorbar(im5, ax=ax[1, 2], orientation="horizontal", shrink=0.7)
-    h.set_label("nr. measurements")
-    fig.suptitle("%s" % (pngfn.split(".")[0]))
+    ax[1, 1].add_patch(rect)
+    fig.suptitle("%s" % (fig_title), fontsize=16)
     fig.savefig(pngfn, dpi=300)
     plt.close()
 
@@ -341,6 +409,7 @@ def plot_single_6panel_u_v_dir_vel_my(
     velocity_average,
     dem_hillshade,
     pngfn,
+    fig_title,
     x_rectangle_start=0,
     y_rectangle_start=0,
     rectangle_width=0,
@@ -349,9 +418,9 @@ def plot_single_6panel_u_v_dir_vel_my(
     fig, ax = plt.subplots(
         nrows=2, ncols=3, figsize=(16, 9), dpi=300, layout="constrained"
     )
-    im0 = ax[0, 0].imshow(u, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im0 = ax[0, 0].imshow(u, vmin=-0.3, vmax=0.3, cmap="PiYG")
     im0b = ax[0, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="horizontal", shrink=0.8)
     h.set_label("u (m/y)")
     ax[0, 0].get_xaxis().set_ticks([])
     ax[0, 0].get_yaxis().set_ticks([])
@@ -364,9 +433,9 @@ def plot_single_6panel_u_v_dir_vel_my(
         facecolor="none",
     )
     ax[0, 0].add_patch(rect)
-    im1 = ax[0, 1].imshow(v, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im1 = ax[0, 1].imshow(v, vmin=-0.3, vmax=0.3, cmap="PiYG")
     im1b = ax[0, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im1, ax=ax[0, 1], orientation="vertical")
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="horizontal", shrink=0.8)
     h.set_label("v (m/y)")
     ax[0, 1].get_xaxis().set_ticks([])
     ax[0, 1].get_yaxis().set_ticks([])
@@ -381,7 +450,7 @@ def plot_single_6panel_u_v_dir_vel_my(
     ax[0, 1].add_patch(rect)
     im2 = ax[0, 2].imshow(correlation, vmin=0.8, vmax=1, cmap="magma")
     im2b = ax[0, 2].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im2, ax=ax[0, 2], orientation="vertical")
+    h = plt.colorbar(im2, ax=ax[0, 2], orientation="horizontal", shrink=0.8)
     h.set_label("correlation ")
     ax[0, 2].get_xaxis().set_ticks([])
     ax[0, 2].get_yaxis().set_ticks([])
@@ -401,7 +470,7 @@ def plot_single_6panel_u_v_dir_vel_my(
         cmap="viridis",
     )
     im3b = ax[1, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im3, ax=ax[1, 0], orientation="vertical")
+    h = plt.colorbar(im3, ax=ax[1, 0], orientation="horizontal", shrink=0.8)
     h.set_label("velocity (m/y)")
     ax[1, 0].get_xaxis().set_ticks([])
     ax[1, 0].get_yaxis().set_ticks([])
@@ -415,141 +484,14 @@ def plot_single_6panel_u_v_dir_vel_my(
     )
     ax[1, 0].add_patch(rect)
     im4 = ax[1, 1].imshow(
-        direction,
-        vmin=0,
-        vmax=360,
-        cmap="hsv",
-    )
-    im4b = ax[1, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im4, ax=ax[1, 1], orientation="vertical")
-    h.set_label("direction for v > 0 (degree)")
-    ax[1, 1].get_xaxis().set_ticks([])
-    ax[1, 1].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[1, 1].add_patch(rect)
-    im5 = ax[1, 2].imshow(
         velocity_average,
         vmin=0,
         vmax=0.5,
         cmap="viridis",
     )
-    im5b = ax[1, 2].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im5, ax=ax[1, 2], orientation="vertical")
-    h.set_label("velocity (average) (m/y)")
-    ax[1, 2].get_xaxis().set_ticks([])
-    ax[1, 2].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[1, 2].add_patch(rect)
-    fig.suptitle("%s" % (pngfn))
-    fig.savefig(pngfn, dpi=300)
-    plt.close()
-
-
-def plot_single_u_v_dir_vel(
-    u,
-    v,
-    correlation,
-    direction,
-    velocity,
-    velocity_masked,
-    dem_hillshade,
-    pngfn,
-    x_rectangle_start=0,
-    y_rectangle_start=0,
-    rectangle_width=0,
-    rectangle_height=0,
-):
-    fig, ax = plt.subplots(
-        nrows=2, ncols=3, figsize=(16, 9), dpi=300, layout="constrained"
-    )
-    im0 = ax[0, 0].imshow(u, vmin=-2, vmax=2, cmap="PiYG")
-    im0b = ax[0, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
-    h.set_label("u (pixel)")
-    ax[0, 0].get_xaxis().set_ticks([])
-    ax[0, 0].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[0, 0].add_patch(rect)
-    im1 = ax[0, 1].imshow(v, vmin=-2, vmax=2, cmap="PiYG")
-    im1b = ax[0, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im1, ax=ax[0, 1], orientation="vertical")
-    h.set_label("v (pixel)")
-    ax[0, 1].get_xaxis().set_ticks([])
-    ax[0, 1].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[0, 1].add_patch(rect)
-    im2 = ax[0, 2].imshow(correlation, vmin=0.8, vmax=1, cmap="magma")
-    im2b = ax[0, 2].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im2, ax=ax[0, 2], orientation="vertical")
-    h.set_label("correlation (masked)")
-    ax[0, 2].get_xaxis().set_ticks([])
-    ax[0, 2].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[0, 2].add_patch(rect)
-    im3 = ax[1, 0].imshow(
-        velocity,
-        vmin=0,
-        vmax=1,
-        cmap="viridis",
-    )
-    im3b = ax[1, 0].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im3, ax=ax[1, 0], orientation="vertical")
-    h.set_label("velocity (m/y)")
-    ax[1, 0].get_xaxis().set_ticks([])
-    ax[1, 0].get_yaxis().set_ticks([])
-    rect = matplotlib.patches.Rectangle(
-        (x_rectangle_start, y_rectangle_start),
-        rectangle_width,
-        rectangle_height,
-        linewidth=1,
-        edgecolor="k",
-        facecolor="none",
-    )
-    ax[1, 0].add_patch(rect)
-    im4 = ax[1, 1].imshow(
-        direction,
-        vmin=0,
-        vmax=360,
-        cmap="hsv",
-    )
     im4b = ax[1, 1].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im4, ax=ax[1, 1], orientation="vertical")
-    h.set_label("direction (degree)")
+    h = plt.colorbar(im4, ax=ax[1, 1], orientation="horizontal", shrink=0.8)
+    h.set_label("velocity averaged (m/y)")
     ax[1, 1].get_xaxis().set_ticks([])
     ax[1, 1].get_yaxis().set_ticks([])
     rect = matplotlib.patches.Rectangle(
@@ -562,14 +504,14 @@ def plot_single_u_v_dir_vel(
     )
     ax[1, 1].add_patch(rect)
     im5 = ax[1, 2].imshow(
-        velocity_masked,
+        direction,
         vmin=0,
-        vmax=1,
-        cmap="viridis",
+        vmax=360,
+        cmap="hsv",
     )
     im5b = ax[1, 2].imshow(dem_hillshade, cmap="gray", alpha=0.5)
-    h = plt.colorbar(im5, ax=ax[1, 2], orientation="vertical")
-    h.set_label("velocity (masked) (m/y)")
+    h = plt.colorbar(im5, ax=ax[1, 2], orientation="horizontal", shrink=0.8)
+    h.set_label("direction for v > 0 (degree)")
     ax[1, 2].get_xaxis().set_ticks([])
     ax[1, 2].get_yaxis().set_ticks([])
     rect = matplotlib.patches.Rectangle(
@@ -580,8 +522,8 @@ def plot_single_u_v_dir_vel(
         edgecolor="k",
         facecolor="none",
     )
-    ax[1, 2].add_patch(rect)
-    fig.suptitle("%s" % (pngfn))
+    ax[1, 1].add_patch(rect)
+    fig.suptitle("%s" % (fig_title))
     fig.savefig(pngfn, dpi=300)
     plt.close()
 
@@ -817,6 +759,19 @@ def calc_mode_magnitude_direction(u_ar, v_ar):
 
 
 @nb.njit(parallel=True)
+def calc_nrm(u_ar, v_ar):
+    velocity_nrm = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.uint16)
+    velocity_nrm.fill(9999)
+    for i in nb.prange(u_ar.shape[1]):
+        for j in nb.prange(u_ar.shape[2]):
+            if np.all(np.isnan(u_ar[:, i, j])):
+                # quick way to skip pixels that are all nan - the border pixels
+                continue
+            velocity_nrm[i, j] = np.count_nonzero(~np.isnan(u_ar[:, i, j]))
+    return velocity_nrm
+
+
+@nb.njit(parallel=True)
 def calc_median_magnitude_direction(u_ar, v_ar):
     def ArithmeticDegree_to_GeographicDegree(angle):
         return (-(angle - 90)) % 360
@@ -829,8 +784,8 @@ def calc_median_magnitude_direction(u_ar, v_ar):
     velocity_magnitude.fill(np.nan)
     velocity_direction = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
     velocity_direction.fill(np.nan)
-    velocity_nrm = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.uint8)
-    velocity_nrm.fill(255)
+    velocity_nrm = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.uint16)
+    velocity_nrm.fill(9999)
     for i in nb.prange(u_ar.shape[1]):
         for j in nb.prange(u_ar.shape[2]):
             if np.all(np.isnan(u_ar[:, i, j])):
@@ -842,8 +797,8 @@ def calc_median_magnitude_direction(u_ar, v_ar):
     # subtract mean from stack and subtract
     median_u_mean = np.nanmean(median_u)
     median_v_mean = np.nanmean(median_v)
-    median_u = median_u - median_u_mean
-    median_v = median_u - median_v_mean
+    # median_u = median_u - median_u_mean
+    # median_v = median_u - median_v_mean
     for i in nb.prange(median_u.shape[0]):
         for j in nb.prange(median_u.shape[1]):
             velocity_direction[i, j] = ArithmeticDegree_to_GeographicDegree(
@@ -1038,6 +993,24 @@ def load_u_files_nomask(dirname, height, width):
     return u_files, deltaT, u_ar
 
 
+def load_correlation_files(correlation_files):
+    # open first file to get file dimension
+    height, width, foo_ds_gt, epsg = get_file_dimensions_singlefile(
+        correlation_files[0]
+    )
+    correlation_ar = np.empty((len(correlation_files), height, width), dtype=np.float32)
+    correlation_ar.fill(np.nan)
+    deltaT = np.empty(len(correlation_files), dtype=np.float32)
+    for i in tqdm.tqdm(range(len(correlation_files)), desc="Loading correlation files"):
+        cfile = correlation_files[i]
+        correlation, correlation_ds_gt, correlation_ds_proj, correlation_epsg = (
+            load_offset_tif(cfile)
+        )
+        deltaT[i] = get_deltaT_from_filename(cfile)
+        correlation_ar[i, :, :] = correlation
+    return deltaT, correlation_ar
+
+
 def load_u_files(u_files):
     # open first file to get file dimension
     height, width, foo_ds_gt, epsg = get_file_dimensions_singlefile(u_files[0])
@@ -1092,53 +1065,6 @@ def load_v_files(v_files):
     return deltaT, v_ar
 
 
-def load_u_files_rotation(u_files, dirname, correlation_ar, height, width):
-    u_pngs_dir = os.path.join(dirname, "u_corrected_pngs")
-    if not os.path.exists(u_pngs_dir):
-        os.mkdir(u_pngs_dir)
-    u_ar = np.empty((len(u_files), height, width), dtype=np.float32)
-    u_ar.fill(np.nan)
-    u_ar_ax0_mean = np.empty((len(u_files), width), dtype=np.float32)
-    u_ar_ax0_mean.fill(np.nan)
-    u_ar_ax0_mean_postcor = np.empty((len(u_files), width), dtype=np.float32)
-    u_ar_ax0_mean_postcor.fill(np.nan)
-    u_ar_ax1_mean = np.empty((len(u_files), height), dtype=np.float32)
-    u_ar_ax1_mean.fill(np.nan)
-    u_ar_ax1_mean_postcor = np.empty((len(u_files), height), dtype=np.float32)
-    u_ar_ax1_mean_postcor.fill(np.nan)
-    for i in tqdm.tqdm(range(len(u_files)), desc="Loading u files"):
-        cfile = u_files[i]
-        oversampling = int(os.path.basename(cfile).split("_")[2][2:])
-        matchingstep = int(os.path.basename(cfile).split("_")[5][2:])
-        bm, foo_ds_gt, foo_ds_proj, epsg = load_blockmatching_tif(
-            cfile, matchingstep=matchingstep
-        )
-        deltaT = get_deltaT_from_filename(cfile)
-        # correlation_nan = len(bm[correlation_ar[i, :, :] < c_threshold])
-        bm[correlation_ar[i, :, :] < c_threshold] = np.nan
-        bm_f[correlation_ar[i, :, :] < c_threshold] = np.nan
-        # slope_nan = len(bm[dem_slope < slope_threshold])
-        bm[dem_slope < slope_threshold] = np.nan
-        bm_f[dem_slope < slope_threshold] = np.nan
-        # filter with NDVI and NDSI mask
-        ndvi_ndsi_mask = load_mask(cfile, bm.shape)
-        bm[ndvi_ndsi_mask] = np.nan
-        (
-            bm_f,
-            u_ar_ax0_mean[i, :],
-            u_ar_ax0_mean_postcor[i, :],
-            u_ar_ax1_mean[i, :],
-            u_ar_ax1_mean_postcor[i, :],
-        ) = correct_striping_rotate(
-            bm,
-            pngfn=os.path.join(
-                u_pngs_dir, os.path.basename(cfile)[:-4] + "_striping_correction.png"
-            ),
-        )
-        u_ar[i, :, :] = bm * (satellite_resolution_m / oversampling) / deltaT
-    return u_files, deltaT, u_ar
-
-
 def load_dem_aspect_slope_files(dem_fname):
     logging.info("Loading DEM file %s" % dem_fname)
     dem, dem_gt, dem_proj, dem_epsg = load_Landsat_tif(dem_fname)
@@ -1166,88 +1092,19 @@ def load_dem_aspect_slope_files(dem_fname):
     return dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope, dem_hs
 
 
-def load_correlation_files(
-    correlation_files, geotiffn, ds_gt, epsg_code, save_correlation_tif=False
-):
-    correlation_ar = np.empty((len(correlation_files), height, width), dtype=np.float32)
-    correlation_ar.fill(np.nan)
-    for i in tqdm.tqdm(
-        range(len(correlation_files)), desc="Loading correlation tif files"
-    ):
-        matchingstep = int(os.path.basename(correlation_files[i]).split("_")[5][2:])
-        foo_ds, correlation_gt, correlation_proj, epsg = (
-            load_blockmatching_correlation_tif(correlation_files[i], matchingstep)
-        )
-        correlation_ar[i, :, :] = foo_ds
-    foo_ds = None
-    # plot_histograms(correlation_ar, png_fname="Histogram_test.png")
-    if save_correlation_tif:
-        geotiff_fn = geotiffn + "correlation_mean.tif"
-        save_geotiff(
-            geotiff_fn,
-            np.nanmean(correlation_ar, axis=0),
-            epsg_code,
-            ds_gt,
-            nan_value=np.nan,
-        )
-        geotiff_fn = geotiffn + "correlation_var.tif"
-        save_geotiff(
-            geotiff_fn,
-            np.nanvar(correlation_ar, axis=0),
-            epsg_code,
-            ds_gt,
-            nan_value=np.nan,
-        )
-    return correlation_ar
-
-
-def plot_clip_u_v_dir_vel_average_loop(
-    dem,
-    dem_slope,
-    dem_hs,
+def plot_u_v_corr_vel_dir_gf_loop(
     u_ar,
     v_ar,
-    u_ar_gf,
-    v_ar_gf,
-    stack_vel,
-    stack_gf_vel,
-    stack_nrm,
-    outdir,
+    correlation_ar,
+    magnitude_average,
+    magnitude_direction,
+    magnitude_average_gf,
+    step_size,
 ):
     for i in tqdm.tqdm(range(u_ar.shape[0]), desc="Plotting PNGs"):
-        direction_ar, ar_vel = calc_direction_velocity(u_ar[i, :, :], v_ar[i, :, :])
-        direction_ar_gf, ar_gf_vel = calc_direction_velocity(
-            u_ar_gf[i, :, :], v_ar_gf[i, :, :]
-        )
-        if not os.path.exists(outdir):
-            os.mkdir(outdir)
         fname1 = os.path.basename(u_files[i]).split(".")[0][:-1]
-        pngfn = os.path.join(outdir, fname1 + "6panel_vu_my.png")
-        plot_single_4panel_u_v_my(
-            u_ar[i, :, :],
-            v_ar[i, :, :],
-            u_ar_gf[i, :, :],
-            v_ar_gf[i, :, :],
-            dem_hs,
-            pngfn,
-        )
-        pngfn = os.path.join(outdir, fname1 + "6panel_velocity_my.png")
-        plot_single_4panel_vel_my(
-            ar_vel,
-            ar_gf_vel,
-            stack_vel,
-            stack_gf_vel,
-            stack_nrm,
-            dem_hs,
-            pngfn,
-        )
 
-
-def plot_single_u_v_dir_vel_average_loop(u_ar, v_ar, magnitude_average):
-    for i in tqdm.tqdm(range(u_ar.shape[0]), desc="Plotting PNGs"):
-        direction, magnitude = calc_direction_velocity(u_ar[i, :, :], v_ar[i, :, :])
-        fname1 = os.path.basename(u_files[i]).split(".")[0][:-1]
-        pngfn = fname1 + "6panel_vuvelocity_masked.png"
+        pngfn = fname1 + "6panel_vucorrvelocity_median.png"
         x_range1 = int(u_ar[i, :, :].shape[0] / 3 - 500)
         x_range2 = int(u_ar[i, :, :].shape[0] / 3 + 500)
         y_range1 = int(u_ar[i, :, :].shape[1] / 3 - 500)
@@ -1548,7 +1405,21 @@ def create_fnames_from_csv(csv_fname, dirname):
     matching_step = int(os.path.basename(dirname).split("_")[4][2:])
     outfile_u = []
     outfile_v = []
+    outfile_correlation = []
     for i in range(len(date_pairs)):
+        outfname_correlation = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_correlation.tif" % (
+            date_pairs[i, 0],
+            date_pairs[i, 1],
+            oversampling,
+            block_size,
+            search_radius,
+            matching_step,
+        )
+        outfname_correlation = os.path.join(
+            dirname + "correlation", outfname_correlation
+        )
+        if not os.path.exists(outfname_correlation):
+            logging.info("%s does not exists" % outfname_correlation)
         outfname_u = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_u.tif" % (
             date_pairs[i, 0],
             date_pairs[i, 1],
@@ -1571,15 +1442,20 @@ def create_fnames_from_csv(csv_fname, dirname):
         outfname_v = os.path.join(dirname + "v_p1", outfname_v)
         if not os.path.exists(outfname_v):
             logging.info("%s does not exists" % outfname_v)
-        if not os.path.exists(outfname_u) or not os.path.exists(outfname_v):
+        if (
+            not os.path.exists(outfname_u)
+            or not os.path.exists(outfname_v)
+            or not os.path.exists(outfname_correlation)
+        ):
             logging.info(
                 "Not all u and v files exists for that date. Not adding date %d_%d to list."
                 % (date_pairs[i, 0], date_pairs[i, 1])
             )
         else:
+            outfile_correlation.append(outfname_correlation)
             outfile_u.append(outfname_u)
             outfile_v.append(outfname_v)
-    return outfile_u, outfile_v
+    return outfile_u, outfile_v, outfile_correlation
 
 
 def count_nan_ar(u_ar, u_ar_masked):
@@ -1602,29 +1478,22 @@ if __name__ == "__main__":
     dem_fname = sys.argv[2]
     csv_fname = sys.argv[3]
     plot_pngs = False
+    plot_final_pngs = True
     plot_clip_pngs = False
     calc_mode = False
-    # python run_stack_block_matching_fromcsv.py  \
-    # CORR_os05_bs91_sr06_ms05 \
-    # CORR_os01_bs11_sr03_ms01/ \
+    # python /raid2-gpu2/bodo/LANDSAT/code/slurm_blockmatching/run_averaged_velocities_fromcsv.py  \
     # CORR_os05_bs91_sr06_ms05_ \
-    # COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif \
-    # corr_dates_sd1_cc30_short
-    dirprefix = "/raid2-gpu2/bodo/LANDSAT/P231R077/CORR_os05_bs91_sr06_ms05_"
-    dem_fname = (
-        "/raid2-gpu2/bodo/LANDSAT/P231R077/COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
-    )
-    dem_fname = "COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
-    csv_fname = "corr_dates_sd1_cc30"
+    # COP15_DEM_NW_ARGENTINA_UTM20_P231R078.tif \
+    # corr_dates_sd1_cc20_A
+    # dirprefix = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os05_bs91_sr06_ms05_"
+    # dem_fname = (
+    #     "/raid2-gpu2/bodo/LANDSAT/P231R078/COP15_DEM_NW_ARGENTINA_UTM20_P231R078.tif"
+    # )
+    # csv_fname = "corr_dates_sd1_cc20_A"
     geotiffn = os.path.basename(dirprefix)
 
-    # dem_fname = (
-    #     "/work/bookhage/Landsat/P231R077/COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
-    # )
-    # csv_fname = "corr_dates_sd1_cc30_short"
-
     satellite_resolution_m = 15
-    deltadirection_threshold = 45
+    deltadirection_threshold = 90
     gaussian_sigma = 1
     gaussian_truncate = 3
 
@@ -1633,28 +1502,40 @@ if __name__ == "__main__":
     )
 
     # Loading alrady converted, masked, and detrended (ramp-removed) TIF files
-    outfile_u, outfile_v = create_fnames_from_csv(csv_fname, dirprefix)
+    outfile_u, outfile_v, outfile_correlation = create_fnames_from_csv(
+        csv_fname, dirprefix
+    )
 
     logging.info("Loading %d u files" % len(outfile_u))
     deltaT_u, u_ar = load_u_files(outfile_u)
     logging.info("Loading %d v files" % len(outfile_v))
     deltaT_v, v_ar = load_v_files(outfile_v)
+    logging.info("Loading %d correlation files" % len(outfile_correlation))
+    deltaT_v, correlation_ar = load_correlation_files(outfile_correlation)
 
     date1, date2, date1_string, date2_string, deltaT_y = get_dates_deltaT_from_filename(
         outfile_u
     )
-    with open("date1_string.txt", "w") as f:
-        for line in date1_string:
-            f.write(f"{line}\n")
-    with open("date2_string.txt", "w") as f:
-        for line in date2_string:
-            f.write(f"{line}\n")
+    # with open("date1_string.txt", "w") as f:
+    #     for line in date1_string:
+    #         f.write(f"{line}\n")
+    # with open("date2_string.txt", "w") as f:
+    #     for line in date2_string:
+    #         f.write(f"{line}\n")
     height, width, ds_gt, epsg_code = get_file_dimensions_singlefile(outfile_u[0])
 
     logging.info("Calculating velocity and direction for each date")
     direction, magnitude = calc_multistep_direction_velocity(u_ar, v_ar)
     logging.info("Calculating aspect and direction angle difference")
     deltadirection = calc_dem_aspect_direction_difference(dem_aspect, direction)
+
+    logging.info("Calculate Number of measurements before aspect masking")
+    nrm_before_aspect = calc_nrm(u_ar, v_ar)
+    geotiff_outfn = (
+        geotiffn + os.path.basename(csv_fname) + "_nre_before_aspect.tif"
+    )
+    logging.info("Writing geotiff %s" % (geotiff_outfn))
+    save_geotiff(geotiff_outfn, nrm_before_aspect, epsg_code, ds_gt, nan_value=np.nan)
 
     logging.info(
         "Mask out pixels with an angle difference above %d degree for each date"
@@ -1670,15 +1551,24 @@ if __name__ == "__main__":
     velocity_magnitude, velocity_direction, velocity_nrm = (
         calc_median_magnitude_direction(u_ar, v_ar)
     )
-    geotiff_outfn = geotiffn + "median_velocity_magnitude_mmy.tif"
+    geotiff_outfn = (
+        geotiffn + os.path.basename(csv_fname) + "_median_velocity_magnitude_my.tif"
+    )
     logging.info("Writing geotiff %s" % (geotiff_outfn))
     save_geotiff(geotiff_outfn, velocity_magnitude, epsg_code, ds_gt, nan_value=np.nan)
-    geotiff_outfn = geotiffn + "median_velocity_direction.tif"
+    geotiff_outfn = (
+        geotiffn + os.path.basename(csv_fname) + "_median_velocity_direction.tif"
+    )
     logging.info("Writing geotiff %s" % (geotiff_outfn))
     save_geotiff(geotiff_outfn, velocity_direction, epsg_code, ds_gt, nan_value=np.nan)
-    geotiff_outfn = geotiffn + "nre_velocity.tif"
+    geotiff_outfn = geotiffn + os.path.basename(csv_fname) + "_nre_velocity.tif"
     logging.info("Writing geotiff %s" % (geotiff_outfn))
-    save_geotiff_8bit(geotiff_outfn, velocity_nrm, epsg_code, ds_gt, nan_value=255)
+    save_geotiff_16bit(geotiff_outfn, velocity_nrm, epsg_code, ds_gt, nan_value=9999)
+    geotiff_outfn = (
+        geotiffn + os.path.basename(csv_fname) + "_nre_diff.tif"
+    )
+    logging.info("Writing geotiff %s" % (geotiff_outfn))
+    save_geotiff(geotiff_outfn, nrm_before_aspect-velocity_nrm, epsg_code, ds_gt, nan_value=np.nan)
 
     # # now could add median velocity filtered with direction variance
     # logging.info("Calculating direction variance after masking")
@@ -1692,94 +1582,153 @@ if __name__ == "__main__":
     # logging.info("Writing geotiff %s" % (geotiff_outfn))
     # save_geotiff(geotiff_outfn, magnitude_variance, epsg_code, ds_gt, nan_value=np.nan)
 
-    # logging.info("Gaussian Filtering of velocity magnitude")
-    # # displacement_my = gaussian_filter(displacement_my, sigma=3, mode="nearest")
-    # displacement_my = gaussian_filter_nan(velocity_magnitude, sigma=1, truncate=3)
+    logging.info("Gaussian Filtering of velocity magnitude")
+    # displacement_my = gaussian_filter(displacement_my, sigma=3, mode="nearest")
+    velocity_magnitude_gf = gaussian_filter_nan(
+        velocity_magnitude, sigma=gaussian_sigma, truncate=gaussian_truncate
+    )
 
-    # # The gaussian filter is slow. Should be implemented on CUDA or using numba
-    # # https://github.com/jacobtomlinson/gpu-python-tutorial/blob/main/3.0%20Numba%20gauss.ipynb
-    # logging.info("Applying gaussian smoothing on u_ar with sigma=%d" % gaussian_sigma)
-    # u_ar_gf = np.empty_like(u_ar)
-    # u_ar_gf.fill(np.nan)
-    # for i in tqdm.tqdm(range(len(u_ar)), desc="Gaussian filt u_ar"):
-    #     u_ar_gf[i, :, :] = gaussian_filter_nan(
-    #         u_ar[i, :, :], sigma=gaussian_sigma, truncate=gaussian_truncate
-    #     )
-    # logging.info("Applying gaussian smoothing on v_ar with sigma=%d" % gaussian_sigma)
-    # v_ar_gf = np.empty_like(v_ar)
-    # v_ar_gf.fill(np.nan)
-    # for i in tqdm.tqdm(range(len(v_ar)), desc="Gaussian filt v_ar"):
-    #     v_ar_gf[i, :, :] = gaussian_filter_nan(
-    #         v_ar[i, :, :], sigma=gaussian_sigma, truncate=gaussian_truncate
-    #     )
-    # #
-    # # logging.info(
-    # #     "Calculating median velocity and direction for each data for Gaussian filtered data"
-    # # )
-    # velocity_magnitude_gf, velocity_direction_gf, velocity_nrm_gf = (
-    #     calc_median_magnitude_direction(u_ar_gf, v_ar_gf)
-    # )
-    # geotiff_outfn = geotiffn + "median_velocity_magnitude_mmy_gf.tif"
-    # logging.info("Writing geotiff %s" % (geotiff_outfn))
-    # save_geotiff(geotiff_outfn, velocity_magnitude, epsg_code, ds_gt, nan_value=np.nan)
-    # geotiff_outfn = geotiffn + "median_velocity_direction_gf.tif"
-    # logging.info("Writing geotiff %s" % (geotiff_outfn))
-    # save_geotiff(geotiff_outfn, velocity_direction, epsg_code, ds_gt, nan_value=np.nan)
-    # geotiff_outfn = geotiffn + "nre_velocity_gf.tif"
-    # logging.info("Writing geotiff %s" % (geotiff_outfn))
-    # save_geotiff_8bit(geotiff_outfn, velocity_nrm, epsg_code, ds_gt, nan_value=255)
-
-    if plot_clip_pngs:
-        png_outfn = geotiffn + "clip1"
-        logging.info("Plotting clip1 into %s" % png_outfn)
-        plot_clip_u_v_dir_vel_average_loop(
-            dem[8400:8800, 4000:4250],
-            dem_slope[8400:8800, 4000:4250],
-            dem_hs[8400:8800, 4000:4250],
-            u_ar[:, 8400:8800, 4000:4250],
-            v_ar[:, 8400:8800, 4000:4250],
-            u_ar_gf[:, 8400:8800, 4000:4250],
-            v_ar_gf[:, 8400:8800, 4000:4250],
-            velocity_magnitude_masked[8400:8800, 4000:4250],
-            velocity_magnitude_gf[8400:8800, 4000:4250],
-            velocity_nrm_masked[8400:8800, 4000:4250],
-            png_outfn,
-        )
-        png_outfn = geotiffn + "clip2"
-        logging.info("Plotting clip2 into %s" % png_outfn)
-        plot_clip_u_v_dir_vel_average_loop(
-            dem[5600:7000, 4500:5900],
-            dem_slope[5600:7000, 4500:5900],
-            dem_hs[5600:7000, 4500:5900],
-            u_ar[:, 5600:7000, 4500:5900],
-            v_ar[:, 5600:7000, 4500:5900],
-            u_ar_gf[:, 5600:7000, 4500:5900],
-            v_ar_gf[:, 5600:7000, 4500:5900],
-            velocity_magnitude_masked[5600:7000, 4500:5900],
-            velocity_magnitude_gf[5600:7000, 4500:5900],
-            velocity_nrm_masked[5600:7000, 4500:5900],
-            png_outfn,
-        )
+    # # Load ramp fitting statistics
+    # u_stats_fn = csv_fname + "_u_stats.csv"
+    # v_stats_fn = pd.read_csv(v_stats_fn)
+    # v_stats_fn = csv_fname + "_v_stats.csv"
+    # v_stats_fn = pd.read_csv(v_stats_fn)
 
     # if plot_pngs:
-    #     plot_single_u_v_dir_vel_average_loop(
-    #         u_ar, v_ar, magnitude_average=velocity_magnitude
-    #     )
-    # if calc_mode:
-    #     logging.info(
-    #         "Calculating mode velocity and direction for each date after masking"
-    #     )
-    #     velocity_magnitude, velocity_direction = calc_mode_magnitude_direction(
-    #         u_ar, v_ar
-    #     )
-    #     geotiff_outfn = geotiffn + "mode_velocity_magnitude_my.tif"
-    #     logging.info("Writing geotiff %s" % (geotiff_outfn))
-    #     save_geotiff(
-    #         geotiff_outfn, velocity_magnitude, epsg_code, ds_gt, nan_value=np.nan
-    #     )
-    #     geotiff_outfn = geotiffn + "mode_velocity_direction.tif"
-    #     logging.info("Writing geotiff %s" % (geotiff_outfn))
-    #     save_geotiff(
-    #         geotiff_outfn, velocity_direction, epsg_code, ds_gt, nan_value=np.nan
+    #     i = 1
+    #     step_size = 5
+    #     fname1 = os.path.basename(outfile_u[i]).split(".")[0][:-1]
+    #     fig_title = fname1[:-1]
+    #     pngfn = fname1 + "6panel_vucorrvelocity_median.png"
+    #     direction, magnitude = calc_direction_velocity(u_ar[i, :, :], v_ar[i, :, :])
+    #     x_range1 = int(u_ar[i, ::step_size, ::step_size].shape[0] / 3 - 800)
+    #     x_range2 = int(u_ar[i, ::step_size, ::step_size].shape[0] / 3 + 300)
+    #     y_range1 = int(u_ar[i, ::step_size, ::step_size].shape[1] / 3 - 800)
+    #     y_range2 = int(u_ar[i, ::step_size, ::step_size].shape[1] / 3 + 300)
+    #     plot_single_6panel_u_v_dir_vel_my(
+    #         u_ar[i, ::step_size, ::step_size],
+    #         v_ar[i, ::step_size, ::step_size],
+    #         correlation_ar[i, ::step_size, ::step_size],
+    #         direction[::step_size, ::step_size],
+    #         magnitude[::step_size, ::step_size],
+    #         velocity_magnitude[::step_size, ::step_size],
+    #         dem_hs[::step_size, ::step_size],
+    #         pngfn,
+    #         fig_title,
+    #         x_rectangle_start=x_range1,
+    #         y_rectangle_start=y_range1,
+    #         rectangle_width=x_range2 - x_range1,
+    #         rectangle_height=y_range2 - y_range1,
     #     )
     #
+
+    if plot_final_pngs:
+        step_size = 5
+        row = os.path.dirname(dirprefix).split("/")[-1][1:4]
+        column = os.path.dirname(dirprefix).split("/")[-1][5:8]
+        fname1 = (
+            os.path.dirname(dirprefix).split("/")[-1]
+            + "_"
+            + os.path.basename(csv_fname)
+        )
+        fig_title = "%s-%s: %s (n=%d)" % (row, column, fname1, u_ar.shape[0])
+        pngfn = fname1 + "_4panel_velocitydirection_median.png"
+        x_range1 = int(
+            u_ar[0, ::step_size, ::step_size].shape[0] / 2 - (1000 / step_size)
+        )
+        x_range2 = x_range1 + 2000 / step_size
+        y_range1 = int(
+            u_ar[0, ::step_size, ::step_size].shape[1] / 2 - (3000 / step_size)
+        )
+        y_range2 = y_range1 + 2000 / step_size
+        plot_single_4panel_dir_vel_my(
+            velocity_direction[::step_size, ::step_size],
+            # dem_aspect[::step_size, ::step_size],
+            velocity_magnitude[::step_size, ::step_size],
+            velocity_magnitude_gf[::step_size, ::step_size],
+            velocity_nrm[::step_size, ::step_size],
+            dem_hs[::step_size, ::step_size],
+            pngfn,
+            fig_title,
+            x_rectangle_start=x_range1,
+            y_rectangle_start=y_range1,
+            rectangle_width=x_range2 - x_range1,
+            rectangle_height=y_range2 - y_range1,
+        )
+        pngfn = fname1 + "_4panel_velocitydirection_median_clip.png"
+        x_range1 = int(u_ar[0, :, :].shape[0] / 2 - 1000)
+        x_range2 = x_range1 + 2000  # int(u_ar[0, :, :].shape[0] / 3 + 300)
+        y_range1 = int(u_ar[0, :, :].shape[1] / 2 - 3000)
+        y_range2 = y_range1 + 2000  # int(u_ar[0, :, :].shape[1] / 3 + 300)
+        plot_single_4panel_dir_vel_my(
+            velocity_direction[x_range1:x_range2, y_range1:y_range2],
+            # dem_aspect[::step_size, ::step_size],
+            velocity_magnitude[x_range1:x_range2, y_range1:y_range2],
+            velocity_magnitude_gf[x_range1:x_range2, y_range1:y_range2],
+            velocity_nrm[x_range1:x_range2, y_range1:y_range2],
+            dem_hs[x_range1:x_range2, y_range1:y_range2],
+            pngfn,
+            fig_title,
+            x_rectangle_start=0,
+            y_rectangle_start=0,
+            rectangle_width=0,
+            rectangle_height=0,
+        )
+        pngfn = fname1 + "_3panel_nrmeasurements.png"
+        plot_single_3panel_nre(
+            velocity_nrm, nrm_before_aspect,
+            dem_hs,
+            pngfn,
+            fig_title,
+        )
+
+
+    # if plot_final_pngs:
+    #     png_outfn = geotiffn + "clip1"
+    #     logging.info("Plotting clip1 into %s" % png_outfn)
+    #     plot_clip_u_v_dir_vel_average_loop(
+    #         dem[8400:8800, 4000:4250],
+    #         dem_slope[8400:8800, 4000:4250],
+    #         dem_hs[8400:8800, 4000:4250],
+    #         u_ar[:, 8400:8800, 4000:4250],
+    #         v_ar[:, 8400:8800, 4000:4250],
+    #         velocity_magnitude_masked[8400:8800, 4000:4250],
+    #         velocity_magnitude_gf[8400:8800, 4000:4250],
+    #         velocity_nrm_masked[8400:8800, 4000:4250],
+    #         png_outfn,
+    #     )
+    #     png_outfn = geotiffn + "clip2"
+    #     logging.info("Plotting clip2 into %s" % png_outfn)
+    #     plot_clip_u_v_dir_vel_average_loop(
+    #         dem[5600:7000, 4500:5900],
+    #         dem_slope[5600:7000, 4500:5900],
+    #         dem_hs[5600:7000, 4500:5900],
+    #         u_ar[:, 5600:7000, 4500:5900],
+    #         v_ar[:, 5600:7000, 4500:5900],
+    #         u_ar_gf[:, 5600:7000, 4500:5900],
+    #         v_ar_gf[:, 5600:7000, 4500:5900],
+    #         velocity_magnitude_masked[5600:7000, 4500:5900],
+    #         velocity_magnitude_gf[5600:7000, 4500:5900],
+    #         velocity_nrm_masked[5600:7000, 4500:5900],
+    #         png_outfn,
+    #     )
+
+
+# if calc_mode:
+#     logging.info(
+#         "Calculating mode velocity and direction for each date after masking"
+#     )
+#     velocity_magnitude, velocity_direction = calc_mode_magnitude_direction(
+#         u_ar, v_ar
+#     )
+#     geotiff_outfn = geotiffn + "mode_velocity_magnitude_my.tif"
+#     logging.info("Writing geotiff %s" % (geotiff_outfn))
+#     save_geotiff(
+#         geotiff_outfn, velocity_magnitude, epsg_code, ds_gt, nan_value=np.nan
+#     )
+#     geotiff_outfn = geotiffn + "mode_velocity_direction.tif"
+#     logging.info("Writing geotiff %s" % (geotiff_outfn))
+#     save_geotiff(
+#         geotiff_outfn, velocity_direction, epsg_code, ds_gt, nan_value=np.nan
+#     )
+#

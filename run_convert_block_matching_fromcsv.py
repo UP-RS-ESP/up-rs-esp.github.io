@@ -232,12 +232,71 @@ def np_slope_aspect(DEM, gridspacing):
     ), ArithmeticDegree_to_GeographicDegree((np.rad2deg(aspect)))
 
 
+def plot_3panel_overview(
+    dem_hs,
+    correlation_ar,
+    mask,
+    bm,
+    pngfn,
+):
+    fig, ax = plt.subplots(
+        nrows=1, ncols=3, figsize=(16, 6), dpi=300, layout="constrained"
+    )
+    im0 = ax[0].imshow(
+        correlation_ar,
+        vmin=0.5,
+        vmax=1,
+        cmap="magma",
+    )
+    im0b = ax[0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im0, ax=ax[0], orientation="horizontal", shrink=0.7)
+    h.set_label("correlation", fontsize=12)
+    ax[0].get_xaxis().set_ticks([])
+    ax[0].get_yaxis().set_ticks([])
+    im2 = ax[1].imshow(
+        mask,
+        cmap="gray",
+        vmin=0,
+        vmax=1,
+    )
+    im2b = ax[1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[1], orientation="horizontal", shrink=0.7)
+    h.set_label("NDVI/NDSI/shadow mask", fontsize=12)
+    ax[1].get_xaxis().set_ticks([])
+    ax[1].get_yaxis().set_ticks([])
+    im3 = ax[2].imshow(
+        bm,
+        vmin=-3,
+        vmax=3,
+        cmap="PiYG",
+    )
+    im3b = ax[2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im3, ax=ax[2], orientation="horizontal", shrink=0.7)
+    h.set_label("pixel offset", fontsize=12)
+    ax[2].get_xaxis().set_ticks([])
+    ax[2].get_yaxis().set_ticks([])
+    fig.suptitle("%s" % (os.path.basename(pngfn)), fontsize=16)
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
 def convert_v_files(
-    v_files, correlation_ar, height, width, ds_gt, epsg_code, gaussian_filter=False
+    v_files,
+    correlation_files,
+    height,
+    width,
+    ds_gt,
+    epsg_code,
+    plot_pngs=False,
+    gaussian_filter=False,
 ):
     outdir = geotiffn + "v"
     if not os.path.exists(outdir):
         os.mkdir(outdir)
+    if plot_pngs:
+        outdir_png = geotiffn + "v_png"
+    if not os.path.exists(outdir_png):
+        os.mkdir(outdir_png)
     if gaussian_filter:
         outdir_gf = geotiffn + "v_gf"
         if not os.path.exists(outdir_gf):
@@ -246,17 +305,23 @@ def convert_v_files(
         cfile = v_files[i]
         geotiff_fn = os.path.join(outdir, os.path.basename(cfile))
         deltaT = get_deltaT_from_filename(cfile)
-        if os.path.exists(geotiff_fn):
+        if os.path.exists(geotiff_fn) and not plot_pngs:
             if gaussian_filter:
-                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(cfile)
+                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(geotiff_fn)
             else:
                 continue
         else:
-            oversampling = int(os.path.basename(cfile).split("_")[2][2:])
-            matchingstep = int(os.path.basename(cfile).split("_")[5][2:])
-            bm, foo_ds_gt, foo_ds_proj, epsg = load_blockmatching_tif(
-                cfile,
-                matchingstep=matchingstep,
+            if os.path.exists(geotiff_fn):
+                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(geotiff_fn)
+            else:
+                oversampling = int(os.path.basename(cfile).split("_")[2][2:])
+                matchingstep = int(os.path.basename(cfile).split("_")[5][2:])
+                bm, foo_ds_gt, foo_ds_proj, epsg = load_blockmatching_tif(
+                    cfile,
+                    matchingstep=matchingstep,
+                )
+            correlation_ar = convert_correlation_file(
+                correlation_files[i], geotiffn, ds_gt, epsg_code
             )
             bm[correlation_ar[i, :, :] < c_threshold] = np.nan
             # filter bm results with slope. Use only slopes exceeding 5 degree
@@ -266,14 +331,27 @@ def convert_v_files(
             bm[ndvi_ndsi_mask] = np.nan
             bm_nanmean = np.nanmean(bm)
             bm = bm - bm_nanmean
+            # plot mask, correlation, bm
+            if plot_pngs:
+                pngfn = os.path.join(outdir_png, os.path.basename(cfile)[:-4] + ".png")
+                plot_3panel_overview(
+                    dem_hs,
+                    correlation_ar,
+                    ndvi_ndsi_mask,
+                    bm,
+                    pngfn,
+                )
             bm = bm * (satellite_resolution_m / oversampling) / deltaT
-            save_geotiff(
-                geotiff_fn,
-                bm,
-                epsg_code,
-                ds_gt,
-                nan_value=np.nan,
-            )
+            if np.count_nonzero(~np.isnan(bm)) > 3:
+                save_geotiff(
+                    geotiff_fn,
+                    bm,
+                    epsg_code,
+                    ds_gt,
+                    nan_value=np.nan,
+                )
+            else:
+                print("%d: %s" % (i, cfile))
         if gaussian_filter:
             bm_gf = gaussian_filter_nan(
                 bm, sigma=gaussian_sigma, truncate=gaussian_truncate
@@ -289,11 +367,23 @@ def convert_v_files(
 
 
 def convert_u_files(
-    u_files, correlation_ar, height, width, ds_gt, epsg_code, gaussian_filter=False
+    u_files,
+    correlation_files,
+    height,
+    width,
+    ds_gt,
+    epsg_code,
+    plot_pngs=False,
+    gaussian_filter=False,
 ):
+    nodata_files = []
     outdir = geotiffn + "u"
     if not os.path.exists(outdir):
         os.mkdir(outdir)
+    if plot_pngs:
+        outdir_png = geotiffn + "u_png"
+        if not os.path.exists(outdir_png):
+            os.mkdir(outdir_png)
     if gaussian_filter:
         outdir_gf = geotiffn + "u_gf"
         if not os.path.exists(outdir_gf):
@@ -302,19 +392,25 @@ def convert_u_files(
         cfile = u_files[i]
         geotiff_fn = os.path.join(outdir, os.path.basename(cfile))
         deltaT = get_deltaT_from_filename(cfile)
-        if os.path.exists(geotiff_fn):
+        if os.path.exists(geotiff_fn) and not plot_pngs:
             if gaussian_filter:
-                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(cfile)
+                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(geotiff_fn)
             else:
                 continue
         else:
-            oversampling = int(os.path.basename(cfile).split("_")[2][2:])
-            matchingstep = int(os.path.basename(cfile).split("_")[5][2:])
-            bm, foo_ds_gt, foo_ds_proj, epsg = load_blockmatching_tif(
-                cfile,
-                matchingstep=matchingstep,
+            if os.path.exists(geotiff_fn):
+                bm, bm_ds_gt, bm_ds_proj, bm_epsg = load_offset_tif(geotiff_fn)
+            else:
+                oversampling = int(os.path.basename(cfile).split("_")[2][2:])
+                matchingstep = int(os.path.basename(cfile).split("_")[5][2:])
+                bm, foo_ds_gt, foo_ds_proj, epsg = load_blockmatching_tif(
+                    cfile,
+                    matchingstep=matchingstep,
+                )
+            correlation_ar = convert_correlation_file(
+                correlation_files[i], geotiffn, ds_gt, epsg_code
             )
-            bm[correlation_ar[i, :, :] < c_threshold] = np.nan
+            bm[correlation_ar < c_threshold] = np.nan
             # filter bm results with slope. Use only slopes exceeding 5 degree
             bm[dem_slope < slope_threshold] = np.nan
             # filter with NDVI and NDSI mask
@@ -322,14 +418,29 @@ def convert_u_files(
             bm[ndvi_ndsi_mask] = np.nan
             bm_nanmean = np.nanmean(bm)
             bm = bm - bm_nanmean
-            bm = bm * (satellite_resolution_m / oversampling) / deltaT
-            save_geotiff(
-                geotiff_fn,
-                bm,
-                epsg_code,
-                ds_gt,
-                nan_value=np.nan,
-            )
+            # plot mask, correlation, bm
+            if plot_pngs:
+                pngfn = os.path.join(outdir_png, os.path.basename(cfile)[:-4] + ".png")
+                plot_3panel_overview(
+                    dem_hs,
+                    correlation_ar,
+                    ndvi_ndsi_mask,
+                    bm,
+                    pngfn,
+                )
+            if not os.path.exists(geotiff_fn):
+                bm = bm * (satellite_resolution_m / oversampling) / deltaT
+            if np.count_nonzero(~np.isnan(bm)) > 3:
+                save_geotiff(
+                    geotiff_fn,
+                    bm,
+                    epsg_code,
+                    ds_gt,
+                    nan_value=np.nan,
+                )
+            else:
+                print("%d: %s" % (i, cfile))
+                nodata_files.append(cfile)
         if gaussian_filter:
             bm_gf = gaussian_filter_nan(
                 bm, sigma=gaussian_sigma, truncate=gaussian_truncate
@@ -342,6 +453,9 @@ def convert_u_files(
                 ds_gt,
                 nan_value=np.nan,
             )
+    with open("correlation_pairs_without_u_data.txt", "w") as f:
+        for line in nodata_files:
+            f.write("%s\n" % line)
 
 
 def load_dem_aspect_slope_files(dem_fname):
@@ -397,6 +511,28 @@ def convert_correlation_files(correlation_files, geotiffn, ds_gt, epsg_code):
             )
         correlation_ar[i, :, :] = foo_ds
     return correlation_ar
+
+
+def convert_correlation_file(correlation_file, geotiffn, ds_gt, epsg_code):
+    outdir = geotiffn + "correlation"
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    geotiff_fn = os.path.join(outdir, os.path.basename(correlation_file))
+    if os.path.exists(geotiff_fn):
+        foo_ds, _, _, _ = load_correlation_tif(geotiff_fn)
+    else:
+        matchingstep = int(os.path.basename(correlation_file).split("_")[5][2:])
+        foo_ds, correlation_gt, correlation_proj, epsg = (
+            load_blockmatching_correlation_tif(correlation_file, matchingstep)
+        )
+        save_geotiff(
+            geotiff_fn,
+            foo_ds,
+            epsg_code,
+            ds_gt,
+            nan_value=np.nan,
+        )
+    return foo_ds
 
 
 def gaussian_filter_nan(displacement_my, sigma=2, truncate=4):
@@ -530,25 +666,32 @@ if __name__ == "__main__":
     # CORR_os05_bs91_sr06_ms05 \
     # CORR_os01_bs11_sr03_ms01/ \
     # CORR_os05_bs91_sr06_ms05_ \
-    # COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif \
+    # COP15_DEM_ARGENTINA_UTM20_P231R077.tif \
     # corr_dates_sd1_cc30
     # dirname = "/raid2-gpu2/bodo/LANDSAT/P231R077/CORR_os05_bs91_sr06_ms05"
     # dirname_os01 = "/raid2-gpu2/bodo/LANDSAT/P231R077/CORR_os01_bs11_sr03_ms01/"
     # geotiffn = "/raid2-gpu2/bodo/LANDSAT/P231R077/CORR_os05_bs91_sr06_ms05_"
     # dem_fname = (
-    #     "/raid2-gpu2/bodo/LANDSAT/P231R077/COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
+    #     "/raid2-gpu2/bodo/LANDSAT/P231R077/COP15_DEM_ARGENTINA_UTM20_P231R077.tif"
     # )
-
-    # dirname = "/work/bookhage/Landsat/P231R077/CORR_os05_bs91_sr06_ms05"
-    # dirname_os01 = "/work/bookhage/Landsat/P231R077/CORR_os01_bs11_sr03_ms01/"
-    # geotiffn = "/work/bookhage/Landsat/P231R077/CORR_os05_bs91_sr06_ms05_"
+    # dirname = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os05_bs91_sr06_ms05"
+    # dirname_os01 = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os01_bs11_sr03_ms01/"
+    # geotiffn = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os05_bs91_sr06_ms05_"
     # dem_fname = (
-    #     "/work/bookhage/Landsat/P231R077/COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif"
+    #     "/raid2-gpu2/bodo/LANDSAT/P231R078/COP15_DEM_ARGENTINA_UTM20_P231R078.tif"
     # )
-    # csv_fname = "corr_dates_sd1_cc30"
+    # csv_fname = "corr_dates_sd1_cc20"
+
+    # dirname = "/work/bookhage/Landsat/P231R078/CORR_os05_bs91_sr06_ms05"
+    # dirname_os01 = "/work/bookhage/Landsat/P231R078/CORR_os01_bs11_sr03_ms01/"
+    # geotiffn = "/work/bookhage/Landsat/P231R078/CORR_os05_bs91_sr06_ms05_"
+    # dem_fname = (
+    #     "/work/bookhage/Landsat/P231R078/COP15_DEM_ARGENTINA_UTM20_P231R078.tif"
+    # )
+    # csv_fname = "corr_dates_sd1_cc20"
 
     satellite_resolution_m = 15
-    c_threshold = 0.8
+    c_threshold = 0.1
     slope_threshold = 1
 
     dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope, dem_hs = (
@@ -558,9 +701,13 @@ if __name__ == "__main__":
         csv_fname, dirname
     )
     height, width, ds_gt, epsg_code = get_file_dimensions(dirname_os01)
-    logging.info("Loading %d correlation files" % len(outfile_correlation))
-    correlation_ar = convert_correlation_files(
-        outfile_correlation, geotiffn, ds_gt, epsg_code
+    # logging.info("Loading %d correlation files" % len(outfile_correlation))
+    # correlation_ar = convert_correlation_files(
+    #     outfile_correlation, geotiffn, ds_gt, epsg_code
+    # )
+    convert_u_files(
+        outfile_u, outfile_correlation, height, width, ds_gt, epsg_code, plot_pngs=True
     )
-    convert_u_files(outfile_u, correlation_ar, height, width, ds_gt, epsg_code)
-    convert_v_files(outfile_v, correlation_ar, height, width, ds_gt, epsg_code)
+    convert_v_files(
+        outfile_v, outfile_correlation, height, width, ds_gt, epsg_code, plot_pngs=True
+    )

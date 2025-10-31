@@ -1656,7 +1656,7 @@ if __name__ == "__main__":
     # csv_fname = "corr_dates_sd1_cc30_short"
 
     satellite_resolution_m = 15
-    deltadirection_threshold = 45
+    deltadirection_threshold = 90
     gaussian_sigma = 1
     gaussian_truncate = 3
 
