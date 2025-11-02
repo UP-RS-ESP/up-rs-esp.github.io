@@ -120,11 +120,10 @@ MSc_students1:
 - Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
 - Safa Khan (now at GeoSpatial TechOps Engineer at LiveEO)
 - Dr. Manudeo Singh (now Newton fellow at Aberystwyth University, UK)
-- Juan Sebastian Valencia Velasquez
+- Juan Sebastian Valencia Velasquez (now Geospatial Processing)
 - Dr. Stefanie Tofelde (now at FU Berlin)
 - Dr. Nikolaos Antonoglou (now at German Aerospace Center, DLR)
 - Julia Artel (now chemist at private company in Berlin)
-- Dr. Sohini Bhattacharjee (now researcher at University of Kiel)
 - Dr. Ben Purinton (now at the University of Chicago and independent researcher)
 - Dr. Dominik Traxl (now researcher at PIK)
 - Dr. Stephanie Olen (now editor at nature sustainability)
