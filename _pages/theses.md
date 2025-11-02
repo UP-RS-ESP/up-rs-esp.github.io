@@ -16,6 +16,26 @@ There are several open theses topics that interested students can work on. Pleas
 
 | *Title* | Department and Degree | Additional information and PDF link (if available) |
 |:----|-------|:---:|:---:|
+| **[2025]** | | |
+| *Assessing Optical Flow Techniques for Displacement Mapping Using SAR and Optical Images: A Study on the 2023 Kahramanmaraş Earthquakes* | IoG, MSc RSIV |
+| *Detecting Fault Structures in High-Resolution 2D Imagery* | Computer Sciences |
+| *Estimating Ammonia Emissions from Nitrogen-Based Fertilizer Application in South Punjab, Pakistan and Assessing Impact on Atmospheric Ammonia Levels* | Iog, MSc RSIV |
+| *Extending the Capabilities of SegmentAnything to Delineate River Pebbles from Orthophotos* | IoG, MSc RSIV | 
+| *Geomorphic Expression of Slow Deformation Processes in a Tectonically Active Intermontane Basin: Deformed Terraces and Changes in the Fluvial Network in the Calchaquı́ Valley, Northwestern Argentina* | IoG, MSc RSIV | 
+| *Reconstructing the Hydrological History of the Koora/Siriata Paleolake in the South Kenya Rift during the Holocene African Humid Period* | IoG, MSc RSIV | 
+| *Detection of pipe bursts and sewer damages in Berlin using InSAR time series from 2020-2023* | Geographie, Humboldt University |
+| **[2024]** | | |
+| *Random Forest based Ground Classification of UAV Point Clouds* | IoG, MSc RSIV | 
+| *A line-based subsampling and segmentation approach for tree structure detection in terrestrial laser scanning point clouds using supervised machine learning* | IoG, MSc RSIV |
+| *Spatiotemporal Analysis of Remote Sensing Nightlight Data in Germany Using Geographically Weighted Regression (GWR)* | IoG, MSc RSIV |
+| *Development and Validation of a Heat Vulnerability Index for Potsdam and Germany* | IoG, MSc RSIV |
+| *Satellite-Based Lake Area Time Series Analysis on the Central Andean Plateau* | IoG, MSc RSIV |
+| *Reconstruction of Glacial Surface Models Using Improved SfM Workflows: An Example from the Central Tien Shan in Kyrgyzstan*  | IoG, MSc RSIV |
+| *Predicting global plant traits at high resolution using citizen science and Earth observation data* | IoG, MSc RSIV |
+| *Sentinel-2 Based Time Series Classification of Vegetation Index for Disease Detection and Cut-off Identification in Forest Landscapes* | IoG, MSc RSIV | 
+| *Landslide detection using time series of spaceborne Digital Elevation Models and Lidar instruments in the South American Andes* | IoG, MSc RSIV | 
+| *Remote-Sensing based mapping of Solar Panels in Berlin using Machine Learning* | IoG, MSc RSIV |
+| *Classiﬁcation of ICESat-2 ATL03 Point Clouds in Alpine Regions* | IoG, MSc RSIV |
 | **[2023]** | | |
 | *Point Clouds from multi-camera setup: Application in the Geosciences* | IoG, MSc RSIV |
 | *Identify the animal pathways using a convolutional neural network* | IoG, MSc RSIV |
