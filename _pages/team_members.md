@@ -63,7 +63,7 @@ PhD_students2:
     title: Max Hess
     excerpt: 'Point Clouds Classification, Complex Networks, Spatial Analysis'
 PhD_students3:
-  - image_path: /images/KartikSakkarwal.jpeg
+  - image_path: /images/KartikSakkarwal.jpg
     title: Kartik Sakkarwal
     excerpt: Cosmogenic Radionuclides and Geomorphology
   - image_path: /images/JohnRemolador.jpg
@@ -120,7 +120,6 @@ MSc_students1:
 - Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
 - Safa Khan (now at GeoSpatial TechOps Engineer at LiveEO)
 - Dr. Manudeo Singh (now Newton fellow at Aberystwyth University, UK)
-- Juan Sebastian Valencia Velasquez (now Geospatial Processing)
 - Dr. Stefanie Tofelde (now at FU Berlin)
 - Dr. Nikolaos Antonoglou (now at German Aerospace Center, DLR)
 - Julia Artel (now chemist at private company in Berlin)

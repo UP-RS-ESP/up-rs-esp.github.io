@@ -18,12 +18,12 @@ There are several open theses topics that interested students can work on. Pleas
 |:----|-------|:---:|:---:|
 | **[2025]** | | |
 | *Assessing Optical Flow Techniques for Displacement Mapping Using SAR and Optical Images: A Study on the 2023 Kahramanmaraş Earthquakes* | IoG, MSc RSIV |
-| *Detecting Fault Structures in High-Resolution 2D Imagery* | Computer Sciences |
+| *Detecting Fault Structures in High-Resolution 2D Imagery* | Computer Sciences, University of Potsdam |
 | *Estimating Ammonia Emissions from Nitrogen-Based Fertilizer Application in South Punjab, Pakistan and Assessing Impact on Atmospheric Ammonia Levels* | Iog, MSc RSIV |
-| *Extending the Capabilities of SegmentAnything to Delineate River Pebbles from Orthophotos* | IoG, MSc RSIV | 
+| *Extending the Capabilities of SegmentAnything to Delineate River Pebbles from Orthophotos* | IoG, MSc RSIV | [MSc thesis in review in *Earth Surface Dynamics*](https://egusphere.copernicus.org/preprints/2025/egusphere-2025-4003/) 
 | *Geomorphic Expression of Slow Deformation Processes in a Tectonically Active Intermontane Basin: Deformed Terraces and Changes in the Fluvial Network in the Calchaquı́ Valley, Northwestern Argentina* | IoG, MSc RSIV | 
 | *Reconstructing the Hydrological History of the Koora/Siriata Paleolake in the South Kenya Rift during the Holocene African Humid Period* | IoG, MSc RSIV | 
-| *Detection of pipe bursts and sewer damages in Berlin using InSAR time series from 2020-2023* | Geographie, Humboldt University |
+| *Detection of pipe bursts and sewer damages in Berlin using InSAR time series from 2020-2023* | Geography, Humboldt University |
 | **[2024]** | | |
 | *Random Forest based Ground Classification of UAV Point Clouds* | IoG, MSc RSIV | 
 | *A line-based subsampling and segmentation approach for tree structure detection in terrestrial laser scanning point clouds using supervised machine learning* | IoG, MSc RSIV |
@@ -41,7 +41,7 @@ There are several open theses topics that interested students can work on. Pleas
 | *Identify the animal pathways using a convolutional neural network* | IoG, MSc RSIV |
 | *Use of spaceborne lidar and radar data to analyze the vegetation cover in the Namibian Savannah* | IoG, MSc RSIV |
 | *Flood Mapping Using Synthetic Apterture Radar Data and Deep Learning* | IoG, MSc RSIV |
-| *Potential of Sentinel-1 time series for the assessment of maize and wheat phenology* | IoG, MSc RSIV |
+| *Potential of Sentinel-1 time series for the assessment of maize and wheat phenology* | IoG, MSc RSIV | [MSc thesis published in *GIScience & Remote Sensing*](https://www.tandfonline.com/doi/full/10.1080/15481603.2025.2531593)
 | *Assessing the capabilities of Sentinel-2 time series for the monitoring of urban tree vitality* | IoG, MSc RSIV |
 | **[2022]** | | |
 | *The Application of UAV and Satellite Data to Map Palaeontological Sample Sites* | IoG, MSc RSIV |
