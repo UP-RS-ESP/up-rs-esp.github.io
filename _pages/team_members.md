@@ -75,7 +75,10 @@ PhD_students3:
 PhD_students4:
   - image_path: /images/AdkhamM.jpg
     title: Adkham Mamaraimov
-    excerpt: 'Snow Water Equivalent and Remote Sensing'
+    excerpt: 'Snow Water Equivalent and Remote Sensing'
+  - image_path: /images/
+    title: Florian Leder
+    excerpt: 'Offset Pixel Tracking and landslides'
 
 
 MSc_students1:
