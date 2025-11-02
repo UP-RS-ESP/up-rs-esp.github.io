@@ -22,15 +22,20 @@ researchers1:
     url: 'https://schernthanner.de/'
 researchers2:
   - image_path: /images/smith.jpg
-    alt: Taylor Smith
     title: Taylor Smith
     excerpt: 'Snow and Vegetation Remote Sensing, Passive Microwaves, Big Data Analytics'
     url: 'https://tasmi.github.io/'
   - image_path: /images/Patyniak.jpg
-    alt: Magda Patyniak
     title: Magda Patyniak
     excerpt: 'Paleoseismicity, Tectonic Geomorphology, Cosmogenic Nuclides'
     url: 'https://www.researchgate.net/profile/Magda-Patyniak'
+  - image_path: /images/SohiniB.jpg
+    title: Sohini Bhattacharjee
+    excerpt: 'Cosmogenic Nuclides and Geochemistry'
+researchers3:
+  - image_path: /images/carlosp.jpg
+    title: Carlos Peña
+    excerpt: 'Radar Interferometry'
 
 
 PhD_students1:
@@ -57,6 +62,21 @@ PhD_students2:
   - image_path: images/hess.jpg
     title: Max Hess
     excerpt: 'Point Clouds Classification, Complex Networks, Spatial Analysis'
+PhD_students3:
+  - image_path: /images/KartikSakkarwal.jpeg
+    title: Kartik Sakkarwal
+    excerpt: Cosmogenic Radionuclides and Geomorphology
+  - image_path: /images/JohnRemolador.jpg
+    title: John Remolador
+    excerpt: 'Radar Interferometry (InSAR), GNSS'
+  - image_path: images/CarolinaBarbosaLeitedaCruz.jpg
+    title: Carolina Barbosa Leite da Cruz
+    excerpt: 'Cosmogenic Radionuclides (visiting PhD student)'
+PhD_students4:
+  - image_path: /images/AdkhamM.jpg
+    title: Adkham Mamaraimov
+    excerpt: 'Snow Water Equivalent and Remote Sensing'
+
 
 MSc_students1:
   - image_path: /images/LinaMariaPerez2.jpg
@@ -64,27 +84,10 @@ MSc_students1:
     title: Lina Maria Peréz
     excerpt: 'UAV, Landslide mapping, point clouds'
     url: 'https://linmaria.github.io/LintheMoment/'
-  - image_path: /images/LuisKremer2.jpg
-    alt: Luis Kremer
-    title: Luis Kremer
-    excerpt: 'Terrestrial Lidar (TLS) and Point Cloud segmentation'
-  - image_path: /images/ManTuenChan_photo2.jpg
-    alt: Man Tuen Chan
-    title: Man TuenChan
-    excerpt: 'Machine Learning, UNET, Stereo Cameras'
-MSc_students2:
-  - image_path: /images/sebastian.jpg
-    alt: Juan Sebastian Valencia Velasquez
-    title: Juan Sebastian Valencia Velasquez
-    excerpt: 'DEM differencing, Andes'
   - image_path: /images/Hersh.jpg
     alt: David Hersh
     title: David Hersh
     excerpt: 'Terrestrial Lidar (TLS) and Vegetation detection'
-  - image_path: /images/Safa_Khan.jpeg
-    alt: Safa Khan
-    title: Safa Khan
-    excerpt: 'Airborne Lidar data, UAV acquisition, and point-cloud classification'
 ---
 
 # Researchers
@@ -101,6 +104,10 @@ MSc_students2:
 
 {% include feature_row id="PhD_students2" type=center%}
 
+{% include feature_row id="PhD_students3" type=center%}
+
+{% include feature_row id="PhD_students4" type=center%}
+
 # MSc Students
 
 {% include feature_row id="MSc_students1" type=center%}
@@ -108,8 +115,12 @@ MSc_students2:
 {% include feature_row id="MSc_students2" type=center%}
 
 # Past Members
+
+- Luis Kremer (now PhD student at the Universität Freiburg)
+- Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
+- Safa Khan (now at GeoSpatial TechOps Engineer at LiveEO)
 - Dr. Manudeo Singh (now Newton fellow at Aberystwyth University, UK)
-- Dr. Carlos Peña (now at University of RU Bochum)
+- Juan Sebastian Valencia Velasquez
 - Dr. Stefanie Tofelde (now at FU Berlin)
 - Dr. Nikolaos Antonoglou (now at German Aerospace Center, DLR)
 - Julia Artel (now chemist at private company in Berlin)
