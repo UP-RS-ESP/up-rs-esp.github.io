@@ -132,9 +132,6 @@ Bodo Bookhagen:
   location         : "University of Potsdam"
   email            : "bodo.bookhagen@uni-potsdam.de"
   links:
-    - label: "Email"
-      icon: "fas fa-fw fa-envelope-square"
-      url: "mailto:bodo.bookhagen@uni-potsdam.de"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       url: "https://bodobookhagen.github.io/"
