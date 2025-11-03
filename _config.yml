@@ -110,7 +110,10 @@ author:
   bio              : #"I am an amazing person."
   location         : "University of Potsdam"
   email            : "bodo.bookhagen@uni-potsdam.de"
-  links:
+  instagram        : "bodobookhagen/"
+  orcid            : "https://orcid.org/0000-0003-1323-6453"
+  youtube          : https://www.youtube.com/channel/UCwfN49p16f5WXm0qSNhB9bA
+links:
 #    - label: "Email"
 #      icon: "fas fa-fw fa-envelope-square"
 #      url: mailto:bodo.bookhagen@uni-potsdam.de
