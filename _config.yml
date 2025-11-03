@@ -112,36 +112,27 @@ author:
   email            : "bodo.bookhagen@uni-potsdam.de"
   instagram        : "bodobookhagen/"
   orcid            : "https://orcid.org/0000-0003-1323-6453"
-  youtube          : https://www.youtube.com/channel/UCwfN49p16f5WXm0qSNhB9bA
+  youtube          : "https://www.youtube.com/channel/UCwfN49p16f5WXm0qSNhB9bA"
 links:
-#    - label: "Email"
-#      icon: "fas fa-fw fa-envelope-square"
-#      url: mailto:bodo.bookhagen@uni-potsdam.de
+    # - label: "Email"
+    #   icon: "fas fa-fw fa-envelope-square"
+    #   url: mailto:bodo.bookhagen@uni-potsdam.de
     - label: "Website"
       icon: "fas fa-fw fa-link"
-      #url: "https://up-rs-esp.github.io/"
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      # url: "https://twitter.com/"
-    - label: "Facebook"
-      icon: "fab fa-fw fa-facebook-square"
-      # url: "https://facebook.com/"
+      url: "https://up-rs-esp.github.io/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/UP-RS-ESP"
     - label: "Instagram"
       icon: "fab fa-fw fa-instagram"
       # url: "https://instagram.com/"
+    - label: "youtube"
+      icon: "fab fa-fw fa-youtube"
+      url: "https://www.youtube.com/channel/UCwfN49p16f5WXm0qSNhB9bA"
 
 # Site Footer
 footer:
   links:
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      # url:
-    - label: "Facebook"
-      icon: "fab fa-fw fa-facebook-square"
-      # url:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: https://github.com/UP-RS-ESP
