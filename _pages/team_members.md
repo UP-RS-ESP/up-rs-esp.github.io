@@ -119,9 +119,6 @@ MSc_students1:
 
 # Past Members
 
-- Luis Kremer (now PhD student at the Universität Freiburg)
-- Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
-- Safa Khan (now at GeoSpatial TechOps Engineer at LiveEO)
 - Dr. Manudeo Singh (now Newton fellow at Aberystwyth University, UK)
 - Dr. Stefanie Tofelde (now at FU Berlin)
 - Dr. Nikolaos Antonoglou (now at German Aerospace Center, DLR)
@@ -132,13 +129,20 @@ MSc_students1:
 - Dr. Fabiana Castino (now at DWD - Deutscher Wetterdienst)
 - Dr. Ramezani Ziarani (now researcher at KIT)
 - Dr. Fiona Clubb (now Asst. Professor at Durham University)
-- Dr. Frank Günther (now independent researcher)
+- Dr. Frank Günther (now Professor at the Hochschule Neubrandenburg)
 - Dr. Konstanze Stübner (now at HZDR Dresden-Rossendorf)
 - Dr. Bedartha Goswami (now Asst. Professor at University of Tuebingen)
 - Dr. Lucia Tyrallova (now coordinating international study programs at UP/FH Potsdam)
 - Dr. Lisa Luna (now at USGS)
 
 # Past MSc Students
+- VictoriaDergunova (now GFZ Potsdam)
+- Yiğit Özlan
+- Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
+- Luis Kremer (now PhD student at the Universität Freiburg)
+- Safa Khan (now at GeoSpatial TechOps Engineer at LiveEO)
+- Stefan Schütz
+- Ananya Pandey (now PhD student at Università di Pavia)
 - Samuel Russell
 - Bashini Mahaarachchi
 - Franziska Boerner
