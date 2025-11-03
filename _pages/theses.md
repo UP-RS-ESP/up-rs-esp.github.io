@@ -36,6 +36,7 @@ There are several open theses topics that interested students can work on. Pleas
 | *Landslide detection using time series of spaceborne Digital Elevation Models and Lidar instruments in the South American Andes* | IoG, MSc RSIV | 
 | *Remote-Sensing based mapping of Solar Panels in Berlin using Machine Learning* | IoG, MSc RSIV |
 | *Classiﬁcation of ICESat-2 ATL03 Point Clouds in Alpine Regions* | IoG, MSc RSIV |
+| *A systematic assessment of European urban agriculture potential using geoinformation* | IoG, MSc RSIV |
 | **[2023]** | | |
 | *Point Clouds from multi-camera setup: Application in the Geosciences* | IoG, MSc RSIV |
 | *Identify the animal pathways using a convolutional neural network* | IoG, MSc RSIV |
