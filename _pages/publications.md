@@ -15,6 +15,8 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2025]** | | |
+N Boers, T Liu, S Bathiany, M Ben-Yami, L Blaschke, N Bochow, C Boulton, T Lenton, A Morr, D Nian, M Rypdal, and T Smith | 2025 | Destabilization of Earth system tipping elements. | *Nature Geoscience* | [DOI](https://doi.org/10.1038/s41561-025-01787-0) 
+Y Su, C Zhang, A Cescatti, K Yu, P Ciais, T Smith, J Shang, J Carnicer, J Liu, JM Chen, J K Green, J Wu, G E Ponce-Campos, Y Zhang, Z Zuo, J Liao, J Wu, R Lafortezza, K Yan, X Yang, L Liu, J Ren, W Yuan, X Chen, C Wu, and W Zhou | 2025 | Pervasive but biome-dependent relationship between fragmentation and resilience in forests | *Nature Ecology & Evolution* [DOI](https://doi.org/10.1038/s41559-025-02776-7)
 Hess, M., Rheinwalt, A., Bookhagen, B. | 2025 | Refining point-cloud neighborhood construction for improved classification | *Science of Remote Sensing* | [DOI](https://doi.org/10.1016/j.srs.2025.100325)
 Armeni, V., Mantiloni, L., Bookhagen, B., Rivalta, E., Acocella, V., Strecker, M.R. | 2025 | Spatial patterns of volcanism between adjacent rift segments | *Earth and Planetary Science Letters* | [DOI](https://doi.org/10.1016/j.epsl.2025.119623)
 Flores, L., Nendel, C., Bookhagen, B., Reyes, J.A.O., Smith, T., Ghazaryan, G. | 2025 | The potential of Sentinel-1 time series for large-scale assessment of maize and wheat phenology across Germany | *GIScience & Remote Sensing*| [DOI](https://doi.org/10.1080/15481603.2025.2531593)
