@@ -30,7 +30,7 @@ There are several open theses topics that interested students can work on. Pleas
 | *Spatiotemporal Analysis of Remote Sensing Nightlight Data in Germany Using Geographically Weighted Regression (GWR)* | IoG, MSc RSIV |
 | *Development and Validation of a Heat Vulnerability Index for Potsdam and Germany* | IoG, MSc RSIV |
 | *Satellite-Based Lake Area Time Series Analysis on the Central Andean Plateau* | IoG, MSc RSIV |
-| *Reconstruction of Glacial Surface Models Using Improved SfM Workflows: An Example from the Central Tien Shan in Kyrgyzstan*  | IoG, MSc RSIV |
+| *Reconstruction of Glacial Surface Models Using Improved SfM Workflows: An Example from the Central Tien Shan in Kyrgyzstan*  | Geography, Humboldt University |
 | *Predicting global plant traits at high resolution using citizen science and Earth observation data* | IoG, MSc RSIV |
 | *Sentinel-2 Based Time Series Classification of Vegetation Index for Disease Detection and Cut-off Identification in Forest Landscapes* | IoG, MSc RSIV | 
 | *Landslide detection using time series of spaceborne Digital Elevation Models and Lidar instruments in the South American Andes* | IoG, MSc RSIV | 
