@@ -1,10 +1,12 @@
 ---
-layout: splash
+layout: single
+classes: wide
 title: 'Codes'
 read_time: false
 permalink: /codes/
 author_profile: false
 toc: true
+toc_sticky: true
 toc_label: "List of Codes and Source files"
 ---
 
