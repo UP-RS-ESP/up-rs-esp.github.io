@@ -18,7 +18,7 @@ There are several open theses topics that interested students can work on. Pleas
 |:----|-------|:---:|:---:|
 | **[2025]** | | |
 | *Assessing Optical Flow Techniques for Displacement Mapping Using SAR and Optical Images: A Study on the 2023 Kahramanmaraş Earthquakes* | IoG, MSc RSIV |
-| *Detecting Fault Structures in High-Resolution 2D Imagery* | Computer Sciences, University of Potsdam |
+| *Detecting Fault Structures in High-Resolution 2D Imagery* | Computer Science, University of Potsdam |
 | *Estimating Ammonia Emissions from Nitrogen-Based Fertilizer Application in South Punjab, Pakistan and Assessing Impact on Atmospheric Ammonia Levels* | Iog, MSc RSIV |
 | *Extending the Capabilities of SegmentAnything to Delineate River Pebbles from Orthophotos* | IoG, MSc RSIV | [MSc thesis in review in *Earth Surface Dynamics*](https://egusphere.copernicus.org/preprints/2025/egusphere-2025-4003/) 
 | *Geomorphic Expression of Slow Deformation Processes in a Tectonically Active Intermontane Basin: Deformed Terraces and Changes in the Fluvial Network in the Calchaquı́ Valley, Northwestern Argentina* | IoG, MSc RSIV | 
