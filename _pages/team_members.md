@@ -68,7 +68,7 @@ PhD_students3:
     excerpt: Cosmogenic Radionuclides and Geomorphology
   - image_path: /images/JohnRemolador.jpg
     title: John Remolador
-    excerpt: 'Radar Interferometry (InSAR), GNSS'
+    excerpt: 'Radar Interferometry (InSAR) and GNSS'
   - image_path: images/CarolinaBarbosaLeitedaCruz.jpg
     title: Carolina Barbosa Leite da Cruz
     excerpt: 'Cosmogenic Radionuclides (visiting PhD student)'
@@ -79,6 +79,9 @@ PhD_students4:
   - image_path: /images/leder.jpg
     title: Florian Leder
     excerpt: 'Offset Pixel Tracking and landslides'
+  - image_path: /images/BlancaS.jpg
+    title: Blanca Symmes-Lopetegui
+    excerpt: 'Radar Interferometry (InSAR) and GNSS'
 
 
 MSc_students1:
