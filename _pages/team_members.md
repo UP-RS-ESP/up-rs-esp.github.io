@@ -82,6 +82,10 @@ PhD_students4:
   - image_path: /images/BlancaS.jpg
     title: Blanca Symmes-Lopetegui
     excerpt: 'Radar Interferometry (InSAR) and GNSS'
+PhD_students5:
+  - image_path: /images/NajibKakar.jpg
+    title: Najib Kakar
+    excerpt: 'Radar Interferometry (InSAR) in Central Asia'
 
 
 MSc_students1:
@@ -113,6 +117,8 @@ MSc_students1:
 {% include feature_row id="PhD_students3" type=center%}
 
 {% include feature_row id="PhD_students4" type=center%}
+
+{% include feature_row id="PhD_students5" type=center%}
 
 # MSc Students
 
