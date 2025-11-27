@@ -15,6 +15,7 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2025]** | | |
+Smith, T and Bookhagen, B. | 2025 | Strongly Heterogeneous Surface-Water Warming Trends in High Mountain Asia. | *Geophysical Research Letters* | [https://doi.org/10.1029/2025GL119418](https://doi.org/10.1029/2025GL119418)
 Boers, N., Liu, T., Bathiany, S., Ben-Yami, M., Blaschke, L., Bochow, N., Boulton, C., Lenton, T., Morr, A., Nian, D., Rypdal, M., Smith, T. | 2025 | Destabilization of Earth system tipping elements. | *Nature Geoscience* | [DOI](https://doi.org/10.1038/s41561-025-01787-0)
 Su, Y., Zhang, C., Cescatti, A., Yu, K., Ciais, P., Smith, T., Shang, J., Carnicer, J., Liu, J., Chen, J. M., Green, J. K., Wu, J., Ponce-Campos, G. E., Zhang, Y., Zuo, Z., Liao, J., Wu, J., Lafortezza, R., Yan, K., Yang, X., Liu, L., Ren, J., Yuan, W., Chen, X., Wu, C., & Zhou, W. | 2025 | Pervasive but biome-dependent relationship between fragmentation and resilience in forests | *Nature Ecology & Evolution* | [DOI](https://doi.org/10.1038/s41559-025-02776-7)
 Hess, M., Rheinwalt, A., Bookhagen, B. | 2025 | Refining point-cloud neighborhood construction for improved classification | *Science of Remote Sensing* | [DOI](https://doi.org/10.1016/j.srs.2025.100325)
