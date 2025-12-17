@@ -38,7 +38,7 @@ The recorded images are processed as described below and further analyzed to det
 # Camera Calibration Theory
 Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projectiv camera model [@luhmann2017]. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor [@luhmann2017]. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system [@luhmann2017]. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
 
-*Principal point position:*
+### Principal point position
 
 The principal point is a theoretical center of the perspective projection and it is used as rotation point for the projection between the image points ($x,y,z$) and the object coordinates ($X,Y,Z$).
 
@@ -58,7 +58,7 @@ After [@Fraser1997] and [@luhmann2017].
 
 The parameters $x_0, y_0, -c$ inside the equation are the position of the principle point. The $r_i$ coefficients and $X_0,X_0,Z_0$ are elements of the exterior orientation of the individual images.
 
-*Image coordinate perturbations:*
+### Image coordinate perturbations
 
 The image coordinate perturbations extend the collinearity equation. The geometric image error models sum up to one correction $\Delta x$ and $\Delta y$ for the $x$ and $y$ axis of the image coordinate system [@Fraser1997]. There are several corrections discussed in the literature for the image correction. Many basic models follow the work of Duane C. Brown (e.g. "Close-range camera calibration" [@brown1971]). The corrections used here to compensate the radial distortion and the decentering distortion are also represented in software solutions an use the parameters $K_1,K_2,..,K_i$ and $P_1,P_2$. There are more complex effects in other literature, but these are not described here.
 
@@ -92,7 +92,7 @@ $$
 
 The coupling of the Parameters $K_i$ with the exterior orientation is usually low [@Fraser1997].
 
-*Decentering Distortion:*
+### Decentering Distortion
 
 Decentering distortion is caused by misalignment of the optical axis from the image center [@Fraser1997]
 
@@ -104,7 +104,7 @@ $$
 \Delta y_d = 2P_1 \bar{x}\bar{y} + P_2 (r^2 + 2\bar{y}^2)  
 $$
 
-*In plane distortions:*
+### In plane distortions
 
 These are described by $\Delta x_f = b_1 \bar{x} + b_2 \bar{y}$ but neglected in this case.
 
@@ -118,6 +118,7 @@ with $\bar{x} = (x-x_0)$ and $\bar{y} = (y-y_0)$ wich are the distances from the
 
 For this report, the following parameters are used in all calibrations.
 
+<div align="center">
 | \#  | Parameter | Description                         |
 |-----|-----------|-------------------------------------|
 | 1   | F         | Focal length                        |
@@ -128,6 +129,7 @@ For this report, the following parameters are used in all calibrations.
 | 6   | K₃        | Radial Distortion Coefficient 3     |
 | 7   | P₁        | Descentering Distortion Coefficient |
 | 8   | P₂        | Descentering Distortion Coefficient |
+</div>
 
 # Setup
 Basis for the testing are three different cameras: the Sony Alpha 7 R MK 5 (A7R5), the Sony Alpha 6000 (A6000) and the Panasonic S1H. Two of them are Full-Frame (\~36 x 24 mm) sensor cameras, one cameras has slightly smaller APS-C sensor (\~17 x 21 mm). APS-C cameras are usually lighter and more affordable and therefore widely used. As optics, high quality fixed focal-length lenses are used. Fixed focal-length lenses usually maintain more optical stability during shooting than zoom lenses because they contain less movable lens elements [@metashape25]. These cameras are oriented according to different distances and angles during the image acquisition.
@@ -311,6 +313,7 @@ Overall good results for the precalibration are reached. All 3 cameras delivers 
 ### Internal calibration & precalibration values
 After running models with all calibration methods, a comparison of the parameters is possible.
 
+<div align="center">
 | \# | Parameter \[pix\] | A7R5 (internal) | A7R5 (external free) | A7R5 (external fixed) |
 |---------------|---------------|---------------|---------------|---------------|
 | 1 | F | 13099.7 | 13126.4 | 13262.9 |
@@ -321,6 +324,7 @@ After running models with all calibration methods, a comparison of the parameter
 | 6 | K₃ | 3.07501 | 3.25817 | 3.5487 |
 | 7 | P₁ | 0.000684365 | 0.000732308 | 0.00016 |
 | 8 | P₂ | 0.000323586 | 0.000341725 | 0.0008 |
+</div>
 
 | \# | Parameter \[pix\] | A6000 (internal) | A6000 (external free) | A6000 (external fixed) |
 |---------------|---------------|---------------|---------------|---------------|
@@ -349,14 +353,14 @@ A deviation between the different approaches for calibration is visible. Overall
 To support the pure tabular view on the data of the calibration files, the distortion can also be visualized from the calibration files. This is done for the following figures.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/Calibration_A7R5_v2_vs_A7R5_precalibration_3_panel_func1.svg">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A7R5_v2_vs_A7R5_precalibration_3_panel_func1.svg">
   <figcaption><b>Figure 1.</b> Comparison of camera calibration for A7R5. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
 
 A7R5: The figures support what is visible from the models too. The A7R5 has a radial distortion, that is especially strong in the outermost corners. Interesting is the difference between precalibration and the internal calibration too: The both calibrations vary especially in the radial distortion in the outer edges. Both are strong there, but the precalibration by CalibIO is underestimating the distortion in the corners compared to Metashape. This will later be visible in the doming as well.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/Calibration_A6000_v2_vs_A6000_internal_selfcalibration_3_panel_func1.svg">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A6000_v2_vs_A6000_internal_selfcalibration_3_panel_func1.svg">
   <figcaption><b>Figure 1.</b> Comparison of camera calibration for A6000. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
 
@@ -364,7 +368,7 @@ A7R5: The figures support what is visible from the models too. The A7R5 has a ra
 A6000: The A6000 uses the same lens as the A7R5, but is APS-C. So with the 50 mm lens becomes a 75 mm (equivalent) with a roughly 1.5 crop factor. The images profit from the low center distortion of the lens, the distorted corners are cropped away. This becomes visible for all calibrations. The pure amount of correction is way less then for the both full frame cameras. In the example of the A6000 a un-symmetric behavior of the lens is present. This is due to the tangential distortion (P₁,P₂) or the principle point or both. The calibration from CalibIO vary mostly in the radial distortion, but not as extensive a in the A7R5.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/Calibration_S1H_v2_vs_S1H_precalibration_3_panel_func1.svg">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_S1H_v2_vs_S1H_precalibration_3_panel_func1.svg">
   <figcaption><b>Figure 1.</b> Comparison of camera calibration for S1H. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
 
