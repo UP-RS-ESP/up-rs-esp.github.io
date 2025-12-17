@@ -197,12 +197,10 @@ This is the input data for the photogrammetric reconstruction and the later domi
 ## Data Processing:
 For the processing a simple workflow is used the software Agisoft Metashape (v2.1 ???). From camera alignment and filtering of the tie points a dense point cloud is derived. Before that, a the camera calibration is done in the software CalibIO and the right parameters for the self-calibration in Metashape has to be chosen.
 
-*Precalibration:*
-
+### Precalibration
 The calibration with ChArUco board is done in the software CalibIO. For this, the CalibIO workflow is followed with the detection of tie points and camera optimization. As Initialization method *vanishing points* is used. The boards tie points are detected with the *estimate homography* option. To improve the quality of the calibration some photos with high rms reprojection erros are manually excluded from the optimization. In the second refinement of the calibration the robust norm with a threshold of 0.3 pix is enabled. The result is exported as .json file, converted to an .xml and loaded into Metashape.
 
-*Internal self-calibration:*
-
+### Internal self-calibration
 The internal self calibration is automatically done in Metashape during the image alignment. The parameters are set inside the Alignment menu and then the calibration is estimated during the tie point calculation. One option in this testing was to load the highly accurate precalibration and let Metashape refine it slightly. This is also set up before the alignment. After the initial alignment some of the tie points with high errors are deleted (Tie point filtering or gradual selection). After that the camera positions are optimized again, what leads to a better model.
 
 The Process is visualized in the following graph.
@@ -212,18 +210,15 @@ The Process is visualized in the following graph.
   <figcaption><b>Figure 1.</b> Processing steps Metashape.</figcaption>
 </figure>
 
-*Alignement:*
-
+### Alignement
 The alignment of the images is done for all cameras on the quality setting "highest". This is the most accurate setting for the alignment and uses a four times upscaled images [@metashape25] for the tie point coordinate extraction. The alignment estimates the camera positions (exterior orientation), the camera calibration includes the lens distortions (interior orientation) and the point cloud with the tie points in the object space.
 
 For testing the influence of the calibration on the doming effect later in the processing, the aligned is done for three settings for the calibration. Internal self-calibration in Metshape, loaded precalibration with variable parameters in Metashape and loaded precalibration with fixed parameter in Metashape.
 
-*Filtering:*
-
+### Filtering
 After alignment the resulting tie points are filtered, and points with high reprojection errors are deleted to improve the camera orientations for the next steps. High reprojection errors usually indicates poor localization of the tie points in the alignment [@metashape25]. Often around 50% of the points can be deleted to reach higher accuracy inside the adjusted orientations of the cameras. It is strictly necessary to optimize the camera positions after the filtration. The filter threshold is chosen as low as possible for the individual models (see following table).
 
-*Dense Cloud Generation:*
-
+### Dense Cloud Generation
 The last step as preparation for the doming analysis is the dense point cloud generation. This is quickly done with medium quality settings and a mild filtering. Mild filtering is suitable because there is not any noise in the images, they are produced with low (\~base) ISO setting under perfect daylight conditions.
 
 All processing steps are summarized in the following table.
@@ -258,12 +253,10 @@ All processing steps are summarized in the following table.
 
 After reconstruction the point clouds, a spherical fit and local variance measures are made to determine the geometric quality of the models
 
-*Determine the doming error:*
-
+### Determine the doming error
 The characteristics of the doming error is that the reconstructed area is warped in a spherical matter concave or convex: especially the edges of the observed area are suffering from offset relative to the central parts. As method to quantify the doming error a sphere is fitted to all dense points clouds. The radius is the parameter of interest to measure the magnitude of the doming.
 
-*Local geometric noise:*
-
+### Local geometric noise
 To differentiate between the global warping and local noise level inside the model the noise level is inspected in different regions inside each point cloud. This local quality of the model is measured in specified areas in the model center and models edges. For these areas, flat floor parts of the model are extracted. The smoothness of these regions is measured as variance and compared relative between the different reconstructions. The floor parts are flat floor tiles, but they are not perfectly aligned to the general ground level. The scan is so sensitive, that even smallest changes in orientation become visible. So just the variance, but the distance to a fitted plane on these tiles is calculated. That ensures that just the noise as variation from this surface is measured and no trends are included to the standard deviation measure. Pre-test showed such a noise for a simple extraction of the z-coordinates.
 
 <figure>
@@ -302,11 +295,9 @@ The alignment process in Metashpe delivers the internal camera calibration, tie 
 Overall, the results of the internal camera calibration inside Metashape provides the best results for all cameras. This self-calibration with the recorded model images delivers the overall lowest reprojection errors. Fitlering is enhancing every alignment in every case. In terms of reprojection error, the A6000 surpasses the other two cameras. The S1H follows, the A7R5 shows the highest reprojection error, but one should keep in mind that this camera has nearly half the physical pixel size (in µm) then the S1H.
 
 ## Results Calibration
-
 Results of the calibration includes the precalibration in from CalibIO and the self calibration inside Metashape and the comparison of both.
 
-*Precalibration*
-
+### Precalibration
 The pre-calibration is done right before the image acquisition for the photogrammetric model, with all camera/lens combinations. For each Camera around 127-224 images are acquired with the ChArUco Target: A7R5 224 images, A6000 127 images, S1H 181 images.
 
 Overall good results for the precalibration are reached. All 3 cameras delivers results with a mean reprojection error (RPE) better than 0.35 pix.
@@ -317,8 +308,7 @@ Overall good results for the precalibration are reached. All 3 cameras delivers 
 | A6000  | 0.2512 pix | 0.3591 pix |
 | S1H    | 0.1692 pix | 0.238 pix  |
 
-*Internal calibration & precalibration values*
-
+### Internal calibration & precalibration values
 After running models with all calibration methods, a comparison of the parameters is possible.
 
 | \# | Parameter \[pix\] | A7R5 (internal) | A7R5 (external free) | A7R5 (external fixed) |
@@ -381,7 +371,6 @@ A6000: The A6000 uses the same lens as the A7R5, but is APS-C. So with the 50 mm
 S1H: The S1H is a full-frame camera as the A7R5. The camera shows a radial distortion. This is more widely spread around the image, but has a very symmetric character. It reaches pixel offsets from upt o \~75 pix as the A7R5. But other then the differences in the A7R5 , the S1H with its 50 mm lens stays exceptional stable between the between CalibIO and Metashape. The difference is at max \~1 pix, while the difference in the A7R5 is up to \~25 pix. The reason for this is not easy to determine here. I might is caused by manufacturing lens differences. Both lenses has high quality metal housings, the Sony lens features autofocus whereas the Contax lens does not. That mean the lens elements inside the lens just move when the camera is focused for a new distance. But this should be negligible and is most likely not the cause.
 
 ## Results doming
-
 As described in the methods the doming error is estimated by a spherical fit to the dense point cloud data. The results show stronger and more moderate doming strenghts between the different cameras and calibration methods. The doming is in some cases visible with naked eyes in the height models of the reconstructions.
 
 <figure>
@@ -389,8 +378,7 @@ As described in the methods the doming error is estimated by a spherical fit to 
   <figcaption><b>Figure 1.</b> Height model of A7R5 with fixed precalibration.</figcaption>
 </figure>
 
-*Sphere fit*
-
+### Sphere fit
 We can fit a sphere to the point cloud in order to determine the magnitude of a possible doming error in the generated dense point cloud. In order to do this a least square fit is done using the `scipy` package in Python.
 
 |     | Camera | Calibration        | R (m)   | Z (m)    |
@@ -407,8 +395,7 @@ We can fit a sphere to the point cloud in order to determine the magnitude of a 
 
 When looking at the doming errors it is important to define what is desired to see. As the surface is expected to be as flat as possible, the highest radius resembles the most desired reconstruction. The highest radius shows the lowest curvature in the surface. The Z coordinate of the origin of the sphere defines the direction of the curvature: concave or convex. A negative values shows that the origin of the sphere is located under the surface of the model. After the calibration and model reconstruction, it becomes clear that the precalibration delivers the strongest doming error in 2 of 3 cases. The best performer is the Sony A6000 with the highest radius from the Metashape internal calibration. This aligns with the fact, that the Sony A6000 has the lowest reprojection error in the alignment. For both Sony cameras the doming error increases strongly from the precalibrated values that was free during alignment to the pure precalibrated parameters that stayed fixed during alignment. The fixed precalibration values are the worst for both Sony cameras in terms of doming. The highest curved surface is the one of the A7R5. This is easily visible in the model (see figure above). The results from the S1H show a different behavior: parameters are nearly constant between the different calibration methods. The are close to the internal calibration from the A6000 but then even show lower curvature for the precalibrated values. It should be mentioned that the S1H showed the best results in the precalibration inside CalibIO.
 
-*Local noise levels*
-
+### Local noise levels
 To see if the local quality of the models is affected by the calibration in the same way as the doming error, this is tested alongside. As the models are very detailed (Millions of points on a \~4x4 m area), a lot of high frequency variation is present on local neighborhoods inside the models. To see if as low quality calibration also affects the local quality, small areas are extracted as described in the methods section. The observations from these three areas are summarized in the following figure.
 
 <figure>
@@ -419,5 +406,4 @@ To see if the local quality of the models is affected by the calibration in the 
 It is visible that one camera shows different result then the rest. The A7R5 shows that what was looked for, that areas outside the center region contain more noise. That is just present for the one camera A7R5 and here just strong for the external calibration withCalibIO. The two other camera deliver different results. Except a small deviation in the one outside group, the A6000 noise floor stays constant over the hole model. The S1H is even more constant overall. In the S1H a slightly higher noise floor is detected for both outside groups. But with a much lower magnitude than the peaks in the A6000 and A7R5. So all together, a lower local quality in the outside regions for the A7R5 and very subtle for the S1H is indicated by the results. Speaking about a direct causal relationship to the doming error is to early. In this report there is indication, that bad calibration (especially underestimated radial distortion) lead to higher doming errors. But the local noise is likely not directly connected to the doming error, more to the just not fitting calibration. Not fitting calibration (especially the fixed one) forces to Metashape to work with a projection that is not aligning with the data well. So more noise is generated. So the higher doming error occur with more noise in some cases, but further research is needed to determine the exact results. It is usual for edges of models to have lower quality in photogrammetry in general.
 
 # Conclusion
-
 Overall the camera calibration show an strong influence on the doming error inside reconstructed models. The radial distortion, especially the K₁ parameter are likely influencing the doming error directly. This is found from the data collected here. In Both cases where the doming radius dropped strongly between internal and precalibration, the K₁ parameter had half its value, wheras K₂ and K₃ stayed nearly unchanged between cases (see Results Calibration). Second, the local quality for these cases was investigated. The results showed a simultaneous occurrence of higher noise with higher doming in 1/3 cameras strongly, other cameras changes are interpreted as nearly unremarkable, further discussion can be made. The overall noise for them is \< 0.1 mm as standard deviation. Besides the results concerning the geometric quality of the reconstructed models, the used equipment proved its strength in the one way or other. In the reconstruction the APS-C sensor format proved to be more as capable for high quality reconstructions. It performed with best RPE and the lowest doming error for the Metashape-only solution. So the cheaper APS-C camera delivered on point and proved it usability. Nevertheless is should be noted that it likely profited from the expensive high-quality lens and the fact that it has a crop sensor on this full-frame lens. The best calibration results together with the most stable lens parameters had reached the 40 year old manual lens. The reason for that has to be clarified with further testing. From the perspective of this report further testing of different lens/camera combinations with the same test area set-up would be highly interesting. Furthermore, as follow-up research more investigation in the role of K₁ in the doming is suggested. With a synthetic and incremental variation of the K₁ parameter in this real world setting. The resulting doming could be determined and compared to the results in this report.
