@@ -7,7 +7,7 @@ toc: true
 toc_sticky: true
 toc_label: "Camera Calibration with Calib.IO and Metashape"
 header:
-  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
+  #overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
   overlay_filter: 0.3
   caption: "3D Model generated with SfM"
 read_time: false
@@ -411,9 +411,8 @@ It is visible that one camera shows different result then the rest. The A7R5 sho
 Overall the camera calibration show an strong influence on the doming error inside reconstructed models. The radial distortion, especially the K₁ parameter are likely influencing the doming error directly. This is found from the data collected here. In Both cases where the doming radius dropped strongly between internal and precalibration, the K₁ parameter had half its value, wheras K₂ and K₃ stayed nearly unchanged between cases (see Results Calibration). Second, the local quality for these cases was investigated. The results showed a simultaneous occurrence of higher noise with higher doming in 1/3 cameras strongly, other cameras changes are interpreted as nearly unremarkable, further discussion can be made. The overall noise for them is \< 0.1 mm as standard deviation. Besides the results concerning the geometric quality of the reconstructed models, the used equipment proved its strength in the one way or other. In the reconstruction the APS-C sensor format proved to be more as capable for high quality reconstructions. It performed with best RPE and the lowest doming error for the Metashape-only solution. So the cheaper APS-C camera delivered on point and proved it usability. Nevertheless is should be noted that it likely profited from the expensive high-quality lens and the fact that it has a crop sensor on this full-frame lens. The best calibration results together with the most stable lens parameters had reached the 40 year old manual lens. The reason for that has to be clarified with further testing. From the perspective of this report further testing of different lens/camera combinations with the same test area set-up would be highly interesting. Furthermore, as follow-up research more investigation in the role of K₁ in the doming is suggested. With a synthetic and incremental variation of the K₁ parameter in this real world setting. The resulting doming could be determined and compared to the results in this report.
 
 # References
-[^1]:
-Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
-[^2]:	 Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
+[^1]: Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
+[^2]: Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
 [^3]: Brown, Duane, Close-Range Camera Calibration, 1971
 [^4]: Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
 
