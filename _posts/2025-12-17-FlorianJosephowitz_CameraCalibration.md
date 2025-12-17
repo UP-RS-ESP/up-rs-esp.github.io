@@ -38,11 +38,11 @@ The recorded images are processed as described below and further analyzed to det
 # Camera Calibration Theory
 Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projectiv camera model [^1]. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor [^1]. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system [^1]. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
 
-### Principal point position
+*Principal point position:*
 
-The principal point is a theoretical center of the perspective projection and it is used as rotation point for the projection between the image points ($x,y,z$) and the object coordinates ($X,Y,Z$).
+The principal point is a theoretical center of the perspective projection and it is used as rotation point for the projection between the image points ($$x,y,z$$) and the object coordinates ($$X,Y,Z$$).
 
-The principle point is usually not exactly the same as the geometric center of image. It is slightly offsetted in x and y direction and noted as $x_0$ and $y_0$. In addition, the image point has a z coordinate inside the image coordinate frame. It is located above the image plane at $-c$ with c being the camera constant, what is roughly the focal length of the lens.
+The principle point is usually not exactly the same as the geometric center of image. It is slightly offsetted in x and y direction and noted as $$x_0$$ and $$y_0$$. In addition, the image point has a z coordinate inside the image coordinate frame. It is located above the image plane at $$-c$$ with c being the camera constant, what is roughly the focal length of the lens.
 
 The collinearity model is the mathematical description that the projection between object and image coordinates.
 
@@ -58,7 +58,7 @@ After [^1] and [^2].
 
 The parameters $x_0, y_0, -c$ inside the equation are the position of the principle point. The $r_i$ coefficients and $X_0,X_0,Z_0$ are elements of the exterior orientation of the individual images.
 
-### Image coordinate perturbations
+*Image coordinate perturbations:*
 
 The image coordinate perturbations extend the collinearity equation. The geometric image error models sum up to one correction $\Delta x$ and $\Delta y$ for the $x$ and $y$ axis of the image coordinate system [^2]. There are several corrections discussed in the literature for the image correction. Many basic models follow the work of Duane C. Brown [^3]. The corrections used here to compensate the radial distortion and the decentering distortion are also represented in software solutions an use the parameters $K_1,K_2,..,K_i$ and $P_1,P_2$. There are more complex effects in other literature, but these are not described here.
 
