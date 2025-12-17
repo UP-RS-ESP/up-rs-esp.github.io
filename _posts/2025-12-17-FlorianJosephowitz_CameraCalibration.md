@@ -130,7 +130,7 @@ For this report, the following parameters are used in all calibrations.
 | 8   | P₂        | Descentering Distortion Coefficient |
 
 # Setup
-Basis for the testing are three different cameras: the Sony Alpha 7 R MK 5 (A7R5), the Sony Alpha 6000 (A6000) and the Panasonic S1H. Two of them are Full-Frame (\~36 x 24 mm) sensor cameras, one cameras has slightly smaller APS-C sensor (\~17 x 21 mm). APS-C cameras are usually lighter and more affordable and therefore widely used. As optics, high quality fixed focal-length lenses are used. Fixed focal-length lenses usually maintain more optical stability during shooting than zoom lenses because they contain less movable lens elements [@metashape25]. These cameras are oriented according to different distances and angles during the image acquisition.
+Basis for the testing are three different cameras: the Sony Alpha 7 R MK 5 (A7R5), the Sony Alpha 6000 (A6000) and the Panasonic S1H. Two of them are Full-Frame (\~36 x 24 mm) sensor cameras, one cameras has slightly smaller APS-C sensor (\~17 x 21 mm). APS-C cameras are usually lighter and more affordable and therefore widely used. As optics, high quality fixed focal-length lenses are used. Fixed focal-length lenses usually maintain more optical stability during shooting than zoom lenses because they contain less movable lens elements [^4]. These cameras are oriented according to different distances and angles during the image acquisition.
 
 ## Cameras
 The cameras main characteristics are summarized in the following table.
@@ -195,7 +195,7 @@ This is the input data for the photogrammetric reconstruction and the later domi
 |           | Low Handheld | 83     | 50 mm |
 
 ## Data Processing:
-For the processing a simple workflow is used the software Agisoft Metashape (v2.1 ???). From camera alignment and filtering of the tie points a dense point cloud is derived. Before that, a the camera calibration is done in the software CalibIO and the right parameters for the self-calibration in Metashape has to be chosen.
+For the processing a simple workflow is used the software Agisoft Metashape (v2.1). From camera alignment and filtering of the tie points a dense point cloud is derived. Before that, a the camera calibration is done in the software CalibIO and the right parameters for the self-calibration in Metashape has to be chosen.
 
 ### Precalibration
 The calibration with ChArUco board is done in the software CalibIO. For this, the CalibIO workflow is followed with the detection of tie points and camera optimization. As Initialization method *vanishing points* is used. The boards tie points are detected with the *estimate homography* option. To improve the quality of the calibration some photos with high rms reprojection erros are manually excluded from the optimization. In the second refinement of the calibration the robust norm with a threshold of 0.3 pix is enabled. The result is exported as .json file, converted to an .xml and loaded into Metashape.
@@ -415,3 +415,5 @@ Overall the camera calibration show an strong influence on the doming error insi
 Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
 [^2]:	 Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
 [^3]: Brown, Duane, Close-Range Camera Calibration, 1971
+[^4]: Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
+
