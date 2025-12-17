@@ -221,7 +221,7 @@ After alignment the resulting tie points are filtered, and points with high repr
 ### Dense Cloud Generation
 The last step as preparation for the doming analysis is the dense point cloud generation. This is quickly done with medium quality settings and a mild filtering. Mild filtering is suitable because there is not any noise in the images, they are produced with low (\~base) ISO setting under perfect daylight conditions.
 
-All processing steps are summarized in the following table.
+All Metashape processing steps are summarized in the following table.
 
 |   |   | **internal \| free** | **precalibrated \| free** | **prelibrated \| fixed** |
 |---------------|---------------|---------------|---------------|---------------|
@@ -249,7 +249,6 @@ All processing steps are summarized in the following table.
 | **Dense Cloud** | Quality | medium | medium | medium |
 |  | Filtering | mild | mild | mild |
 
-: Metashape processing settings
 
 After reconstruction the point clouds, a spherical fit and local variance measures are made to determine the geometric quality of the models
 
@@ -355,7 +354,7 @@ To support the pure tabular view on the data of the calibration files, the disto
 </figure>
 
 
-A7R5: The figures support what is visible from the models too. The A7R5 has a radial distortion, that is especially strong in the outermost corners. Interesting is the difference between precalibration and the internal calibration too: The both calibrations vary especially in the radial distortion in the outer edges. Both are strong there, but the precalibration by CalibIO is underestimating the distortion in the corners compared to Metashape. This will later be visible in the doming as well.
+*A7R5 (above):* The figures support what is visible from the models too. The A7R5 has a radial distortion, that is especially strong in the outermost corners. Interesting is the difference between precalibration and the internal calibration too: The both calibrations vary especially in the radial distortion in the outer edges. Both are strong there, but the precalibration by CalibIO is underestimating the distortion in the corners compared to Metashape. This will later be visible in the doming as well.
 
 <figure>
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A7R5_v2_vs_A7R5_self_and_precalibration_3panel_func1.jpg">
@@ -363,14 +362,14 @@ A7R5: The figures support what is visible from the models too. The A7R5 has a ra
 </figure>
 
 
-A6000: The A6000 uses the same lens as the A7R5, but is APS-C. So with the 50 mm lens becomes a 75 mm (equivalent) with a roughly 1.5 crop factor. The images profit from the low center distortion of the lens, the distorted corners are cropped away. This becomes visible for all calibrations. The pure amount of correction is way less then for the both full frame cameras. In the example of the A6000 a un-symmetric behavior of the lens is present. This is due to the tangential distortion (P₁,P₂) or the principle point or both. The calibration from CalibIO vary mostly in the radial distortion, but not as extensive a in the A7R5.
+*A6000 (above):* The A6000 uses the same lens as the A7R5, but is APS-C. So with the 50 mm lens becomes a 75 mm (equivalent) with a roughly 1.5 crop factor. The images profit from the low center distortion of the lens, the distorted corners are cropped away. This becomes visible for all calibrations. The pure amount of correction is way less then for the both full frame cameras. In the example of the A6000 a un-symmetric behavior of the lens is present. This is due to the tangential distortion (P₁,P₂) or the principle point or both. The calibration from CalibIO vary mostly in the radial distortion, but not as extensive a in the A7R5.
 
 <figure>
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A7R5_v2_vs_A7R5_self_and_precalibration_3panel_func1.jpg">
   <figcaption><b>Figure 10</b> Comparison of camera calibration for S1H. Top panel shows self calibration with Metashape and bottom row shows precalibrated images with ChAruCo board. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
 
-S1H: The S1H is a full-frame camera as the A7R5. The camera shows a radial distortion. This is more widely spread around the image, but has a very symmetric character. It reaches pixel offsets from upt o \~75 pix as the A7R5. But other then the differences in the A7R5 , the S1H with its 50 mm lens stays exceptional stable between the between CalibIO and Metashape. The difference is at max \~1 pix, while the difference in the A7R5 is up to \~25 pix. The reason for this is not easy to determine here. I might is caused by manufacturing lens differences. Both lenses has high quality metal housings, the Sony lens features autofocus whereas the Contax lens does not. That mean the lens elements inside the lens just move when the camera is focused for a new distance. But this should be negligible and is most likely not the cause.
+*S1H (above):* The S1H is a full-frame camera as the A7R5. The camera shows a radial distortion. This is more widely spread around the image, but has a very symmetric character. It reaches pixel offsets from upt o \~75 pix as the A7R5. But other then the differences in the A7R5 , the S1H with its 50 mm lens stays exceptional stable between the between CalibIO and Metashape. The difference is at max \~1 pix, while the difference in the A7R5 is up to \~25 pix. The reason for this is not easy to determine here. I might is caused by manufacturing lens differences. Both lenses has high quality metal housings, the Sony lens features autofocus whereas the Contax lens does not. That mean the lens elements inside the lens just move when the camera is focused for a new distance. But this should be negligible and is most likely not the cause.
 
 ## Results doming
 As described in the methods the doming error is estimated by a spherical fit to the dense point cloud data. The results show stronger and more moderate doming strenghts between the different cameras and calibration methods. The doming is in some cases visible with naked eyes in the height models of the reconstructions.
@@ -411,8 +410,11 @@ It is visible that one camera shows different result then the rest. The A7R5 sho
 Overall the camera calibration show an strong influence on the doming error inside reconstructed models. The radial distortion, especially the K₁ parameter are likely influencing the doming error directly. This is found from the data collected here. In Both cases where the doming radius dropped strongly between internal and precalibration, the K₁ parameter had half its value, wheras K₂ and K₃ stayed nearly unchanged between cases (see Results Calibration). Second, the local quality for these cases was investigated. The results showed a simultaneous occurrence of higher noise with higher doming in 1/3 cameras strongly, other cameras changes are interpreted as nearly unremarkable, further discussion can be made. The overall noise for them is \< 0.1 mm as standard deviation. Besides the results concerning the geometric quality of the reconstructed models, the used equipment proved its strength in the one way or other. In the reconstruction the APS-C sensor format proved to be more as capable for high quality reconstructions. It performed with best RPE and the lowest doming error for the Metashape-only solution. So the cheaper APS-C camera delivered on point and proved it usability. Nevertheless is should be noted that it likely profited from the expensive high-quality lens and the fact that it has a crop sensor on this full-frame lens. The best calibration results together with the most stable lens parameters had reached the 40 year old manual lens. The reason for that has to be clarified with further testing. From the perspective of this report further testing of different lens/camera combinations with the same test area set-up would be highly interesting. Furthermore, as follow-up research more investigation in the role of K₁ in the doming is suggested. With a synthetic and incremental variation of the K₁ parameter in this real world setting. The resulting doming could be determined and compared to the results in this report.
 
 # References
-[^1]: Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
-[^2]: Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
-[^3]: Brown, Duane, Close-Range Camera Calibration, 1971
-[^4]: Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
+[^1]:	Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
+
+[^2]:	Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
+
+[^3]:	Brown, Duane, Close-Range Camera Calibration, 1971
+
+[^4]:	Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
 
