@@ -5,9 +5,9 @@ author_profile: true
 date: 2025-12-17
 toc: true
 toc_sticky: true
-toc_label: "Camera Calibration"
+toc_label: "Camera Calibration with Calib.IO and Metashape"
 header:
-  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
+  # overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
   overlay_filter: 0.3
   caption: "3D Model generated with SfM"
 read_time: false
