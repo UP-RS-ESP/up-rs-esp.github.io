@@ -19,6 +19,7 @@ tags:
 ---
 Photogrammetric models are widely used in geoscience, but subtle processing errors can significantly distort their geometry. This study investigates the causes of doming errors and outlines practical strategies to improve model accuracy.
 
+
 # Introduction
 High-quality photogrammetric models are essential tools across many scientific disciplines, particularly in the geosciences, where accurate geometry is critical for subsequent analyses. Applications such as roughness estimation, volume calculation, curvature analysis, 3D curve fitting, and data fusion with LiDAR require geometrically reliable models. However, photogrammetric workflows involve multiple complex processing steps and are strongly influenced by user experience, camera hardware, and parameter estimation during bundle adjustment. A common systematic artifact is the so-called doming error, which manifests as a global warping of reconstructed surfaces, especially in ground-based or UAV surveys of relatively flat areas with pronounced vertical relief. This report examines the characteristics and underlying causes of doming errors and proposes strategies to mitigate their impact, thereby improving the geometric fidelity of photogrammetric models.
 
