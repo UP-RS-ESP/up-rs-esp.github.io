@@ -17,7 +17,6 @@ tags:
   - Metashape
   - Calib.IO
 ---
-
 Photogrammetric models are widely used in geoscience, but subtle processing errors can significantly distort their geometry. This study investigates the causes of doming errors and outlines practical strategies to improve model accuracy.
 
 # Introduction
@@ -36,7 +35,7 @@ The recorded images are processed as described below and further analyzed to det
 
 
 # Camera Calibration Theory
-Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projectiv camera model[^1]. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor[^1]. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system[^1]. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
+Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projectiv camera model$$^1$$. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor$$^1$$. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system$$^1$$. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
 
 *Principal point position:*
 
@@ -54,13 +53,13 @@ $$
 y = y_0 - c \cdot \frac{r_{12}(X - X_0) + r_{22}(Y - Y_0) + r_{32}(Z - Z_0)}{r_{13}(X - X_0) + r_{23}(Y - Y_0) + r_{33}(Z - Z_0)}+ \Delta y
 $$
 
-After [^1] and [^2].
+After $$^1$$ and $^2$$.
 
 The parameters $$x_0, y_0, -c$$ inside the equation are the position of the principle point. The $$r_i$$ coefficients and $$X_0,X_0,Z_0$$ are elements of the exterior orientation of the individual images.
 
 *Image coordinate perturbations:*
 
-The image coordinate perturbations extend the collinearity equation. The geometric image error models sum up to one correction $$\Delta x$$ and $$\Delta y$$ for the $$x$$ and $$y$$ axis of the image coordinate system [^2]. There are several corrections discussed in the literature for the image correction. Many basic models follow the work of Duane C. Brown [^3]. The corrections used here to compensate the radial distortion and the decentering distortion are also represented in software solutions an use the parameters $$K_1,K_2,..,K_i$$ and $$P_1,P_2$$. There are more complex effects in other literature, but these are not described here.
+The image coordinate perturbations extend the collinearity equation. The geometric image error models sum up to one correction $$\Delta x$$ and $$\Delta y$$ for the $$x$$ and $$y$$ axis of the image coordinate system$$^2$$. There are several corrections discussed in the literature for the image correction. Many basic models follow the work of Duane C. Brown$$^3$$. The corrections used here to compensate the radial distortion and the decentering distortion are also represented in software solutions an use the parameters $$K_1,K_2,..,K_i$$ and $$P_1,P_2$$. There are more complex effects in other literature, but these are not described here.
 
 $$ \Delta x = \Delta x_r + \Delta x_d + \Delta x_u + \Delta x_f $$ $$ \Delta y = \Delta y_r + \Delta y_d + \Delta y_u + \Delta y_f $$
 
@@ -68,7 +67,7 @@ The total distortion error to the image pixels are the sum from each individual 
 
 *Radial Distortion:*
 
-The radial lens distortion is represented as an odd ordered polynomial series [^2].
+The radial lens distortion is represented as an odd ordered polynomial series$$^2$$.
 
 $$  
 \Delta r = K_1 r^3 + K_2 r^5 + K_3 r^7  
@@ -90,11 +89,11 @@ $$
 = \frac{(y-y_0) K_1 r^3 + K_2 r^5 + K_3 r^7}{\sqrt{(x-x_0)^2+(y-y_0)^2}}  
 $$
 
-The coupling of the Parameters $K_i$ with the exterior orientation is usually low[^2].
+The coupling of the Parameters $K_i$ with the exterior orientation is usually low$$^2$$.
 
 *Decentering Distortion:*
 
-Decentering distortion is caused by misalignment of the optical axis from the image center[^2]
+Decentering distortion is caused by misalignment of the optical axis from the image center$$^2$$.
 
 $$  
 \Delta x_d = P_1 (r^2 + 2\bar{x}^2) + 2P_2 \bar{x}\bar{y}  
@@ -130,7 +129,7 @@ For this report, the following parameters are used in all calibrations.
 | 8   | P₂        | Descentering Distortion Coefficient |
 
 # Setup
-Basis for the testing are three different cameras: the Sony Alpha 7 R MK 5 (A7R5), the Sony Alpha 6000 (A6000) and the Panasonic S1H. Two of them are Full-Frame (\~36 x 24 mm) sensor cameras, one cameras has slightly smaller APS-C sensor (\~17 x 21 mm). APS-C cameras are usually lighter and more affordable and therefore widely used. As optics, high quality fixed focal-length lenses are used. Fixed focal-length lenses usually maintain more optical stability during shooting than zoom lenses because they contain less movable lens elements [^4]. These cameras are oriented according to different distances and angles during the image acquisition.
+Basis for the testing are three different cameras: the Sony Alpha 7 R MK 5 (A7R5), the Sony Alpha 6000 (A6000) and the Panasonic S1H. Two of them are Full-Frame (\~36 x 24 mm) sensor cameras, one cameras has slightly smaller APS-C sensor (\~17 x 21 mm). APS-C cameras are usually lighter and more affordable and therefore widely used. As optics, high quality fixed focal-length lenses are used. Fixed focal-length lenses usually maintain more optical stability during shooting than zoom lenses because they contain less movable lens elements$$^4$$. These cameras are oriented according to different distances and angles during the image acquisition.
 
 ## Cameras
 The cameras main characteristics are summarized in the following table.
@@ -211,12 +210,12 @@ The Process is visualized in the following graph.
 </figure>
 
 ### Alignement
-The alignment of the images is done for all cameras on the quality setting "highest". This is the most accurate setting for the alignment and uses a four times upscaled images [^4] for the tie point coordinate extraction. The alignment estimates the camera positions (exterior orientation), the camera calibration includes the lens distortions (interior orientation) and the point cloud with the tie points in the object space.
+The alignment of the images is done for all cameras on the quality setting "highest". This is the most accurate setting for the alignment and uses a four times upscaled images$$^4$$ for the tie point coordinate extraction. The alignment estimates the camera positions (exterior orientation), the camera calibration includes the lens distortions (interior orientation) and the point cloud with the tie points in the object space.
 
 For testing the influence of the calibration on the doming effect later in the processing, the aligned is done for three settings for the calibration. Internal self-calibration in Metshape, loaded precalibration with variable parameters in Metashape and loaded precalibration with fixed parameter in Metashape.
 
 ### Filtering
-After alignment the resulting tie points are filtered, and points with high reprojection errors are deleted to improve the camera orientations for the next steps. High reprojection errors usually indicates poor localization of the tie points in the alignment [^4]. Often around 50% of the points can be deleted to reach higher accuracy inside the adjusted orientations of the cameras. It is strictly necessary to optimize the camera positions after the filtration. The filter threshold is chosen as low as possible for the individual models (see following table).
+After alignment the resulting tie points are filtered, and points with high reprojection errors are deleted to improve the camera orientations for the next steps. High reprojection errors usually indicates poor localization of the tie points in the alignment$$^4$$. Often around 50% of the points can be deleted to reach higher accuracy inside the adjusted orientations of the cameras. It is strictly necessary to optimize the camera positions after the filtration. The filter threshold is chosen as low as possible for the individual models (see following table).
 
 ### Dense Cloud Generation
 The last step as preparation for the doming analysis is the dense point cloud generation. This is quickly done with medium quality settings and a mild filtering. Mild filtering is suitable because there is not any noise in the images, they are produced with low (\~base) ISO setting under perfect daylight conditions.
@@ -410,11 +409,11 @@ It is visible that one camera shows different result then the rest. The A7R5 sho
 Overall the camera calibration show an strong influence on the doming error inside reconstructed models. The radial distortion, especially the K₁ parameter are likely influencing the doming error directly. This is found from the data collected here. In Both cases where the doming radius dropped strongly between internal and precalibration, the K₁ parameter had half its value, wheras K₂ and K₃ stayed nearly unchanged between cases (see Results Calibration). Second, the local quality for these cases was investigated. The results showed a simultaneous occurrence of higher noise with higher doming in 1/3 cameras strongly, other cameras changes are interpreted as nearly unremarkable, further discussion can be made. The overall noise for them is \< 0.1 mm as standard deviation. Besides the results concerning the geometric quality of the reconstructed models, the used equipment proved its strength in the one way or other. In the reconstruction the APS-C sensor format proved to be more as capable for high quality reconstructions. It performed with best RPE and the lowest doming error for the Metashape-only solution. So the cheaper APS-C camera delivered on point and proved it usability. Nevertheless is should be noted that it likely profited from the expensive high-quality lens and the fact that it has a crop sensor on this full-frame lens. The best calibration results together with the most stable lens parameters had reached the 40 year old manual lens. The reason for that has to be clarified with further testing. From the perspective of this report further testing of different lens/camera combinations with the same test area set-up would be highly interesting. Furthermore, as follow-up research more investigation in the role of K₁ in the doming is suggested. With a synthetic and incremental variation of the K₁ parameter in this real world setting. The resulting doming could be determined and compared to the results in this report.
 
 # References
-[^1]:	Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
+1:	Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
 
-[^2]:	Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
+2:	Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
 
-[^3]:	Brown, Duane, Close-Range Camera Calibration, 1971
+3:	Brown, Duane, Close-Range Camera Calibration, 1971
 
-[^4]:	Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
+4:	Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
 
