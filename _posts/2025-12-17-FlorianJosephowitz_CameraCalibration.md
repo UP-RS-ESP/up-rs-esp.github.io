@@ -7,7 +7,7 @@ toc: true
 toc_sticky: true
 toc_label: "Camera Calibration"
 header:
-  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.png 
+  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg 
   overlay_filter: 0.3
   caption: "3D Model generated with SfM"
 read_time: false
@@ -27,7 +27,7 @@ High-quality photogrammetric models are essential tools across many scientific d
 The basis for this work are images from three different cameras. These images are used to analyze the resulting doming error of a ground reconstruction from each camera. A ground scan with different objects such as stones, spheres, and coded targets is used as a testing ground. The scene is reconstructed from every camera image. The photos from all cameras are structured in 4 recording groups with different angles and distances. The four groups of camera orientations used are: High above ground with nadir view, high above ground with oblique view, lower above ground with oblique view, and very low with oblique view and handheld recording.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/S1H%20OVerview_area_white.png">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/S1H%20OVerview_area_white.jpg">
   <figcaption><b>Figure 1.</b> 3D reconstruction of the test area</figcaption>
 </figure>
 
