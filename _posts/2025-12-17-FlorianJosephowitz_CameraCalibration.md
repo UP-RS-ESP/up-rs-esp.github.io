@@ -35,13 +35,13 @@ The recorded images are processed as described below and further analyzed to det
 
 
 # Camera Calibration Theory
-Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projectiv camera model$$^1$$. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor$$^1$$. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system$$^1$$. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
+Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projective camera model$$^1$$. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor$$^1$$. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system$$^1$$. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
 
 *Principal point position:*
 
 The principal point is a theoretical center of the perspective projection and it is used as rotation point for the projection between the image points ($$x,y,z$$) and the object coordinates ($$X,Y,Z$$).
 
-The principle point is usually not exactly the same as the geometric center of image. It is slightly offsetted in x and y direction and noted as $$x_0$$ and $$y_0$$. In addition, the image point has a z coordinate inside the image coordinate frame. It is located above the image plane at $$-c$$ with c being the camera constant, what is roughly the focal length of the lens.
+The principle point is usually not exactly the same as the geometric center of image. It is slightly offset in x and y direction and noted as $$x_0$$ and $$y_0$$. In addition, the image point has a z coordinate inside the image coordinate frame. It is located above the image plane at $$-c$$ with c being the camera constant, what is roughly the focal length of the lens.
 
 The collinearity model is the mathematical description that the projection between object and image coordinates.
 
@@ -209,7 +209,7 @@ The Process is visualized in the following graph.
   <figcaption><b>Figure 6</b> Processing steps Metashape.</figcaption>
 </figure>
 
-### Alignement
+### Alignment
 The alignment of the images is done for all cameras on the quality setting "highest". This is the most accurate setting for the alignment and uses a four times upscaled images$$^4$$ for the tie point coordinate extraction. The alignment estimates the camera positions (exterior orientation), the camera calibration includes the lens distortions (interior orientation) and the point cloud with the tie points in the object space.
 
 For testing the influence of the calibration on the doming effect later in the processing, the aligned is done for three settings for the calibration. Internal self-calibration in Metshape, loaded precalibration with variable parameters in Metashape and loaded precalibration with fixed parameter in Metashape.
