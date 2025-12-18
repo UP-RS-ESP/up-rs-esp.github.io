@@ -1,5 +1,15 @@
 # /_data/authors.yml
 
+Florian Josephowitz:
+  name        : "Florian Josephowitz"
+  bio         : "MSc Student"
+  location    : "University of Potsdam"
+  avatar      : "/images/FlorianJosephowitz.jpg"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:florian.josephowitz@uni-potsdam.de"
+
 Man Tuen Chan:
   name        : "Man Tuen Chan"
   bio         : "MSc Student"
