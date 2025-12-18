@@ -222,7 +222,7 @@ The last step as preparation for the doming analysis is the dense point cloud ge
 
 All Metashape processing steps are summarized in the following table.
 
-|   |   | **internal \| free** | **precalibrated \| free** | **prelibrated \| fixed** |
+|   |   | **internal-free** | **precalibrated-free** | **prelibrated-fixed** |
 |---------------|---------------|---------------|---------------|---------------|
 | *A7R5* |  |  |  |  |
 | **Alignment** | Quality | highest | highest | highest |
