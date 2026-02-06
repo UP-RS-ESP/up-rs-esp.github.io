@@ -13,8 +13,10 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
+| | **[2026]** | | |
+Smith, T., Morr, A., Bookhagen, B. and Boers, N. | 2026 | Predicting instabilities in transient landforms and interconnected ecosystems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-68944-w)
 | | **[2025]** | | |
-Smith, T and Bookhagen, B. | 2025 | Strongly Heterogeneous Surface-Water Warming Trends in High Mountain Asia | _Geophysical Research Letters_ | [DOI](https://doi.org/10.1029/2025GL119418)
+Smith, T. and Bookhagen, B. | 2025 | Strongly Heterogeneous Surface-Water Warming Trends in High Mountain Asia | _Geophysical Research Letters_ | [DOI](https://doi.org/10.1029/2025GL119418)
 Peña, C., Heidbach, O., Metzger, S., Schurr, B., Moreno, M., Bedford, J., Oncken, O. & Faccenna, C. | 2025 | Pore-pressure diffusion controls upper-plate aftershocks of the 2014 Iquique earthquake | _Nature communications_ | [DOI](https://www.nature.com/articles/s41467-025-65013-6)
 Boers, N., Liu, T., Bathiany, S., Ben-Yami, M., Blaschke, L., Bochow, N., Boulton, C., Lenton, T., Morr, A., Nian, D., Rypdal, M., Smith, T. | 2025 | Destabilization of Earth system tipping elements | _Nature Geoscience_ | [DOI](https://doi.org/10.1038/s41561-025-01787-0)
 Su, Y., Zhang, C., Cescatti, A., Yu, K., Ciais, P., Smith, T., Shang, J., Carnicer, J., Liu, J., Chen, J. M., Green, J. K., Wu, J., Ponce-Campos, G. E., Zhang, Y., Zuo, Z., Liao, J., Wu, J., Lafortezza, R., Yan, K., Yang, X., Liu, L., Ren, J., Yuan, W., Chen, X., Wu, C., & Zhou, W. | 2025 | Pervasive but biome-dependent relationship between fragmentation and resilience in forests | _Nature Ecology & Evolution_ | [DOI](https://doi.org/10.1038/s41559-025-02776-7)
