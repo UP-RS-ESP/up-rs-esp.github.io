@@ -14,7 +14,7 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2026]** | | |
-Liu, T., Morr, A., Bathiany, S., Blaschke, L., Qian, Z., Diao, C., Smith, T., and Boers, N. Data gaps and outliers distort critical slowing down-based resilience indicators | Science Advances | [DOI](https://doi.org/10.1126/sciadv.aee1916)
+Liu, T., Morr, A., Bathiany, S., Blaschke, L., Qian, Z., Diao, C., Smith, T., and Boers, N. | 2026 | Data gaps and outliers distort critical slowing down-based resilience indicators | Science Advances | [DOI](https://doi.org/10.1126/sciadv.aee1916)
 Smith, T., Morr, A., Bookhagen, B. and Boers, N. | 2026 | Predicting instabilities in transient landforms and interconnected ecosystems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-68944-w)
 | | **[2025]** | | |
 Smith, T. and Bookhagen, B. | 2025 | Strongly Heterogeneous Surface-Water Warming Trends in High Mountain Asia | _Geophysical Research Letters_ | [DOI](https://doi.org/10.1029/2025GL119418)
