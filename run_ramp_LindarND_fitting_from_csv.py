@@ -8,7 +8,8 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import matplotlib
 import scipy.ndimage
-import scipy.linalg
+from matplotlib.patches import Rectangle
+from scipy.interpolate import LinearNDInterpolator
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -22,43 +23,184 @@ logging.basicConfig(
 )
 
 
-def write_p1_v_rampremoved(outfile_v, df):
-    for i in tqdm.tqdm(range(len(outfile_v))):
-        v_file = outfile_v[i]
-        geotiff_fn = os.path.basename(v_file)
-        geotiff_fn = os.path.join(dirprefix + "v_p1", geotiff_fn)
-        if os.path.exists(geotiff_fn):
-            continue
-        deltaT, date1, date2, v, v_ds_gt, v_epsg = load_u_file(v_file)
-        V_xy = (
-            df["V_0"].iloc[i] * dem_coord0
-            + df["V_1"].iloc[i] * dem_coord1
-            + df["V_2"].iloc[i]
-        )
-        p1_dv = v - V_xy
-        if not os.path.exists(dirprefix + "v_p1"):
-            os.mkdir(dirprefix + "v_p1")
-        geotiff_fn = os.path.join(dirprefix + "v_p1", geotiff_fn)
-        save_geotiff(geotiff_fn, p1_dv, v_epsg, v_ds_gt, nan_value=np.nan)
+def tile_with_overlap(x, tile_size=128, overlap=24):
+    iheight = x.shape[0]
+    iwidth = x.shape[1]
+    # pad overlap to all sides of array
+    x = np.pad(
+        x,
+        ((overlap, overlap), (overlap, overlap)),
+        mode="constant",
+        constant_values=np.nan,
+    )
+    height = x.shape[0]
+    width = x.shape[1]
+    patch_size = tile_size + (overlap * 2)
+    pad_height = (patch_size - (height % patch_size)) % patch_size
+    pad_width = (patch_size - (width % patch_size)) % patch_size
+    # Apply padding to the image
+    x = np.pad(
+        x, ((0, pad_height), (0, pad_width)), mode="constant", constant_values=np.nan
+    )
+    assert x.shape[0] % patch_size == 0
+    assert x.shape[1] % patch_size == 0
+    foo = np.lib.stride_tricks.sliding_window_view(x, (patch_size, patch_size))[
+        ::tile_size, ::tile_size
+    ]
+    return (
+        iheight,
+        iwidth,
+        pad_height,
+        pad_width,
+        patch_size,
+        x.shape[0],
+        x.shape[1],
+        foo.shape[0],
+        foo.shape[1],
+        foo.shape[2],
+        foo.reshape((foo.shape[0] * foo.shape[1], foo.shape[2], foo.shape[3])),
+    )
 
 
-def write_p1_u_rampremoved(outfile_u, df):
-    for i in tqdm.tqdm(range(len(outfile_u))):
-        u_file = outfile_u[i]
-        geotiff_fn = os.path.basename(u_file)
-        geotiff_fn = os.path.join(dirprefix + "u_p1", geotiff_fn)
-        if os.path.exists(geotiff_fn):
-            continue
-        deltaT, date1, date2, u, u_ds_gt, u_epsg = load_u_file(u_file)
-        U_xy = (
-            df["U_0"].iloc[i] * dem_coord0
-            + df["U_1"].iloc[i] * dem_coord1
-            + df["U_2"].iloc[i]
+@nb.njit(parallel=True)
+def get_tile_centerpoints(tile):
+    tile_median = np.empty(tile.shape[0], dtype=np.float32)
+    tile_median.fill(np.nan)
+    tile_mean = np.empty(tile.shape[0], dtype=np.float32)
+    tile_mean.fill(np.nan)
+    tile_min = np.empty(tile.shape[0], dtype=np.float32)
+    tile_min.fill(np.nan)
+    tile_max = np.empty(tile.shape[0], dtype=np.float32)
+    tile_max.fill(np.nan)
+    tile_p25 = np.empty(tile.shape[0], dtype=np.float32)
+    tile_p25.fill(np.nan)
+    tile_p75 = np.empty(tile.shape[0], dtype=np.float32)
+    tile_p75.fill(np.nan)
+    for i in nb.prange(tile.shape[0]):
+        tile_median[i] = np.nanmedian(tile[i, :, :])
+        tile_mean[i] = np.nanmean(tile[i, :, :])
+        tile_min[i] = np.nanmin(tile[i, :, :])
+        tile_max[i] = np.nanmax(tile[i, :, :])
+        tile_p25[i], tile_p75[i] = np.nanpercentile(tile[i, :, :], [25, 75])
+    return tile_median, tile_mean, tile_min, tile_max, tile_p25, tile_p75
+
+
+def plot_tile_overview(
+    offset, offset_lineari, offset_tile_mean, suptitle, tiles_overview_output_fn
+):
+    # making plot of data and tiling setup
+    nr_rows = 2
+    nr_cols = 2
+    fig, ax = plt.subplots(
+        nr_cols,
+        nr_rows,
+        sharex=True,
+        sharey=True,
+        figsize=(16, 12),
+        dpi=300,
+        layout="constrained",
+    )
+    ax[0, 0].imshow(
+        dem_hs,
+        extent=dem_extent,
+        cmap="gray",
+    )
+    im0 = ax[0, 0].imshow(
+        dem,
+        extent=dem_extent,
+        cmap="gist_earth",
+        vmin=np.nanpercentile(dem, 2),
+        vmax=np.nanpercentile(dem, 98),
+        alpha=0.7,
+    )
+    h0 = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
+    h0.set_label("Elevation (m)")
+    for i in range(0, len(coord0_tile_min), 1):
+        tile_width = coord0_tile_max[i] - coord0_tile_min[i]
+        tile_height = coord1_tile_max[i] - coord1_tile_min[i]
+        # xy, width, height
+        rect = Rectangle(
+            (coord0_tile_min[i], coord1_tile_min[i]),
+            width=tile_width,
+            height=tile_height,
+            linewidth=1,
+            edgecolor="black",
+            facecolor=None,
+            fill=False,
+            alpha=1,
         )
-        p1_du = u - U_xy
-        if not os.path.exists(dirprefix + "u_p1"):
-            os.mkdir(dirprefix + "u_p1")
-        save_geotiff(geotiff_fn, p1_du, u_epsg, u_ds_gt, nan_value=np.nan)
+        ax[0, 0].add_patch(rect)
+    ax[0, 0].set_aspect("equal", "box")
+    ax[0, 0].plot(coord0_tile_median, coord1_tile_median, "co", color="k", ms=3)
+    ax[0, 0].set_ylabel("UTM-Y")
+    #
+    ax[1, 0].imshow(
+        dem_hs,
+        extent=dem_extent,
+        cmap="gray",
+    )
+    im0 = ax[1, 0].imshow(
+        offset_lineari,
+        extent=dem_extent,
+        cmap="Spectral",
+        vmin=-0.2,
+        vmax=0.2,
+        alpha=0.7,
+    )
+    im1 = ax[1, 0].scatter(
+        coord0_tile_median,
+        coord1_tile_median,
+        s=35,
+        c=offset_tile_mean,
+        cmap="Spectral",
+        edgecolors="black",
+        vmin=-0.2,
+        vmax=0.2,
+        alpha=0.7,
+    )
+    h1 = plt.colorbar(im1, ax=ax[1, 0])
+    h1.set_label("Interpolated Offset (m/y)")
+    ax[1, 0].set_aspect("equal", "box")
+    ax[1, 0].set_ylabel("UTM-Y")
+    #
+    ax[0, 1].imshow(
+        dem_hs,
+        extent=dem_extent,
+        cmap="gray",
+    )
+    im2 = ax[0, 1].imshow(
+        offset,
+        cmap="Spectral",
+        vmin=-0.2,
+        vmax=0.2,
+        extent=dem_extent,
+        alpha=0.7,
+    )
+    h2 = plt.colorbar(im2, ax=ax[0, 1])
+    h2.set_label("Offset (m/y)")
+    ax[0, 1].plot(coord0_tile_median, coord1_tile_median, "co", color="k", ms=3)
+    ax[0, 1].set_aspect("equal", "box")
+    #
+    ax[1, 1].imshow(
+        dem_hs,
+        extent=dem_extent,
+        cmap="gray",
+    )
+    im3 = ax[1, 1].imshow(
+        offset - offset_lineari,
+        cmap="Spectral",
+        vmin=-0.2,
+        vmax=0.2,
+        extent=dem_extent,
+        alpha=0.7,
+    )
+    h3 = plt.colorbar(im3, ax=ax[1, 1])
+    h3.set_label("Corrected offset (m/y)")
+    ax[1, 1].set_aspect("equal", "box")
+    ax[1, 1].set_xlabel("UTM-X")
+    fig.suptitle(suptitle, fontsize=14)
+    fig.savefig(tiles_overview_output_fn, dpi=300)
+    plt.close()
 
 
 def load_blockmatching_tif(fname, matchingstep=1):
@@ -128,7 +270,6 @@ def load_offset_tif(fname):
     offset_ds_proj = offset_ds.GetProjection()
     epsg = int(osr.SpatialReference(wkt=offset_ds_proj).GetAttrValue("AUTHORITY", 1))
     offset = np.array(offset_ds.GetRasterBand(1).ReadAsArray()).astype("float32")
-    offset[offset == -128] = np.nan
     offset_ds = None
     return offset, offset_ds_gt, offset_ds_proj, epsg
 
@@ -256,6 +397,426 @@ def calc_dir_mag(v_ar, u_ar, deltaT_y, stepsize):
     return uv_dir, uv_mag
 
 
+def plot_single_4panel_u_v_my(
+    u_ar,
+    v_ar,
+    u_ar_gf,
+    v_ar_gf,
+    dem_hs,
+    pngfn,
+):
+    fig, ax = plt.subplots(
+        nrows=2, ncols=2, figsize=(9, 9), dpi=300, layout="constrained"
+    )
+    im0 = ax[0, 0].imshow(u_ar, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 0].get_xaxis().set_ticks([])
+    ax[0, 0].get_yaxis().set_ticks([])
+    ax[0, 0].set_title("u masked")
+    im1 = ax[1, 0].imshow(v_ar, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im1b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[1, 0].get_xaxis().set_ticks([])
+    ax[1, 0].get_yaxis().set_ticks([])
+    ax[1, 0].set_title("v masked")
+    im4 = ax[0, 1].imshow(u_ar_gf, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im4b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 1].get_xaxis().set_ticks([])
+    ax[0, 1].get_yaxis().set_ticks([])
+    ax[0, 1].set_title("u GaussianF")
+    im5 = ax[1, 1].imshow(v_ar_gf, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im5b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[1, 1].get_xaxis().set_ticks([])
+    ax[1, 1].get_yaxis().set_ticks([])
+    ax[1, 1].set_title("v GaussianF")
+    h = plt.colorbar(im1, ax=ax[0, :], orientation="horizontal", shrink=0.7)
+    h.set_label("u (m/y)")
+    h2 = plt.colorbar(im4, ax=ax[1, :], orientation="horizontal", shrink=0.7)
+    h2.set_label("v (m/y)")
+    fig.suptitle("%s" % (pngfn.split(".")[0]))
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
+def plot_single_4panel_vel_my(
+    ar_vel,
+    ar_gf_vel,
+    stack_vel,
+    stack_gf_vel,
+    stack_nrm,
+    dem_hs,
+    pngfn,
+):
+    fig, ax = plt.subplots(
+        nrows=2, ncols=3, figsize=(12, 9), dpi=300, layout="constrained"
+    )
+    im0 = ax[0, 0].imshow(ar_vel, vmin=0.1, vmax=1.5, cmap="magma")
+    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 0].get_xaxis().set_ticks([])
+    ax[0, 0].get_yaxis().set_ticks([])
+    ax[0, 0].set_title("velocity")
+    im1 = ax[0, 1].imshow(
+        ar_gf_vel,
+        vmin=0.1,
+        vmax=1.5,
+        cmap="magma",
+    )
+    im1b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 1].get_xaxis().set_ticks([])
+    ax[0, 1].get_yaxis().set_ticks([])
+    ax[0, 1].set_title("velocity GaussianF")
+    im2 = ax[1, 0].imshow(
+        stack_vel,
+        vmin=0.1,
+        vmax=1.5,
+        cmap="magma",
+    )
+    im2b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[1, 0].get_xaxis().set_ticks([])
+    ax[1, 0].get_yaxis().set_ticks([])
+    ax[1, 0].set_title("stack velocity")
+    im3 = ax[1, 1].imshow(
+        stack_gf_vel,
+        vmin=0.1,
+        vmax=1.5,
+        cmap="magma",
+    )
+    im3b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[1, 1].get_xaxis().set_ticks([])
+    ax[1, 1].get_yaxis().set_ticks([])
+    ax[1, 1].set_title("stack velocity GaussianF")
+    im4 = ax[0, 2].imshow(
+        stack_gf_vel,
+        vmin=0.1,
+        vmax=1.5,
+        cmap="magma",
+    )
+    im4b = ax[0, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[0, 2].get_xaxis().set_ticks([])
+    ax[0, 2].get_yaxis().set_ticks([])
+    ax[0, 2].set_title("velocity GaussianF")
+    im5 = ax[1, 2].imshow(
+        stack_nrm,
+        vmin=50,
+        vmax=210,
+        cmap="plasma",
+    )
+    im5b = ax[1, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    ax[1, 2].get_xaxis().set_ticks([])
+    ax[1, 2].get_yaxis().set_ticks([])
+    h = plt.colorbar(im0, ax=ax[0, :], orientation="horizontal", shrink=0.7)
+    h.set_label("velocity (m/y)")
+    h = plt.colorbar(im3, ax=ax[1, 0:2], orientation="horizontal", shrink=0.7)
+    h.set_label("velocity (m/y)")
+    h = plt.colorbar(im5, ax=ax[1, 2], orientation="horizontal", shrink=0.7)
+    h.set_label("nr. measurements")
+    fig.suptitle("%s" % (pngfn.split(".")[0]))
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
+def plot_single_6panel_u_v_dir_vel_my(
+    u,
+    v,
+    correlation,
+    direction,
+    velocity,
+    velocity_average,
+    dem_hs,
+    pngfn,
+    x_rectangle_start=0,
+    y_rectangle_start=0,
+    rectangle_width=0,
+    rectangle_height=0,
+):
+    fig, ax = plt.subplots(
+        nrows=2, ncols=3, figsize=(16, 9), dpi=300, layout="constrained"
+    )
+    im0 = ax[0, 0].imshow(u, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
+    h.set_label("u (m/y)")
+    ax[0, 0].get_xaxis().set_ticks([])
+    ax[0, 0].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 0].add_patch(rect)
+    im1 = ax[0, 1].imshow(v, vmin=-0.5, vmax=0.5, cmap="PiYG")
+    im1b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="vertical")
+    h.set_label("v (m/y)")
+    ax[0, 1].get_xaxis().set_ticks([])
+    ax[0, 1].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 1].add_patch(rect)
+    im2 = ax[0, 2].imshow(correlation, vmin=0.8, vmax=1, cmap="magma")
+    im2b = ax[0, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[0, 2], orientation="vertical")
+    h.set_label("correlation ")
+    ax[0, 2].get_xaxis().set_ticks([])
+    ax[0, 2].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 2].add_patch(rect)
+    im3 = ax[1, 0].imshow(
+        velocity,
+        vmin=0,
+        vmax=0.5,
+        cmap="viridis",
+    )
+    im3b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im3, ax=ax[1, 0], orientation="vertical")
+    h.set_label("velocity (m/y)")
+    ax[1, 0].get_xaxis().set_ticks([])
+    ax[1, 0].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 0].add_patch(rect)
+    im4 = ax[1, 1].imshow(
+        direction,
+        vmin=0,
+        vmax=360,
+        cmap="hsv",
+    )
+    im4b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im4, ax=ax[1, 1], orientation="vertical")
+    h.set_label("direction for v > 0 (degree)")
+    ax[1, 1].get_xaxis().set_ticks([])
+    ax[1, 1].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 1].add_patch(rect)
+    im5 = ax[1, 2].imshow(
+        velocity_average,
+        vmin=0,
+        vmax=0.5,
+        cmap="viridis",
+    )
+    im5b = ax[1, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im5, ax=ax[1, 2], orientation="vertical")
+    h.set_label("velocity (average) (m/y)")
+    ax[1, 2].get_xaxis().set_ticks([])
+    ax[1, 2].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 2].add_patch(rect)
+    fig.suptitle("%s" % (pngfn))
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
+def plot_single_u_v_dir_vel(
+    u,
+    v,
+    correlation,
+    direction,
+    velocity,
+    velocity_masked,
+    dem_hs,
+    pngfn,
+    x_rectangle_start=0,
+    y_rectangle_start=0,
+    rectangle_width=0,
+    rectangle_height=0,
+):
+    fig, ax = plt.subplots(
+        nrows=2, ncols=3, figsize=(16, 9), dpi=300, layout="constrained"
+    )
+    im0 = ax[0, 0].imshow(u, vmin=-2, vmax=2, cmap="PiYG")
+    im0b = ax[0, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
+    h.set_label("u (pixel)")
+    ax[0, 0].get_xaxis().set_ticks([])
+    ax[0, 0].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 0].add_patch(rect)
+    im1 = ax[0, 1].imshow(v, vmin=-2, vmax=2, cmap="PiYG")
+    im1b = ax[0, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="vertical")
+    h.set_label("v (pixel)")
+    ax[0, 1].get_xaxis().set_ticks([])
+    ax[0, 1].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 1].add_patch(rect)
+    im2 = ax[0, 2].imshow(correlation, vmin=0.8, vmax=1, cmap="magma")
+    im2b = ax[0, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[0, 2], orientation="vertical")
+    h.set_label("correlation (masked)")
+    ax[0, 2].get_xaxis().set_ticks([])
+    ax[0, 2].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[0, 2].add_patch(rect)
+    im3 = ax[1, 0].imshow(
+        velocity,
+        vmin=0,
+        vmax=1,
+        cmap="viridis",
+    )
+    im3b = ax[1, 0].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im3, ax=ax[1, 0], orientation="vertical")
+    h.set_label("velocity (m/y)")
+    ax[1, 0].get_xaxis().set_ticks([])
+    ax[1, 0].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 0].add_patch(rect)
+    im4 = ax[1, 1].imshow(
+        direction,
+        vmin=0,
+        vmax=360,
+        cmap="hsv",
+    )
+    im4b = ax[1, 1].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im4, ax=ax[1, 1], orientation="vertical")
+    h.set_label("direction (degree)")
+    ax[1, 1].get_xaxis().set_ticks([])
+    ax[1, 1].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 1].add_patch(rect)
+    im5 = ax[1, 2].imshow(
+        velocity_masked,
+        vmin=0,
+        vmax=1,
+        cmap="viridis",
+    )
+    im5b = ax[1, 2].imshow(dem_hs, cmap="gray", alpha=0.5)
+    h = plt.colorbar(im5, ax=ax[1, 2], orientation="vertical")
+    h.set_label("velocity (masked) (m/y)")
+    ax[1, 2].get_xaxis().set_ticks([])
+    ax[1, 2].get_yaxis().set_ticks([])
+    rect = matplotlib.patches.Rectangle(
+        (x_rectangle_start, y_rectangle_start),
+        rectangle_width,
+        rectangle_height,
+        linewidth=1,
+        edgecolor="k",
+        facecolor="none",
+    )
+    ax[1, 2].add_patch(rect)
+    fig.suptitle("%s" % (pngfn))
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
+def plot_stack_stats(dir_median, dir_var, mag_median, mag_wmean, stackfn):
+    fig, ax = plt.subplots(2, 2, figsize=(16, 9), dpi=300)
+    im0 = ax[0, 0].imshow(dir_median, vmin=0, vmax=360, cmap="hsv")
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="vertical")
+    h.set_label("Direction (degree)")
+    ax[0, 0].axis("off")
+    im1 = ax[0, 1].imshow(
+        dir_var,
+        vmin=np.nanpercentile(dir_var, 2),
+        vmax=np.nanpercentile(dir_var, 98),
+        cmap="viridis",
+    )
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="vertical")
+    h.set_label("Direction variance (degree)")
+    ax[0, 1].axis("off")
+    im2 = ax[1, 0].imshow(
+        mag_median,
+        vmin=np.nanpercentile(mag_median, 2),
+        vmax=np.nanpercentile(mag_median, 98),
+        cmap="magma",
+    )
+    h = plt.colorbar(im2, ax=ax[1, 0], orientation="vertical")
+    h.set_label("Displacement magnitude median (m/yr)")
+    ax[1, 0].axis("off")
+    im3 = ax[1, 1].imshow(
+        mag_wmean,
+        vmin=np.nanpercentile(mag_wmean, 2),
+        vmax=np.nanpercentile(mag_wmean, 98),
+        cmap="viridis",
+    )
+    h = plt.colorbar(im3, ax=ax[1, 1], orientation="vertical")
+    h.set_label("Displacement magnitude weighted mean (m/yr)")
+    ax[1, 1].axis("off")
+    fig.suptitle("%s" % (stackfn))
+    fig.tight_layout()
+    fig.savefig(stackfn, dpi=300)
+    plt.close()
+
+
+def calc_stack_stats_np(stack):
+    # not using this, too slow
+    stack_mean = np.mean(stack, axis=0).astype(np.float32)
+    stack_median = np.median(stack, axis=0).astype(np.float32)
+    stack_var = np.var(stack, axis=0).astype(np.float32)
+    stack_p25 = np.percentile(stack, 25, axis=0).astype(np.float32)
+    stack_p75 = np.percentile(stack, 75, axis=0).astype(np.float32)
+    return stack_mean, stack_median, stack_var, stack_p25, stack_p75
+
+
 @nb.njit(parallel=True)
 def calc_direction_velocity(u, v):
     def ArithmeticDegree_to_GeographicDegree(angle):
@@ -275,6 +836,256 @@ def calc_direction_velocity(u, v):
                     np.rad2deg(np.arctan2(v[i, j], u[i, j]))
                 )
     return direction, magnitude
+
+
+@nb.njit(parallel=True)
+def calc_multistep_direction_velocity(u_ar, v_ar):
+    def ArithmeticDegree_to_GeographicDegree(angle):
+        return (-(angle - 90)) % 360
+
+    direction = np.empty(
+        (u_ar.shape[0], u_ar.shape[1], u_ar.shape[2]), dtype=np.float32
+    )
+    direction.fill(np.nan)
+    magnitude = np.empty(
+        (u_ar.shape[0], u_ar.shape[1], u_ar.shape[2]), dtype=np.float32
+    )
+    magnitude.fill(np.nan)
+    for i in nb.prange(u_ar.shape[0]):
+        for j in nb.prange(u_ar.shape[1]):
+            for k in nb.prange(u_ar.shape[2]):
+                magnitude[i, j, k] = np.sqrt(v_ar[i, j, k] ** 2 + u_ar[i, j, k] ** 2)
+                if magnitude[i, j, k] == 0:
+                    continue
+                else:
+                    direction[i, j, k] = ArithmeticDegree_to_GeographicDegree(
+                        np.rad2deg(np.arctan2(v_ar[i, j, k], u_ar[i, j, k]))
+                    )
+    return direction, magnitude
+
+
+@nb.njit(parallel=True)
+def mask_dem_aspect_direction(deltadirection, u_ar, v_ar, deltadirection_threshold=45):
+    for i in nb.prange(deltadirection.shape[0]):
+        for j in nb.prange(deltadirection.shape[1]):
+            for k in nb.prange(deltadirection.shape[2]):
+                if deltadirection[i, j, k] > deltadirection_threshold:
+                    u_ar[i, j, k] = np.nan
+                    v_ar[i, j, k] = np.nan
+    return u_ar, v_ar
+
+
+@nb.njit(parallel=True)
+def calc_dem_aspect_direction_difference(dem_aspect, direction):
+    deltadirection = np.empty(
+        (u_ar.shape[0], u_ar.shape[1], u_ar.shape[2]), dtype=np.float32
+    )
+    deltadirection.fill(np.nan)
+    for i in nb.prange(u_ar.shape[0]):
+        for j in nb.prange(u_ar.shape[1]):
+            for k in nb.prange(u_ar.shape[2]):
+                if np.isnan(direction[i, j, k]):
+                    continue
+                angle1 = np.min(np.array([dem_aspect[j, k], direction[i, j, k]]))
+                angle2 = np.max(np.array([dem_aspect[j, k], direction[i, j, k]]))
+                if angle1 - angle2 < 0 and angle1 - angle2 > -180:
+                    deltadirection[i, j, k] = np.abs(angle1 - angle2) % 360
+                # elif angle1 - angle2 < -180:
+                #     deltadirection[i, j, k] = (angle1 - angle2) % 360
+                else:
+                    deltadirection[i, j, k] = (angle1 - angle2) % 360
+    return deltadirection
+
+
+@nb.njit(parallel=True)
+def calc_magnitude_variance(u_ar, v_ar):
+    def ArithmeticDegree_to_GeographicDegree(angle):
+        return (-(angle - 90)) % 360
+
+    stack_var = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    stack_var.fill(np.nan)
+    for i in nb.prange(u_ar.shape[1]):
+        for j in nb.prange(u_ar.shape[2]):
+            var_u = np.nanvar(u_ar[:, i, j])
+            var_v = np.nanvar(v_ar[:, i, j])
+            stack_var[i, j] = np.sqrt(var_u**2 + var_v**2)
+    return stack_var
+
+
+@nb.njit(parallel=True)
+def calc_direction_variance(u_ar, v_ar):
+    def ArithmeticDegree_to_GeographicDegree(angle):
+        return (-(angle - 90)) % 360
+
+    stack_var = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    stack_var.fill(np.nan)
+    for i in nb.prange(u_ar.shape[1]):
+        for j in nb.prange(u_ar.shape[2]):
+            stack_var[i, j] = ArithmeticDegree_to_GeographicDegree(
+                np.rad2deg(
+                    np.arctan2(np.nanvar(v_ar[:, i, j]), np.nanvar(u_ar[:, i, j]))
+                )
+            )
+    return stack_var
+
+
+@nb.njit(parallel=True)
+def calc_correlation_stats(stack):
+    stack_var = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_var.fill(np.nan)
+    stack_mean = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_mean.fill(np.nan)
+    stack_p25 = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_p25.fill(np.nan)
+    stack_median = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_median.fill(np.nan)
+    stack_p75 = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_p75.fill(np.nan)
+    for i in nb.prange(stack.shape[1]):
+        for j in nb.prange(stack.shape[2]):
+            # the mean of correlation is done through the Fisher Z transform
+            # the Fisher transform equals the inverse hyperbolic tangent
+            stack_mean[i, j] = np.tanh(np.nanmean(np.arctanh(stack[:, i, j])))
+            stack_var[i, j] = np.var(stack[:, i, j])
+            stack_p25[i, j], stack_median[i, j], stack_p75[i, j] = np.percentile(
+                stack[:, i, j], [25, 50, 75]
+            )
+    return stack_mean, stack_median, stack_var, stack_p25, stack_p75
+
+
+@nb.njit(parallel=True)
+def calc_datepair_range(stack):
+    stack_ptp = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_ptp.fill(np.nan)
+    for i in nb.prange(stack.shape[1]):
+        for j in nb.prange(stack.shape[2]):
+            if np.all(np.isnan(stack[:, i, j])):
+                continue
+            if np.any(np.isnan(stack[:, i, j])):
+                cvalue = stack[:, i, j][~np.isnan(stack[:, i, j])]
+            else:
+                cvalue = stack[:, i, j]
+            stack_ptp[i, j] = np.ptp(cvalue)
+    return stack_ptp
+
+
+def calc_mode_magnitude_direction(u_ar, v_ar):
+    def ArithmeticDegree_to_GeographicDegree(angle):
+        return (-(angle - 90)) % 360
+
+    velocity_magnitude = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    velocity_magnitude.fill(np.nan)
+    velocity_direction = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    velocity_direction.fill(np.nan)
+    for i in tqdm.tqdm(range(u_ar.shape[1])):
+        for j in nb.prange(u_ar.shape[2]):
+            if np.all(np.isnan(u_ar[:, i, j])):
+                continue
+            vals, counts = np.unique(
+                u_ar[:, i, j][~np.isnan(u_ar[:, i, j])], return_counts=True
+            )
+            index = np.argmax(counts)
+            u_ar_mode = vals[index]
+            vals, counts = np.unique(
+                v_ar[:, i, j][~np.isnan(u_ar[:, i, j])], return_counts=True
+            )
+            index = np.argmax(counts)
+            v_ar_mode = vals[index]
+            velocity_direction[i, j] = ArithmeticDegree_to_GeographicDegree(
+                np.rad2deg(np.arctan2(v_ar_mode, u_ar_mode))
+            )
+            velocity_magnitude[i, j] = np.sqrt(u_ar_mode**2 + v_ar_mode**2)
+    return velocity_magnitude, velocity_direction
+
+
+@nb.njit(parallel=True)
+def calc_median_magnitude_direction(u_ar, v_ar):
+    def ArithmeticDegree_to_GeographicDegree(angle):
+        return (-(angle - 90)) % 360
+
+    median_u = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    median_u.fill(np.nan)
+    median_v = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    median_v.fill(np.nan)
+    velocity_magnitude = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    velocity_magnitude.fill(np.nan)
+    velocity_direction = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.float32)
+    velocity_direction.fill(np.nan)
+    velocity_nrm = np.empty((u_ar.shape[1], u_ar.shape[2]), dtype=np.uint8)
+    velocity_nrm.fill(255)
+    for i in nb.prange(u_ar.shape[1]):
+        for j in nb.prange(u_ar.shape[2]):
+            if np.all(np.isnan(u_ar[:, i, j])):
+                # quick way to skip pixels that are all nan - the border pixels
+                continue
+            median_u[i, j] = np.nanmedian(u_ar[:, i, j])
+            median_v[i, j] = np.nanmedian(v_ar[:, i, j])
+            velocity_nrm[i, j] = np.count_nonzero(~np.isnan(u_ar[:, i, j]))
+    # subtract mean from stack and subtract
+    median_u_mean = np.nanmean(median_u)
+    median_v_mean = np.nanmean(median_v)
+    median_u = median_u - median_u_mean
+    median_v = median_u - median_v_mean
+    for i in nb.prange(median_u.shape[0]):
+        for j in nb.prange(median_u.shape[1]):
+            velocity_direction[i, j] = ArithmeticDegree_to_GeographicDegree(
+                np.rad2deg(np.arctan2(median_v[i, j], median_u[i, j]))
+            )
+            velocity_magnitude[i, j] = np.sqrt(
+                median_u[i, j] ** 2 + median_v[i, j] ** 2
+            )
+    return velocity_magnitude, velocity_direction, velocity_nrm
+
+
+@nb.njit(parallel=True)
+def calc_stack_stats(stack, correlation_ar):
+    stack_var = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_var.fill(np.nan)
+    stack_mean = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_mean.fill(np.nan)
+    stack_p25 = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_p25.fill(np.nan)
+    stack_median = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_median.fill(np.nan)
+    stack_p75 = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_p75.fill(np.nan)
+    stack_weightedmean = np.empty((stack.shape[1], stack.shape[2]), dtype=np.float32)
+    stack_weightedmean.fill(np.nan)
+    for i in nb.prange(stack.shape[1]):
+        for j in nb.prange(stack.shape[2]):
+            stack_var[i, j] = np.var(stack[:, i, j])
+            stack_mean[i, j] = np.mean(stack[:, i, j])
+            stack_p25[i, j], stack_median[i, j], stack_p75[i, j] = np.percentile(
+                stack[:, i, j], [25, 50, 75]
+            )
+            # calculating weighted average with np.average
+            # heigher values have more importance / larger weights
+            # np.average(v_ar[:,151,3059], weights=correlation_ar[:,151,3059]) is equals to
+            # np.sum(v_ar[:,151,3059] * correlation_ar[:,151,3059]) / np.sum(correlation_ar[:,151,3059])
+            # calculating weighted mean using correlation squared
+            stack_weightedmean[i, j] = np.average(
+                stack[:, i, j], weights=correlation_ar[:, i, j] ** 2
+            )
+    return stack_mean, stack_median, stack_var, stack_p25, stack_p75, stack_weightedmean
+
+
+def plot_histograms(correlation_ar, correlation_files, png_fname):
+    fig, ax = plt.subplots(1, 1, figsize=(16, 9), dpi=300, layout="constrained")
+    bins = np.linspace(0, 1, 51)
+    for i in range(correlation_ar.shape[0]):
+        plot_hist(
+            correlation_ar[i, :, :].ravel()[~np.isnan(correlation_ar[i, :, :].ravel())],
+            bins=bins,
+            log_bins=False,
+            density=True,
+            ax=ax,
+            label=correlation_files[i],
+        )
+    ax.grid()
+    ax.set_xlabel("Correlation coefficient")
+    ax.set_ylabel("Density")
+    plt.legend()
+    fig.savefig(png_fname, dpi=300)
 
 
 def load_mask(filename, mask_size):
@@ -1023,10 +1834,201 @@ def ArithmeticDegree_to_GeographicDegree(angle):
         return 90 - angle
 
 
-def calc_u_stats(outfile_u, dem_step=2):
+def calc_v_stats(outfile_v, dem_step=2, plot_pngs=False):
+    value_stats = []
+    v_percentiles = []
+    dv_percentiles = []
+    v_tile_mean_list = []
+    for i in tqdm.tqdm(range(len(outfile_v))):
+        v_file = outfile_v[i]
+        deltaT, date1, date2, v, _, _ = load_u_file(v_file)
+        vvar = np.nanvar(v).astype(np.float32)
+        vmean = np.nanmean(v).astype(np.float32)
+        v10, v25, vmedian, v75, v90 = np.nanpercentile(v, [10, 25, 50, 75, 90]).astype(
+            np.float32
+        )
+        v_perc100 = np.nanpercentile(v, np.arange(0, 100, 1)).astype(np.float32)
+        v_percentiles.append(v_perc100)
+        # logging.info("Tiling offset array ")
+        (
+            iheight,
+            iwidth,
+            pad_height,
+            pad_width,
+            patch_size,
+            oheight,
+            owidth,
+            dim0,
+            dim1,
+            dim2,
+            v_tiles,
+        ) = tile_with_overlap(v, tile_size=tile_size, overlap=100)
+        v_tile_median, v_tile_mean, v_tile_min, v_tile_max, v_tile_p25, v_tile_p75 = (
+            get_tile_centerpoints(v_tiles)
+        )
+        # logging.info("LinearNDInterpolator of mean offset")
+        Linear_interpolator = LinearNDInterpolator(
+            (coord0_tile_median, coord1_tile_median), v_tile_mean
+        )
+        v_tile_mean_linear = Linear_interpolator((dem_coord0, dem_coord1))
+        outfile_v_tile_mean = v_file
+        write_tilemean_v_removed(outfile_v_tile_mean, v_tile_mean_linear)
+        tmean_linear_dv = v - v_tile_mean_linear
+        tmean_dv10, tmean_dv25, tmean_dvmedian, tmean_dv75, tmean_dv90 = (
+            np.nanpercentile(tmean_linear_dv, [10, 25, 50, 75, 90]).astype(np.float32)
+        )
+        tmean_mse = (np.square(tmean_linear_dv)).mean(axis=0)
+        tmean_rmse = np.sqrt(tmean_mse).astype(np.float32)
+        # v_tile_mean_linear[np.isnan(v)] = np.nan
+        if plot_pngs:
+            tiles_overview_output_fn = (
+                os.path.basename(v_file)[:-4] + "_tileoverview.png"
+            )
+            tiles_overview_output_fn = os.path.join(
+                tiles_overview_pngdir, tiles_overview_output_fn
+            )
+            suptitle = os.path.basename(v_file)[:-4]
+            if not os.path.exists(tiles_overview_output_fn):
+                plot_tile_overview(
+                    offset=v,
+                    offset_lineari=v_tile_mean_linear,
+                    offset_tile_mean=v_tile_mean,
+                    suptitle=suptitle,
+                    tiles_overview_output_fn=tiles_overview_output_fn,
+                )
+        v_tile_mean_list.append(v_tile_mean)
+
+        xcoord = dem_coord0[::dem_step, ::dem_step].copy()
+        ycoord = dem_coord1[::dem_step, ::dem_step].copy()
+        v = v[::dem_step, ::dem_step]
+        xcoord = xcoord[~np.isnan(v)]
+        ycoord = ycoord[~np.isnan(v)]
+        v = v[~np.isnan(v)]
+        A = np.c_[
+            xcoord,
+            ycoord,
+            np.ones(len(xcoord)),
+        ]
+        V, residuals, rank, s = np.linalg.lstsq(
+            A.astype(np.float32), v.astype(np.float32), rcond=None
+        )
+        # residuals = np.sum(p1_du**2)
+        slope_deg = np.rad2deg(np.arctan(np.sqrt(V[0] ** 2 + V[1] ** 2)))
+        aspect_deg = ArithmeticDegree_to_GeographicDegree(
+            np.rad2deg(np.arctan2(V[1], -V[0]))
+        )
+        v_xy = V[0] * xcoord + V[1] * ycoord + V[2]
+        p1_dv = v - v_xy
+        p1_dv10, p1_dv25, p1_dvmedian, p1_dv75, p1_dv90 = np.nanpercentile(
+            p1_dv, [10, 25, 50, 75, 90]
+        ).astype(np.float32)
+        p1_dv_perc100 = np.nanpercentile(p1_dv, np.arange(0, 100, 1)).astype(np.float32)
+        dv_percentiles.append(p1_dv_perc100)
+        mse = (np.square(p1_dv)).mean(axis=0)
+        p1_rmse = np.sqrt(mse).astype(np.float32)
+        A = np.vstack(
+            (
+                np.ones(len(xcoord), dtype=np.float32),
+                xcoord,
+                ycoord,
+                xcoord * ycoord,
+                xcoord**2,
+                ycoord**2,
+            )
+        ).T
+        V2, residuals2, _, _ = np.linalg.lstsq(
+            A.astype(np.float32),
+            v.astype(np.float32),
+            rcond=None,
+        )
+        if len(residuals2) == 0:
+            residuals2 = v - np.dot(A, V2)
+            residuals2 = np.asarray([np.sum(residuals2**2).astype(np.float32)])
+        fxx = V2[4]
+        fyy = V2[5]
+        fxy = V2[3]
+        fx = V2[1]
+        fy = V2[2]
+        # mean curvature (arithmetic average)
+        c_m = -((1 + (fy**2)) * fxx - 2 * fxy * fx * fy + (1 + (fx**2)) * fyy) / (
+            2 * ((fx**2) + (fy**2) + 1) ** (3 / 2)
+        )
+        c_simple = 2 * fxx + 2 * fyy
+        slope2_deg = np.rad2deg(np.arctan(np.sqrt(fx**2 + fy**2)))
+        aspect2_deg = ArithmeticDegree_to_GeographicDegree(
+            np.rad2deg(np.arctan2(fy, -fx))
+        )
+        V2_xy = (
+            V2[0]
+            + V2[1] * xcoord
+            + V2[2] * ycoord
+            + V2[3] * xcoord * ycoord
+            + V2[4] * xcoord**2
+            + V2[5] * ycoord**2
+        )
+        p2_dv = v - V2_xy
+        mse2 = (np.square(p2_dv)).mean(axis=0)
+        p2_rmse = np.sqrt(mse2)
+        value_stats.append(
+            [
+                i,
+                v_file,
+                date1,
+                date2,
+                deltaT,
+                len(v),
+                vmean,
+                vvar,
+                v10,
+                v25,
+                vmedian,
+                v75,
+                v90,
+                V[0],
+                V[1],
+                V[2],
+                residuals[0],
+                slope_deg,
+                aspect_deg,
+                p1_rmse,
+                np.mean(p1_dv).astype(np.float32),
+                np.var(p1_dv).astype(np.float32),
+                p1_dv10,
+                p1_dv25,
+                p1_dvmedian,
+                p1_dv75,
+                p1_dv90,
+                V2[0],
+                V2[1],
+                V2[2],
+                V2[3],
+                V2[4],
+                V2[5],
+                residuals2[0],
+                slope2_deg,
+                aspect2_deg,
+                c_simple,
+                c_m,
+                p2_rmse.astype(np.float32),
+                np.mean(p2_dv).astype(np.float32),
+                np.var(p2_dv).astype(np.float32),
+                tmean_rmse,
+                tmean_dv10,
+                tmean_dv25,
+                tmean_dvmedian,
+                tmean_dv75,
+                tmean_dv90,
+            ]
+            #
+        )
+    return value_stats, v_percentiles, dv_percentiles, v_tile_mean_list
+
+
+def calc_u_stats(outfile_u, dem_step=2, plot_pngs=False):
     value_stats = []
     u_percentiles = []
     du_percentiles = []
+    u_tile_mean_list = []
     for i in tqdm.tqdm(range(len(outfile_u))):
         u_file = outfile_u[i]
         deltaT, date1, date2, u, _, _ = load_u_file(u_file)
@@ -1037,6 +2039,55 @@ def calc_u_stats(outfile_u, dem_step=2):
         )
         u_perc100 = np.nanpercentile(u, np.arange(0, 100, 1)).astype(np.float32)
         u_percentiles.append(u_perc100)
+        # logging.info("Tiling offset array ")
+        (
+            iheight,
+            iwidth,
+            pad_height,
+            pad_width,
+            patch_size,
+            oheight,
+            owidth,
+            dim0,
+            dim1,
+            dim2,
+            u_tiles,
+        ) = tile_with_overlap(u, tile_size=tile_size, overlap=100)
+        u_tile_median, u_tile_mean, u_tile_min, u_tile_max, u_tile_p25, u_tile_p75 = (
+            get_tile_centerpoints(u_tiles)
+        )
+        # logging.info("LinearNDInterpolator of mean offset")
+        Linear_interpolator = LinearNDInterpolator(
+            (coord0_tile_median, coord1_tile_median), u_tile_mean
+        )
+        u_tile_mean_linear = Linear_interpolator((dem_coord0, dem_coord1))
+        outfile_u_tile_mean = u_file
+        write_tilemean_u_removed(outfile_u_tile_mean, u_tile_mean_linear)
+        tmean_linear_du = u - u_tile_mean_linear
+        tmean_du10, tmean_du25, tmean_dumedian, tmean_du75, tmean_du90 = (
+            np.nanpercentile(tmean_linear_du, [10, 25, 50, 75, 90]).astype(np.float32)
+        )
+        tmean_mse = (np.square(tmean_linear_du)).mean(axis=0)
+        tmean_rmse = np.sqrt(tmean_mse).astype(np.float32)
+        # u_tile_mean_linear[np.isnan(u)] = np.nan
+        if plot_pngs:
+            tiles_overview_output_fn = (
+                os.path.basename(u_file)[:-4] + "_tileoverview.png"
+            )
+            tiles_overview_output_fn = os.path.join(
+                tiles_overview_pngdir, tiles_overview_output_fn
+            )
+            suptitle = os.path.basename(u_file)[:-4]
+            if not os.path.exists(tiles_overview_output_fn):
+                plot_tile_overview(
+                    offset=u,
+                    offset_lineari=u_tile_mean_linear,
+                    offset_tile_mean=u_tile_mean,
+                    suptitle=suptitle,
+                    tiles_overview_output_fn=tiles_overview_output_fn,
+                )
+        u_tile_mean_list.append(u_tile_mean)
+
         xcoord = dem_coord0[::dem_step, ::dem_step].copy()
         ycoord = dem_coord1[::dem_step, ::dem_step].copy()
         u = u[::dem_step, ::dem_step]
@@ -1151,9 +2202,70 @@ def calc_u_stats(outfile_u, dem_step=2):
                 p2_rmse.astype(np.float32),
                 np.mean(p2_du).astype(np.float32),
                 np.var(p2_du).astype(np.float32),
+                tmean_rmse,
+                tmean_du10,
+                tmean_du25,
+                tmean_dumedian,
+                tmean_du75,
+                tmean_du90,
             ]
+            #
         )
-    return value_stats, u_percentiles, du_percentiles
+    return value_stats, u_percentiles, du_percentiles, u_tile_mean_list
+
+
+def write_tilemean_u_removed(outfile_u_tile_mean, u_tile_mean_linear):
+    geotiff_fn = os.path.basename(outfile_u_tile_mean)
+    if not os.path.exists(dirprefix + "u_tile_linear_mean"):
+        os.mkdir(dirprefix + "u_tile_linear_mean")
+    geotiff_fn = os.path.join(dirprefix + "u_tile_linear_mean", geotiff_fn)
+    if not os.path.exists(geotiff_fn):
+        save_geotiff(geotiff_fn, u_tile_mean_linear, dem_epsg, dem_gt, nan_value=np.nan)
+
+
+def write_p1_u_rampremoved(outfile_u, df):
+    for i in tqdm.tqdm(range(len(outfile_u))):
+        u_file = outfile_u[i]
+        deltaT, date1, date2, u, u_ds_gt, u_epsg = load_u_file(u_file)
+        U_xy = (
+            df["U_0"].iloc[i] * dem_coord0
+            + df["U_1"].iloc[i] * dem_coord1
+            + df["U_2"].iloc[i]
+        )
+        p1_du = u - U_xy
+        geotiff_fn = os.path.basename(u_file)
+        if not os.path.exists(dirprefix + "u_p1"):
+            os.mkdir(dirprefix + "u_p1")
+        geotiff_fn = os.path.join(dirprefix + "u_p1", geotiff_fn)
+        if not os.path.exists(geotiff_fn):
+            save_geotiff(geotiff_fn, p1_du, u_epsg, u_ds_gt, nan_value=np.nan)
+
+
+def write_tilemean_v_removed(outfile_v_tile_mean, v_tile_mean_linear):
+    geotiff_fn = os.path.basename(outfile_v_tile_mean)
+    if not os.path.exists(dirprefix + "v_tile_linear_mean"):
+        os.mkdir(dirprefix + "v_tile_linear_mean")
+    geotiff_fn = os.path.join(dirprefix + "v_tile_linear_mean", geotiff_fn)
+    if not os.path.exists(geotiff_fn):
+        save_geotiff(geotiff_fn, v_tile_mean_linear, dem_epsg, dem_gt, nan_value=np.nan)
+
+
+def write_p1_v_rampremoved(outfile_v, df):
+    for i in tqdm.tqdm(range(len(outfile_v))):
+        v_file = outfile_v[i]
+        deltaT, date1, date2, v, v_ds_gt, v_epsg = load_u_file(v_file)
+        V_xy = (
+            df["V_0"].iloc[i] * dem_coord0
+            + df["V_1"].iloc[i] * dem_coord1
+            + df["V_2"].iloc[i]
+        )
+        p1_dv = v - V_xy
+        geotiff_fn = os.path.basename(v_file)
+        if not os.path.exists(dirprefix + "v_p1"):
+            os.mkdir(dirprefix + "v_p1")
+        geotiff_fn = os.path.join(dirprefix + "v_p1", geotiff_fn)
+        if not os.path.exists(geotiff_fn):
+            save_geotiff(geotiff_fn, p1_dv, v_epsg, v_ds_gt, nan_value=np.nan)
 
 
 if __name__ == "__main__":
@@ -1163,17 +2275,128 @@ if __name__ == "__main__":
     dirprefix = sys.argv[1]
     dem_fname = sys.argv[2]
     csv_fname = sys.argv[3]
+    # python run_stack_block_matching_fromcsv.py  \
+    # CORR_os05_bs91_sr06_ms05 \
+    # CORR_os01_bs11_sr03_ms01/ \
+    # CORR_os05_bs91_sr06_ms05_ \
+    # COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif \
+    # corr_dates_sd1_cc30_short
+    # dirprefix = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os05_bs91_sr06_ms05_"
+    # dirprefix = "/raid2-gpu2/bodo/LANDSAT/P231R078/CORR_os01_bs41_sr03_ms01_"
+    # dem_fname = (
+    #     "/raid2-gpu2/bodo/LANDSAT/P231R078/COP15_DEM_ARGENTINA_UTM20_P231R078.tif"
+    # )
+    # csv_fname = "corr_dates_sd1_cc20_B"
+    tile_size = 1500
+    tiles_overview_pngdir = dirprefix + "tilesoverview_png"
 
-    dem, dem_gt, dem_proj, dem_epsg = load_dem_files(dem_fname)
-    dem_coord0, dem_coord1 = np.meshgrid(
-        np.arange(0, dem.shape[1] * dem_gt[1], dem_gt[1]),
-        np.arange(0, dem.shape[0] * dem_gt[1], dem_gt[1]),
+    if not os.path.exists(tiles_overview_pngdir):
+        os.mkdir(tiles_overview_pngdir)
+
+    dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope, dem_hs = (
+        load_dem_aspect_slope_files(dem_fname)
     )
+    minx = dem_gt[0]
+    maxy = dem_gt[3]
+    maxx = minx + dem_gt[1] * dem.shape[1]
+    miny = maxy + dem_gt[5] * dem.shape[0]
+    # extent=[longitude_top_left,longitude_top_right,latitude_bottom_left,latitude_top_left]
+    dem_extent = [
+        minx,
+        maxx,
+        miny,
+        maxy,
+    ]
+    dem_coord0, dem_coord1 = np.meshgrid(
+        np.arange(minx, maxx, dem_gt[1]),
+        np.arange(miny, maxy, dem_gt[1]),
+    )
+    dem_coord0 = dem_coord0.astype(np.float32)
+    dem_coord1 = np.flipud(dem_coord1.astype(np.float32))
+    #
+    logging.info("Tiling DEM")
+    (
+        iheight,
+        iwidth,
+        pad_height,
+        pad_width,
+        patch_size,
+        oheight,
+        owidth,
+        dim0,
+        dim1,
+        dim2,
+        dem_tiles,
+    ) = tile_with_overlap(dem, tile_size=tile_size, overlap=100)
+    (
+        DEM_tile_median,
+        DEM_tile_mean,
+        DEM_tile_min,
+        DEM_tile_max,
+        DEM_tile_p25,
+        DEM_tile_p75,
+    ) = get_tile_centerpoints(dem_tiles)
+    #
+    logging.info("Tiling UTM-X")
+    (
+        iheight,
+        iwidth,
+        pad_height,
+        pad_width,
+        patch_size,
+        oheight,
+        owidth,
+        dim0,
+        dim1,
+        dim2,
+        coord0_tiles,
+    ) = tile_with_overlap(dem_coord0, tile_size=tile_size, overlap=100)
+    (
+        coord0_tile_median,
+        coord0_tile_mean,
+        coord0_tile_min,
+        coord0_tile_max,
+        coord0_tile_p25,
+        coord0_tile_p75,
+    ) = get_tile_centerpoints(coord0_tiles)
+    #
+    logging.info("Tiling UTM-Y")
+    (
+        iheight,
+        iwidth,
+        pad_height,
+        pad_width,
+        patch_size,
+        oheight,
+        owidth,
+        dim0,
+        dim1,
+        dim2,
+        coord1_tiles,
+    ) = tile_with_overlap(dem_coord1, tile_size=tile_size, overlap=100)
+    (
+        coord1_tile_median,
+        coord1_tile_mean,
+        coord1_tile_min,
+        coord1_tile_max,
+        coord1_tile_p25,
+        coord1_tile_p75,
+    ) = get_tile_centerpoints(coord1_tiles)
+    dem_coords_fn = csv_fname + "_tilesize%d_dem_coords.csv" % tile_size
+    np.savetxt(
+        dem_coords_fn,
+        np.c_[coord0_tile_median, coord1_tile_median, DEM_tile_median].T,
+        delimiter=",",
+    )
+
     outfile_correlation, outfile_u, outfile_v, outfile_masks = create_fnames_from_csv(
         csv_fname, dirprefix
     )
     logging.info("Loading and processing %d u files" % len(outfile_u))
-    u_stats, u_percentiles, du_percentiles = calc_u_stats(outfile_u)
+    u_stats, u_percentiles, du_percentiles, u_tile_mean_list = calc_u_stats(
+        outfile_u,
+        plot_pngs=True,
+    )
     u_stats_df = pd.DataFrame(
         u_stats,
         columns=[
@@ -1218,28 +2441,30 @@ if __name__ == "__main__":
             "p2_rmse",
             "p2_du_mean",
             "p2_du_var",
+            "tmean_rmse",
+            "tmean_du10",
+            "tmean_du25",
+            "tmean_dumedian",
+            "tmean_du75",
+            "tmean_du90",
         ],
     )
     u_stats_df.set_index("filenr", inplace=True)
-    u_stats_df.to_csv(
-        os.path.basename(dirprefix) + os.path.basename(csv_fname) + "_u_stats.csv"
-    )
-    u_percentiles_fn = (
-        os.path.basename(dirprefix) + os.path.basename(csv_fname) + "_u_percentiles.csv"
-    )
+    u_stats_df.to_csv(os.path.basename(dirprefix) + csv_fname + "_u_stats.csv")
+    u_percentiles_fn = os.path.basename(dirprefix) + csv_fname + "_u_percentiles.csv"
     np.savetxt(u_percentiles_fn, u_percentiles, delimiter=",")
     du_percentiles_fn = (
-        os.path.basename(dirprefix)
-        + os.path.basename(csv_fname)
-        + "_p1_du_percentiles.csv"
+        os.path.basename(dirprefix) + csv_fname + "_p1_du_percentiles.csv"
     )
     np.savetxt(du_percentiles_fn, du_percentiles, delimiter=",")
-
     logging.info("Writing detrended (planar ramp removed) %d u files" % len(outfile_u))
     write_p1_u_rampremoved(outfile_u, u_stats_df)
 
     logging.info("Loading and processing %d v files" % len(outfile_v))
-    v_stats, v_percentiles, dv_percentiles = calc_u_stats(outfile_v)
+    v_stats, v_percentiles, dv_percentiles, v_tile_mean_list = calc_v_stats(
+        outfile_v,
+        plot_pngs=True,
+    )
     v_stats_df = pd.DataFrame(
         v_stats,
         columns=[
@@ -1249,13 +2474,13 @@ if __name__ == "__main__":
             "date2",
             "deltaT_y",
             "nrelements",
-            "vmean",
-            "vvar",
-            "v10",
-            "v25",
-            "vmedian",
-            "v75",
-            "v90",
+            "umean",
+            "uvar",
+            "u10",
+            "u25",
+            "umedian",
+            "u75",
+            "u90",
             "V_0",
             "V_1",
             "V_2",
@@ -1276,7 +2501,7 @@ if __name__ == "__main__":
             "V2_3",
             "V2_4",
             "V2_5",
-            "p2_residuals",
+            "p2_residvals",
             "p2_slope_deg",
             "p2_asppect_deg",
             "p2_curv_simple",
@@ -1284,22 +2509,21 @@ if __name__ == "__main__":
             "p2_rmse",
             "p2_dv_mean",
             "p2_dv_var",
+            "tmean_rmse",
+            "tmean_dv10",
+            "tmean_dv25",
+            "tmean_dvmedian",
+            "tmean_dv75",
+            "tmean_dv90",
         ],
     )
     v_stats_df.set_index("filenr", inplace=True)
-    v_stats_df.to_csv(
-        os.path.basename(dirprefix) + os.path.basename(csv_fname) + "_v_stats.csv"
-    )
-    v_percentiles_fn = (
-        os.path.basename(dirprefix) + os.path.basename(csv_fname) + "_v_percentiles.csv"
-    )
+    v_stats_df.to_csv(os.path.basename(dirprefix) + csv_fname + "_v_stats.csv")
+    v_percentiles_fn = os.path.basename(dirprefix) + csv_fname + "_v_percentiles.csv"
     np.savetxt(v_percentiles_fn, v_percentiles, delimiter=",")
     dv_percentiles_fn = (
-        os.path.basename(dirprefix)
-        + os.path.basename(csv_fname)
-        + "_p1_dv_percentiles.csv"
+        os.path.basename(dirprefix) + csv_fname + "_p1_dv_percentiles.csv"
     )
     np.savetxt(dv_percentiles_fn, dv_percentiles, delimiter=",")
-
     logging.info("Writing detrended (planar ramp removed) %d v files" % len(outfile_v))
     write_p1_v_rampremoved(outfile_v, v_stats_df)

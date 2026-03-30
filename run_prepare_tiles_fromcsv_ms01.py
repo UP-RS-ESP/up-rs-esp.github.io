@@ -89,6 +89,7 @@ def load_offset_tif_tile(fname, xoff=0, yoff=0, xsize=5000, ysize=5000):
     offset = np.array(
         offset_ds.GetRasterBand(1).ReadAsArray(xoff, yoff, xsize, ysize)
     ).astype("float32")
+    offset[offset == -128] = np.nan
     offset_ds = None
     return offset
 
@@ -899,8 +900,6 @@ def create_MASK_fnames_from_csv(csv_fname, dirname):
 def create_fnames_from_csv(csv_fname, dirname):
     date_pairs = np.genfromtxt(csv_fname, delimiter=",")
     logging.info("Loading %d files" % len(date_pairs))
-    mask_dir = os.path.dirname(dirname)
-    mask_dir = os.path.join(mask_dir, "MASKS")
     logging.info("Data directory is %s" % (dirname))
     oversampling = int(os.path.basename(dirname).split("_")[1][2:])
     block_size = int(os.path.basename(dirname).split("_")[2][2:])
@@ -909,7 +908,6 @@ def create_fnames_from_csv(csv_fname, dirname):
     outfile_correlation = []
     outfile_u = []
     outfile_v = []
-    outfile_masks = []
     for i in range(len(date_pairs)):
         outfname_correlation = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_correlation.tif" % (
             date_pairs[i, 0],
@@ -919,9 +917,7 @@ def create_fnames_from_csv(csv_fname, dirname):
             search_radius,
             matching_step,
         )
-        outfname_correlation = os.path.join(
-            dirname + "correlation", outfname_correlation
-        )
+        outfname_correlation = os.path.join(dirname, outfname_correlation)
         if not os.path.exists(outfname_correlation):
             logging.info("%s does not exists" % outfname_correlation)
         outfname_u = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_u.tif" % (
@@ -932,7 +928,7 @@ def create_fnames_from_csv(csv_fname, dirname):
             search_radius,
             matching_step,
         )
-        outfname_u = os.path.join(dirname + "u", outfname_u)
+        outfname_u = os.path.join(dirname, outfname_u)
         if not os.path.exists(outfname_u):
             logging.info("%s does not exists" % outfname_u)
         outfname_v = "%d_%d_os%02d_bs%02d_sr%02d_ms%02d_v.tif" % (
@@ -943,32 +939,23 @@ def create_fnames_from_csv(csv_fname, dirname):
             search_radius,
             matching_step,
         )
-        outfname_v = os.path.join(dirname + "v", outfname_v)
+        outfname_v = os.path.join(dirname, outfname_v)
         if not os.path.exists(outfname_v):
             logging.info("%s does not exists" % outfname_v)
-        outfname_masks = "%d_%d_NDSI_NDVI_CLOUD_SHADOW_mask.tif" % (
-            date_pairs[i, 0],
-            date_pairs[i, 1],
-        )
-        outfname_masks = os.path.join(mask_dir, outfname_masks)
-        if not os.path.exists(outfname_masks):
-            logging.info("%s does not exists" % outfname_masks)
         if (
             not os.path.exists(outfname_correlation)
             or not os.path.exists(outfname_u)
             or not os.path.exists(outfname_v)
-            or not os.path.exists(outfname_masks)
         ):
             logging.info(
-                "Not all correlation, mask, u, v files exists for that date. Not adding date %d_%d to list."
+                "Not all correlation, u, v files exists for that date. Not adding date %d_%d to list."
                 % (date_pairs[i, 0], date_pairs[i, 1])
             )
         else:
             outfile_correlation.append(outfname_correlation)
             outfile_u.append(outfname_u)
             outfile_v.append(outfname_v)
-            outfile_masks.append(outfname_masks)
-    return outfile_correlation, outfile_u, outfile_v, outfile_masks
+    return outfile_correlation, outfile_u, outfile_v
 
 
 def count_nan_ar(u_ar, u_ar_masked):
@@ -1117,23 +1104,32 @@ if __name__ == "__main__":
     # dirprefix = sys.argv[1]
     # dem_fname = sys.argv[2]
     # csv_fname = sys.argv[3]
+    # python run_stack_block_matching_fromcsv.py  \
+    # CORR_os05_bs91_sr06_ms05 \
+    # CORR_os01_bs11_sr03_ms01/ \
+    # CORR_os05_bs91_sr06_ms05_ \
+    # COP15_DEM_NW_ARGENTINA_UTM20_P231R077.tif \
+    # corr_dates_sd1_cc30_short
 
-    dirname = "/raid2-gpu2/bodo/LANDSAT/P231R076/CORR_os05_bs91_sr06_ms05"
-    dirprefix = dirname + "_"
-    csv_fname = "/raid2-gpu2/bodo/LANDSAT/P231R076/corr_dates_sd1_cc30"
-    h5_dirprefix = dirname + "_h5"
+    dirname = "/raid2-gpu2/bodo/LANDSAT/P231R076/CORR_os05_bs91_sr15_ms01"
+    csv_fname = "/raid2-gpu2/bodo/LANDSAT/P231R076/corr_dates_sd1_cc30_B"
     dem_fname = (
-        "/raid2-gpu2/bodo/LANDSAT/P231R076/COP15_DEM_ARGENTINA_UTM20_P231R076.tif"
+        "/raid2-gpu2/bodo/LANDSAT/P231R076/COP15_DEM_ARGENTINA_UTM20_P231R076_os05.tif"
     )
+    h5_dirprefix = dirname + "_h5"
+    dirprefix = dirname + "_"
 
     satellite_resolution_m = 15
     deltadirection_threshold = 45
+    gaussian_sigma = 1
+    gaussian_truncate = 3
+    write_ts = False
 
     dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope, dem_hs = (
         load_dem_aspect_slope_files(dem_fname)
     )
-    outfile_correlation, outfile_u, outfile_v, outfile_masks = create_fnames_from_csv(
-        csv_fname, dirprefix
+    outfile_correlation, outfile_u, outfile_v = create_fnames_from_csv(
+        csv_fname, dirname
     )
 
     logging.info("Loading one u file to get file dimensions")
@@ -1141,8 +1137,11 @@ if __name__ == "__main__":
         outfile_u[0]
     )  # the dimensions should be the same as the DEM
 
+    if not os.path.exists(h5_dirprefix):
+        os.mkdir(h5_dirprefix)
+
     # load each tile area separately, perform stacking and filtering and write output. Merge in next step.
-    tile_size = 5000
+    tile_size = 10000
     xtiles = int(np.ceil(dem.shape[1] / tile_size))
     ytiles = int(np.ceil(dem.shape[0] / tile_size))
     tile_counter = 1
@@ -1249,7 +1248,11 @@ if __name__ == "__main__":
             )
             logging.info("Calculating mean and std. dev. velocity for each date")
             u_mean, u_median, u_var, u_p25, u_p75, u_std = calc_date_stats(u_ar)
-            hdf_fname = dirprefix + "u_stats_tile_x%02d_y%02d.h5" % (i, j)
+            hdf_fname = os.path.basename(dirprefix) + "u_stats_tile_x%02d_y%02d.h5" % (
+                i,
+                j,
+            )
+            hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
             logging.info("Writing u stats tile %s" % hdf_fname)
             with h5py.File(hdf_fname, "w") as f:
                 f.create_dataset(
@@ -1301,7 +1304,11 @@ if __name__ == "__main__":
                     chunks=True,
                 )
             v_mean, v_median, v_var, v_p25, v_p75, v_std = calc_date_stats(v_ar)
-            hdf_fname = dirprefix + "v_stats_tile_x%02d_y%02d.h5" % (i, j)
+            hdf_fname = os.path.basename(dirprefix) + "v_stats_tile_x%02d_y%02d.h5" % (
+                i,
+                j,
+            )
+            hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
             logging.info("Writing v stats tile %s" % hdf_fname)
             with h5py.File(hdf_fname, "w") as f:
                 f.create_dataset(
@@ -1352,8 +1359,11 @@ if __name__ == "__main__":
                     compression_opts=7,
                     chunks=True,
                 )
-
-            hdf_fname = dirprefix + "velocity_tile_x%02d_y%02d.h5" % (i, j)
+            hdf_fname = os.path.basename(dirprefix) + "velocity_tile_x%02d_y%02d.h5" % (
+                i,
+                j,
+            )
+            hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
             logging.info("Writing velocity tile %s" % hdf_fname)
             with h5py.File(hdf_fname, "w") as f:
                 f.create_dataset(
@@ -1380,28 +1390,37 @@ if __name__ == "__main__":
                     compression_opts=7,
                     chunks=True,
                 )
-            hdf_fname = dirprefix + "u_ts_tile_x%02d_y%02d.h5" % (i, j)
-            logging.info("Writing u array time series %s" % hdf_fname)
-            with h5py.File(hdf_fname, "w") as f:
-                f.create_dataset(
-                    "u_ar",
-                    data=u_ar,
-                    dtype=np.dtype(u_ar[0, 0, 0]),
-                    compression="gzip",
-                    compression_opts=7,
-                    chunks=True,
+            if write_ts:
+                hdf_fname = os.path.basename(dirprefix) + "u_ts_tile_x%02d_y%02d.h5" % (
+                    i,
+                    j,
                 )
-            hdf_fname = dirprefix + "v_ts_tile_x%02d_y%02d.h5" % (i, j)
-            logging.info("Writing v array time series%s" % hdf_fname)
-            with h5py.File(hdf_fname, "w") as f:
-                f.create_dataset(
-                    "v_ar",
-                    data=v_ar,
-                    dtype=np.dtype(v_ar[0, 0, 0]),
-                    compression="gzip",
-                    compression_opts=7,
-                    chunks=True,
+                hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
+                logging.info("Writing u array time series %s" % hdf_fname)
+                with h5py.File(hdf_fname, "w") as f:
+                    f.create_dataset(
+                        "u_ar",
+                        data=u_ar,
+                        dtype=np.dtype(u_ar[0, 0, 0]),
+                        compression="gzip",
+                        compression_opts=7,
+                        chunks=True,
+                    )
+                hdf_fname = os.path.basename(dirprefix) + "v_ts_tile_x%02d_y%02d.h5" % (
+                    i,
+                    j,
                 )
+                hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
+                logging.info("Writing v array time series%s" % hdf_fname)
+                with h5py.File(hdf_fname, "w") as f:
+                    f.create_dataset(
+                        "v_ar",
+                        data=v_ar,
+                        dtype=np.dtype(v_ar[0, 0, 0]),
+                        compression="gzip",
+                        compression_opts=7,
+                        chunks=True,
+                    )
             del (
                 u_ar,
                 v_ar,
@@ -1416,7 +1435,8 @@ if __name__ == "__main__":
             )
             tile_counter = tile_counter + 1
             if i == 0 and j == 0:
-                hdf_fname = dirprefix + "dates_data.h5"
+                hdf_fname = os.path.basename(dirprefix) + "dates_data.h5"
+                hdf_fname = os.path.join(h5_dirprefix, hdf_fname)
                 logging.info("Writing date data %s" % hdf_fname)
                 with h5py.File(hdf_fname, "w") as f:
                     f.create_dataset(

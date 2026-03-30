@@ -113,6 +113,18 @@ def load_Landsat_tif(fname):
     return Landsat_B8, Landsat_ds_gt, Landsat_ds_proj, epsg
 
 
+def load_geotiff_tif(fname):
+    Landsat_ds = gdal.Open(fname)
+    Landsat_ds_gt = Landsat_ds.GetGeoTransform()
+    Landsat_ds_proj = Landsat_ds.GetProjection()
+    epsg = int(osr.SpatialReference(wkt=Landsat_ds_proj).GetAttrValue("AUTHORITY", 1))
+    Landsat_B8 = np.array(Landsat_ds.GetRasterBand(1).ReadAsArray()).astype("float32")
+    # make sure that raster is properly pre-processed. Set 0 and -9999 to nan
+    # Landsat_B8[Landsat_B8 == -9999] = np.nan
+    Landsat_ds = None
+    return Landsat_B8, Landsat_ds_gt, Landsat_ds_proj, epsg
+
+
 def get_geotiff_info(geotiff_fn):
     """
     Get Geotiff information from fn.
@@ -196,6 +208,72 @@ def plot_3panel_overview(
     ax[2].get_xaxis().set_ticks([])
     ax[2].get_yaxis().set_ticks([])
     fig.suptitle("%s" % (pngfn), fontsize=16)
+    fig.savefig(pngfn, dpi=300)
+    plt.close()
+
+
+def plot_4panel_map_overview(
+    dem,
+    dem_hs,
+    dem_slope,
+    displacement_my,
+    displacement_my_gf,
+    pngfn,
+    suptitle,
+    x_start=0,
+    y_start=0,
+    x_end=0,
+    y_end=0,
+):
+    fig, ax = plt.subplots(
+        nrows=2, ncols=2, figsize=(16, 14), dpi=300, layout="constrained"
+    )
+    im0 = ax[0, 0].imshow(
+        dem[x_start:x_end, y_start:y_end],
+        vmin=np.nanpercentile(dem[x_start:x_end, y_start:y_end], 2),
+        vmax=np.nanpercentile(dem[x_start:x_end, y_start:y_end], 98),
+        cmap="terrain",
+    )
+    im0b = ax[0, 0].imshow(dem_hs[x_start:x_end, y_start:y_end], cmap="gray", alpha=0.5)
+    h = plt.colorbar(im0, ax=ax[0, 0], orientation="horizontal", shrink=0.8)
+    h.set_label("elevation (m)", fontsize=14)
+    ax[0, 0].get_xaxis().set_ticks([])
+    ax[0, 0].get_yaxis().set_ticks([])
+    im1 = ax[0, 1].imshow(
+        dem_slope[x_start:x_end, y_start:y_end],
+        cmap="viridis",
+        norm=matplotlib.colors.LogNorm(vmin=0.1, vmax=60),
+    )
+    im1b = ax[0, 1].imshow(dem_hs[x_start:x_end, y_start:y_end], cmap="gray", alpha=0.5)
+    h = plt.colorbar(im1, ax=ax[0, 1], orientation="horizontal", shrink=0.8)
+    h.set_label("log slope (degree)", fontsize=14)
+    ax[0, 1].get_xaxis().set_ticks([])
+    ax[0, 1].get_yaxis().set_ticks([])
+    im2 = ax[1, 0].imshow(
+        displacement_my[x_start:x_end, y_start:y_end],
+        cmap="plasma",
+        vmin=0.3,
+        vmax=3,
+    )
+    im2b = ax[1, 0].imshow(dem_hs[x_start:x_end, y_start:y_end], cmap="gray", alpha=0.5)
+    h = plt.colorbar(im2, ax=ax[1, 0:2], orientation="horizontal", shrink=0.8)
+    h.set_label("velocity (m/y)", fontsize=14)
+    ax[1, 0].get_xaxis().set_ticks([])
+    ax[1, 0].get_yaxis().set_ticks([])
+    ax[1, 0].set_title("Unfiltered Displacement")
+    im3 = ax[1, 1].imshow(
+        displacement_my_gf[x_start:x_end, y_start:y_end],
+        vmin=0.3,
+        vmax=3,
+        cmap="plasma",
+    )
+    im3b = ax[1, 1].imshow(dem_hs[x_start:x_end, y_start:y_end], cmap="gray", alpha=0.5)
+    # h = plt.colorbar(im3, ax=ax[1, 1], orientation="horizontal", shrink=0.8)
+    # h.set_label("velocity variance (m/y)")
+    ax[1, 1].get_xaxis().set_ticks([])
+    ax[1, 1].get_yaxis().set_ticks([])
+    ax[1, 1].set_title("Gaussian Filtered Displacement")
+    fig.suptitle("%s" % (suptitle))
     fig.savefig(pngfn, dpi=300)
     plt.close()
 
@@ -703,7 +781,9 @@ def plot_CC_profiles():
         layout="constrained",
         sharex=True,
     )
-    im0 = ax[0].scatter(
+    im0 = ax[
+        0
+    ].scatter(
         displacement_stats_df.loc[
             displacement_stats_df["centroid_y"]
             >= displacement_stats_df["centroid_y"].median()
@@ -727,7 +807,9 @@ def plot_CC_profiles():
     h0 = plt.colorbar(im0, ax=ax[0], orientation="horizontal", shrink=0.8)
     h0.set_label("Northern half mean velocity (m/y)", fontsize=12)
     ax[1].set_xlabel("UTM-X (km)", fontsize=16)
-    im1 = ax[1].scatter(
+    im1 = ax[
+        1
+    ].scatter(
         displacement_stats_df.loc[
             displacement_stats_df["centroid_y"]
             < displacement_stats_df["centroid_y"].median()
@@ -766,7 +848,9 @@ def plot_CC_profiles():
         layout="constrained",
         sharex=True,
     )
-    im0 = ax[0].scatter(
+    im0 = ax[
+        0
+    ].scatter(
         displacement1e5m2_stats_df.loc[
             displacement1e5m2_stats_df["centroid_y"]
             >= displacement1e5m2_stats_df["centroid_y"].median()
@@ -790,7 +874,9 @@ def plot_CC_profiles():
     h0 = plt.colorbar(im0, ax=ax[0], orientation="horizontal", shrink=0.8)
     h0.set_label("Northern half mean velocity (m/y)", fontsize=12)
     ax[1].set_xlabel("UTM-X (km)", fontsize=16)
-    im1 = ax[1].scatter(
+    im1 = ax[
+        1
+    ].scatter(
         displacement1e5m2_stats_df.loc[
             displacement1e5m2_stats_df["centroid_y"]
             < displacement1e5m2_stats_df["centroid_y"].median()
@@ -829,7 +915,9 @@ def plot_CC_profiles():
         layout="constrained",
         sharex=True,
     )
-    im0 = ax[0].scatter(
+    im0 = ax[
+        0
+    ].scatter(
         displacement1e6m2_stats_df.loc[
             displacement1e6m2_stats_df["centroid_y"]
             >= displacement1e6m2_stats_df["centroid_y"].median()
@@ -853,7 +941,9 @@ def plot_CC_profiles():
     h0 = plt.colorbar(im0, ax=ax[0], orientation="horizontal", shrink=0.8)
     h0.set_label("Northern half mean velocity (m/y)", fontsize=12)
     ax[1].set_xlabel("UTM-X (km)", fontsize=16)
-    im1 = ax[1].scatter(
+    im1 = ax[
+        1
+    ].scatter(
         displacement1e6m2_stats_df.loc[
             displacement1e6m2_stats_df["centroid_y"]
             < displacement1e6m2_stats_df["centroid_y"].median()
@@ -884,6 +974,7 @@ def plot_CC_profiles():
     plt.close()
 
 
+# look for weighted gaussian filter and weight by nre
 def gaussian_filter_nan(displacement_my, sigma=2, truncate=4):
     # Gaussian Filter that ignores NaNs. First replaces NaNs with zeros and then uses a second run on a binary mask to remove the effect of 0.
     V = displacement_my.copy()
@@ -903,24 +994,39 @@ if __name__ == "__main__":
     dem_fname = sys.argv[1]
     displacement_fn = sys.argv[2]
     nre_fn = sys.argv[3]
+    min_area = 1e3  # 1e3 / (15 * 15) = 5 pixels
+    v_threshold = 0.15  # threshold was at 0.5
 
-    # dem_fname = "COP15_DEM_ARGENTINA_UTM20_P231R076.tif"
-    # displacement_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my.tif"
-    # nre_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_nre_velocity.tif"
+    # dem_fname = "COP15_DEM_ARGENTINA_UTM19_P001R076.tif"
+    # displacement_fn = (
+    #     "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc4_B_median_velocity_magnitude_my.tif"
+    # )
+    # nre_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc4_B_nre_velocity.tif"
+    # dem_fname = "COP15_DEM_ARGENTINA_UTM20_P231R077.tif"
+    # displacement_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc29_B_median_velocity_magnitude_my.tif"
+    # nre_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc29_B_nre_velocity.tif"
     # dem_fname = "COP15_DEM_ARGENTINA_UTM20_P231R077.tif"
     # displacement_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc29_A_median_velocity_magnitude_my.tif"
     # nre_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc29_A_nre_velocity.tif"
     # dem_fname = "COP15_DEM_ARGENTINA_UTM20_P231R078.tif"
     # displacement_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc20_B_median_velocity_magnitude_my.tif"
     # nre_fn = "CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc20_B_nre_velocity.tif"
+    plot_map_pngs = False
+    CC_png_dir = displacement_fn[:-4] + "_map_pngs"
     overview_png_fname = "%s_3panel_overview.png" % displacement_fn[:-4]
-    bbox_fn = "%s_cc1e4m2_bbox.gpkg" % displacement_fn[:-4]
     displacement_stats_fn = "%s_cc1e4m2.gpkg" % displacement_fn[:-4]
-    displacement_stats1e5m2_fn = "%s_cc1e5m2.gpkg" % displacement_fn[:-4]
-    displacement_stats1e6m2_fn = "%s_cc1e6m2.gpkg" % displacement_fn[:-4]
+    bboxf1_fn = "%s_filt_cc1e4m2_bbox.gpkg" % displacement_fn[:-4]
+    bboxf2_fn = "%s_filt_cc1e5m2_bbox.gpkg" % displacement_fn[:-4]
+    displacement_statsf_fn = "%s_filt_cc1e4m2.gpkg" % displacement_fn[:-4]
+    displacement_stats1e5m2f_fn = "%s_filt_cc1e5m2.gpkg" % displacement_fn[:-4]
+    displacement_stats1e6m2f_fn = "%s_filt_cc1e6m2.gpkg" % displacement_fn[:-4]
     displacement_gf_fn = "%s_gf.tif" % displacement_fn[:-4]
+    landsat_path = int(os.path.basename(dem_fname).split("_")[-1].split(".")[0][1:4])
+    landsat_row = int(os.path.basename(dem_fname).split("_")[-1].split(".")[0][5:])
 
-    logging.info("Loading %s" % dem_fname)
+    if not os.path.exists((CC_png_dir)):
+        os.mkdir(CC_png_dir)
+
     dem, dem_gt, dem_proj, dem_epsg, dem_aspect, dem_slope, dem_hs = (
         load_dem_aspect_slope_files(dem_fname)
     )
@@ -948,19 +1054,30 @@ if __name__ == "__main__":
     nre[nre == 0] = np.nan
     nre[nre == 9999] = np.nan
 
-    logging.info("Gaussian Filtering of velocity magnitude")
-    # displacement_my = gaussian_filter(displacement_my, sigma=3, mode="nearest")
-    displacement_my_gf = displacement_my.copy()
-    displacement_my_gf[displacement_my_gf < 0.1] = np.nan
-    displacement_my_gf = gaussian_filter_nan(displacement_my_gf, sigma=1, truncate=3)
-    logging.info("Writing geotiff %s" % (displacement_gf_fn))
-    save_geotiff(
-        displacement_gf_fn,
-        displacement_my_gf,
-        displacement_epsg,
-        displacement_ds_gt,
-        nan_value=np.nan,
-    )
+    if not os.path.exists((displacement_gf_fn)):
+        logging.info("Gaussian Filtering of velocity magnitude")
+        # displacement_my = gaussian_filter(displacement_my, sigma=3, mode="nearest")
+        displacement_my_gf = displacement_my.copy()
+        displacement_my_gf[displacement_my_gf < 0.1] = np.nan
+        displacement_my_gf = gaussian_filter_nan(
+            displacement_my_gf, sigma=1, truncate=3
+        )
+        logging.info("Writing geotiff %s" % (displacement_gf_fn))
+        save_geotiff(  #
+            displacement_gf_fn,
+            displacement_my_gf,
+            displacement_epsg,
+            displacement_ds_gt,
+            nan_value=np.nan,
+        )
+    elif os.path.exists((displacement_gf_fn)):
+        logging.info("Loading Gaussian filtered geotiff of velocity magnitude")
+        (
+            displacement_my_gf,
+            displacement_my_gf_gt,
+            displacement_my_gf_prog,
+            displacement_my_gf_epsg,
+        ) = load_geotiff_tif(displacement_gf_fn)
 
     logging.info("Plotting 3-panel overview")
     plot_3panel_overview(
@@ -976,16 +1093,18 @@ if __name__ == "__main__":
 
     #
     # connect component analysis
-    logging.info("Finding connected components")
-    v_threshold = 0.1
-    displacement_my_t01 = displacement_my.copy()
+    logging.info(
+        "Finding connected components on Gaussian-Filtered stacked displacement"
+    )
+    displacement_my_t01 = displacement_my_gf.copy()
     displacement_my_t01[displacement_my_t01 >= v_threshold] = 1
     displacement_my_t01[displacement_my_t01 < v_threshold] = 0
     displacement_my_t01[np.isnan(displacement_my_t01)] = 0
     displacement_my_t01 = displacement_my_t01.astype(np.bool_)
     logging.info("Calculating regionprops for connected component labels")
-    min_area = 1e4
-    min_size = int(np.round(min_area / (displacement_ds_gt[1] * displacement_ds_gt[1])))
+    min_size = int(
+        np.ceil(np.round(min_area / (displacement_ds_gt[1] * displacement_ds_gt[1])))
+    )
     displacement_my_t01_bw1e4 = morphology.remove_small_objects(
         displacement_my_t01, min_size=min_size, connectivity=2
     )
@@ -999,7 +1118,6 @@ if __name__ == "__main__":
             properties=("centroid", "area", "coords", "area_filled", "bbox"),
         )
     )
-
     # iterate through each connected component and extract relevant stats
     utm_x = np.arange(
         displacement_ds_gt[0],
@@ -1014,7 +1132,13 @@ if __name__ == "__main__":
     displacement_stats_table = []
     # outline_x_coords = []
     # outline_y_coords = []
-    for i in tqdm.tqdm(range(len(displacement_my_t01_bw1e4_labels_props_df))):
+    logging.info(
+        "Calculating statistics for connected components on unfiltered displacement data"
+    )
+    for i in tqdm.tqdm(
+        range(len(displacement_my_t01_bw1e4_labels_props_df)),
+        desc="Iterating through connected comp.",
+    ):
         cdf = displacement_my_t01_bw1e4_labels_props_df.iloc[i]
         area_m2 = cdf["area"] * displacement_ds_gt[1] ** 2
         area_filled_m2 = cdf["area_filled"] * displacement_ds_gt[1] ** 2
@@ -1067,13 +1191,20 @@ if __name__ == "__main__":
                 ]
             )
             cdisplacement = displacement_my[cdf.coords[:, 0], cdf.coords[:, 1]]
+            # weighted displacement by number of measurements
+            weights = cnre / np.nanmax(cnre)
+            weights_sq = (cnre / np.nanmax(cnre)) ** 2
+            wmean = np.average(cdisplacement, weights=weights)
+            wmean_sq = np.average(cdisplacement, weights=weights_sq)
             displacement_stats = np.array(
                 [
-                    np.mean(cdisplacement),
-                    np.var(cdisplacement),
-                    np.median(cdisplacement),
-                    np.percentile(cdisplacement, 25),
-                    np.percentile(cdisplacement, 75),
+                    np.nanmean(cdisplacement),
+                    np.nanvar(cdisplacement),
+                    np.nanmedian(cdisplacement),
+                    np.nanpercentile(cdisplacement, 25),
+                    np.nanpercentile(cdisplacement, 75),
+                    wmean,
+                    wmean_sq,
                 ]
             )
             caspect = dem_aspect[cdf.coords[:, 0], cdf.coords[:, 1]]
@@ -1089,6 +1220,8 @@ if __name__ == "__main__":
             displacement_stats_table.append(
                 np.r_[
                     i,
+                    landsat_path,
+                    landsat_row,
                     utm_x_centroid,
                     utm_y_centroid,
                     area_m2,
@@ -1106,9 +1239,12 @@ if __name__ == "__main__":
             )
 
     displacement_stats_df = pd.DataFrame(
-        data=np.array(displacement_stats_table)[:, 1:],
+        data=np.array(displacement_stats_table)[:, 0:],
         index=np.array(displacement_stats_table)[:, 0],
         columns=[
+            "CC_id",
+            "Path",
+            "Row",
             "centroid_x",
             "centroid_y",
             "area_m2",
@@ -1141,23 +1277,60 @@ if __name__ == "__main__":
             "v_median",
             "v_p25",
             "v_p75",
+            "V_wmean_nre",
+            "v_wmean_nre2",
             "nre_mean",
             "nre_max",
             "nre_min",
         ],
     )
+    displacement_stats_df = displacement_stats_df.select_dtypes(np.float64).astype(
+        np.float32
+    )
+    displacement_stats_df = displacement_stats_df.convert_dtypes()
     # removal of large area - likely oceans or lakes
     displacement_stats_df = displacement_stats_df.reindex()
     displacement_stats_df = displacement_stats_df[
-        displacement_stats_df["area_m2"] < 1e7
+        displacement_stats_df["area_m2"] < 1e9
     ]
     # (idx2remove,) = np.where(displacement_stats_df["area_m2"] > 1e7)
     # displacement_stats_df.drop(index=idx2remove, inplace=True)
 
-    # displacement_stats_df.loc[
-    #     (displacement_stats_df["v_median"] > 0.2)
-    #     & (displacement_stats_df["area_m2"] > 1e5) & (displacement_stats_df['nre_min'] > 100)
+    logging.info("Building bounding box geometry")
+    bbox_polygon_list = []
+    for i in range(len(displacement_stats_df)):
+        minx = displacement_stats_df.iloc[i]["bbox_x_coord1"]
+        miny = displacement_stats_df.iloc[i]["bbox_y_coord1"]
+        maxx = displacement_stats_df.iloc[i]["bbox_x_coord2"]
+        maxy = displacement_stats_df.iloc[i]["bbox_y_coord2"]
+        bbox_tuple = (minx, miny, maxx, maxy)
+        bbox_polygon = geometry.box(*bbox_tuple)
+        bbox_polygon_list.append(bbox_polygon)
+    displacement_stats_bbox_gdf = gpd.GeoDataFrame(
+        displacement_stats_df, geometry=bbox_polygon_list, crs="EPSG:%d" % dem_epsg
+    )
+    displacement_stats_bbox_gdf = displacement_stats_bbox_gdf.convert_dtypes()
+    displacement_stats_bbox_gdf.to_file(bboxf1_fn)
+    displacement_stats_gdf = gpd.GeoDataFrame(
+        displacement_stats_df,
+        geometry=gpd.points_from_xy(
+            displacement_stats_df.centroid_x, displacement_stats_df.centroid_y
+        ),
+        crs="EPSG:%d" % dem_epsg,
+    )
+    displacement_stats_gdf.to_file(displacement_stats_fn)
+
+    logging.info("Filtering vector file to remove outliers")
+    # changing nre_mean to lower value will include more areas
+    displacement_stats_dff = displacement_stats_df.loc[
+        (displacement_stats_df["slope_mean"] > 10)
+        & (displacement_stats_df["nre_mean"] > 5)
+        & (displacement_stats_df["dem_mean"] > 1500)
+    ]
+    #     & (displacement_stats_df["area_m2"] < 0.5e6)
     # ]
+    # If you don't do filtering step, do:
+    # displacement_stats_dff = displacement_stats_df
     # displacement_stats_df.loc[
     #     (displacement_stats_df["v_median"] > 0.5)
     #     & (displacement_stats_df["area_m2"] > 1e6) & (displacement_stats_df['nre_min'] > 50)
@@ -1177,38 +1350,93 @@ if __name__ == "__main__":
     # create bounding box polyong
     # polygon_geom = Polygon(zip(lon_point_list, lat_point_list))
     # polygon = gpd.GeoDataFrame(index=[0], crs='EPSG:32619', geometry=[polygon_geom])
-    logging.info("Building bounding box geometry")
+    logging.info("Building bounding box geometry of filtered data")
     bbox_polygon_list = []
-    for i in range(len(displacement_stats_df)):
-        minx = displacement_stats_df.iloc[i]["bbox_x_coord1"]
-        miny = displacement_stats_df.iloc[i]["bbox_y_coord1"]
-        maxx = displacement_stats_df.iloc[i]["bbox_x_coord2"]
-        maxy = displacement_stats_df.iloc[i]["bbox_y_coord2"]
+    for i in range(len(displacement_stats_dff)):
+        minx = displacement_stats_dff.iloc[i]["bbox_x_coord1"]
+        miny = displacement_stats_dff.iloc[i]["bbox_y_coord1"]
+        maxx = displacement_stats_dff.iloc[i]["bbox_x_coord2"]
+        maxy = displacement_stats_dff.iloc[i]["bbox_y_coord2"]
         bbox_tuple = (minx, miny, maxx, maxy)
         bbox_polygon = geometry.box(*bbox_tuple)
         bbox_polygon_list.append(bbox_polygon)
-
+    logging.info("Writing geopackage GPKG bounding box to file")
     displacement_stats_bbox_gdf = gpd.GeoDataFrame(
-        displacement_stats_df, geometry=bbox_polygon_list, crs="EPSG:32620"
+        displacement_stats_dff, geometry=bbox_polygon_list, crs="EPSG:%d" % dem_epsg
     )
-    displacement_stats_bbox_gdf.to_file(bbox_fn)
-    # remove low-slope areas
-    # displacement_stats_df.loc[displacement_stats_df['slope_mean'] < 7]
+    displacement_stats_bbox_gdf.to_file(bboxf2_fn)
+    logging.info("Writing geopackage GPKG centroid to file")
     displacement_stats_gdf = gpd.GeoDataFrame(
-        displacement_stats_df,
+        displacement_stats_dff,
         geometry=gpd.points_from_xy(
-            displacement_stats_df.centroid_x, displacement_stats_df.centroid_y
+            displacement_stats_dff.centroid_x, displacement_stats_dff.centroid_y
         ),
-        crs="EPSG:32620",
+        crs="EPSG:%d" % dem_epsg,
     )
-    displacement_stats_gdf.to_file(displacement_stats_fn)
+    displacement_stats_gdf.to_file(displacement_statsf_fn)
 
+    logging.info("Writing geopackage GPKG centroid > 1e5 m2 to file")
     displacement1e5m2_stats_gdf = displacement_stats_gdf.loc[
         displacement_stats_gdf["area_m2"] > 1e5
     ]
-    displacement1e5m2_stats_gdf.to_file(displacement_stats1e5m2_fn)
+    displacement1e5m2_stats_gdf.to_file(displacement_stats1e5m2f_fn)
+
+    logging.info("Writing geopackage GPKG centroid > 1e6 m2 to file")
     displacement1e6m2_stats_gdf = displacement_stats_gdf.loc[
         displacement_stats_gdf["area_m2"] > 1e6
     ]
-    displacement1e6m2_stats_gdf.to_file(displacement_stats1e6m2_fn)
+    displacement1e6m2_stats_gdf.to_file(displacement_stats1e6m2f_fn)
     # plot_CC_profiles()
+
+    # gdal_rasterize -l CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my_filt_cc1e4m2_bbox \
+    #   -burn 1.0 -tr 15.0 15.0 -a_nodata 0.0 -te 179692.5 -2660407.5 400207.5 -2453692.5 \
+    #   -ot Byte -of GTiff -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 \
+    #   /home/bodo/Dropbox/foo/P231R076/CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my_filt_cc1e4m2_bbox.gpkg \
+    #   /home/bodo/Dropbox/foo/P231R076/CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my_gf_cc1e4m2_filt.tif
+
+    outline_buffer_px = int(50)
+    if plot_map_pngs:
+        for i in tqdm.tqdm(
+            range(len(displacement1e5m2_stats_gdf)), desc="Plotting map PNGs"
+        ):
+            # (CC_id,) = np.where(
+            #     displacement1e5m2_stats_gdf["v_mean"]
+            #     == displacement1e5m2_stats_gdf["v_mean"].max()
+            # )[0]
+            CC_id = i
+            # logging.info("Plotting CC_ID %05d" % CC_id)
+            CC_png_fname = "%s_4panel_CC%05d.png" % (
+                displacement_fn[:-4],
+                displacement1e5m2_stats_gdf.iloc[CC_id]["CC_id"],
+            )
+            CC_png_fname = os.path.join(CC_png_dir, CC_png_fname)
+            if os.path.exists(CC_png_fname):
+                continue
+            suptitle = (
+                "%s" % (displacement_fn[:-4])
+                + "\n"
+                + "CC: %05d (nr: %05d) Area: %2.2f km2"
+                % (
+                    displacement1e5m2_stats_gdf.iloc[CC_id]["CC_id"],
+                    CC_id,
+                    displacement1e5m2_stats_gdf.iloc[CC_id]["area_m2"] / 1e6,
+                )
+            )
+            # Make sure to flip x and y for plotting
+            plot_4panel_map_overview(
+                dem,
+                dem_hs,
+                dem_slope,
+                displacement_my,
+                displacement_my_gf,
+                CC_png_fname,
+                suptitle,
+                y_start=int(displacement1e5m2_stats_gdf.iloc[CC_id]["bbox_x1"])
+                - outline_buffer_px,
+                x_start=int(displacement1e5m2_stats_gdf.iloc[CC_id]["bbox_y1"])
+                - outline_buffer_px,
+                y_end=int(displacement1e5m2_stats_gdf.iloc[CC_id]["bbox_x2"])
+                + outline_buffer_px,
+                x_end=int(displacement1e5m2_stats_gdf.iloc[CC_id]["bbox_y2"])
+                + outline_buffer_px,
+            )

@@ -14,10 +14,10 @@ JOBHEADER = """#!/bin/bash
 #SBATCH --partition=gpu              # on the partition "gpu"
 #SBATCH --nodes=1                    # on a single node
 #SBATCH --ntasks=1                   # with a single task (this should always be 1, apart from special cases)
-#SBATCH --cpus-per-task=2            # with that many cpu cores
-#SBATCH --mem=300GB                  # will require that amount of RAM at maximum (if the process takes more it gets killed)
-#SBATCH --gres=gpu:2                 # get both GPUs on node
-#SBATCH --time=0-05:00               # maximum runtime of the job as "d-hh:mm"
+#SBATCH --cpus-per-task=4            # with that many cpu cores
+#SBATCH --mem=700GB                  # will require that amount of RAM at maximum (if the process takes more it gets killed)
+#SBATCH --gres=gpu:4                 # get both GPUs on node
+#SBATCH --time=0-04:00               # maximum runtime of the job as "d-hh:mm"
 #SBATCH --chdir=/work/bookhage/Landsat/P001R077   # working directory of the job
 #SBATCH --mail-type=FAIL             # always get mail notifications
 #SBATCH --output=slurm-%j.out        # standard out of the job into this file (also stderr)
@@ -161,28 +161,32 @@ if __name__ == "__main__":
             )
         )
         commands.append("sleep 30s")
-        counter += 1
+
+        if cudadevice == 0:
+            cudadevice = 1
+        elif cudadevice == 1:
+            cudadevice = 2
+        elif cudadevice == 2:
+            cudadevice = 3
+        else:
+            cudadevice = 0
+            counter += 1
 
         if counter == nr_jobs_per_cuda:
-            if cudadevice == 0:
-                cudadevice = 1
-                counter = 0
-            else:
-                # write to file
-                runfile_out_jobfn = runfile_out[:-5] + "_job%03d.bash" % jobcounter
-                logging.info("Writing to file %s" % runfile_out_jobfn)
-                with open(runfile_out_jobfn, "w") as f:
-                    f.write(JOBHEADER + "\n")
-                    for line in commands:
-                        f.write(f"{line}\n")
-                    f.write("\n")
-                    f.write("wait\n")
-                commands = []
-                cudadevice = 0
-                counter = 0
-                jobcounter += 1
-                sbatch_commands.append("sbatch %s" % runfile_out_jobfn)
-                # sbatch_commands.append("sleep 30s")
+            # write to file
+            runfile_out_jobfn = runfile_out[:-5] + "_job%03d.bash" % jobcounter
+            logging.info("Writing to file %s" % runfile_out_jobfn)
+            with open(runfile_out_jobfn, "w") as f:
+                f.write(JOBHEADER + "\n")
+                for line in commands:
+                    f.write(f"{line}\n")
+                f.write("\n")
+                f.write("wait\n")
+            commands = []
+            counter = 0
+            jobcounter += 1
+            sbatch_commands.append("sbatch %s" % runfile_out_jobfn)
+            # sbatch_commands.append("sleep 30s")
 
         if i == len(date_pairs) - 1:
             # last iteration in for loop - write file
@@ -194,7 +198,6 @@ if __name__ == "__main__":
                     f.write(f"{line}\n")
                 f.write("\n")
                 f.write("wait\n")
-            cudadevice = 0
             commands = []
             sbatch_commands.append("sbatch %s" % runfile_out_jobfn)
 

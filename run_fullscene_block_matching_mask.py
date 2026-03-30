@@ -124,32 +124,6 @@ def save_c_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=0):
     del outband, outRaster, driver
 
 
-def save_uv_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=-128):
-    xdim = array.shape[0]
-    ydim = array.shape[1]
-    srs = osr.SpatialReference()
-    srs.ImportFromEPSG(epsg_code)
-    driver = gdal.GetDriverByName("GTiff")
-    driver.Register()
-    outRaster = driver.Create(
-        geotiff_fn,
-        ydim,
-        xdim,
-        1,
-        gdal.GDT_Int8,
-        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=2"],
-    )
-    outRaster.SetGeoTransform(geotransform)
-    outRaster.SetProjection(srs.ExportToProj4())
-    outband = outRaster.GetRasterBand(1)
-    outband.WriteArray(array, 0, 0)
-    outband.FlushCache()
-    outband.SetNoDataValue(nan_value)
-    outband.ComputeStatistics(0)
-    outband.FlushCache()
-    del outband, outRaster, driver
-
-
 def save_float32_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=0):
     xdim = array.shape[0]
     ydim = array.shape[1]
@@ -164,6 +138,32 @@ def save_float32_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=0
         1,
         gdal.GDT_Float32,
         options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=3"],
+    )
+    outRaster.SetGeoTransform(geotransform)
+    outRaster.SetProjection(srs.ExportToProj4())
+    outband = outRaster.GetRasterBand(1)
+    outband.WriteArray(array, 0, 0)
+    outband.FlushCache()
+    outband.SetNoDataValue(nan_value)
+    outband.ComputeStatistics(0)
+    outband.FlushCache()
+    del outband, outRaster, driver
+
+
+def save_uv_geotiff(geotiff_fn, array, epsg_code, geotransform, nan_value=-128):
+    xdim = array.shape[0]
+    ydim = array.shape[1]
+    srs = osr.SpatialReference()
+    srs.ImportFromEPSG(epsg_code)
+    driver = gdal.GetDriverByName("GTiff")
+    driver.Register()
+    outRaster = driver.Create(
+        geotiff_fn,
+        ydim,
+        xdim,
+        1,
+        gdal.GDT_Int8,
+        options=["COMPRESS=DEFLATE", "ZLEVEL=7", "PREDICTOR=2"],
     )
     outRaster.SetGeoTransform(geotransform)
     outRaster.SetProjection(srs.ExportToProj4())
@@ -266,6 +266,13 @@ if __name__ == "__main__":
     #   231078 121 8 5 5 2 \
     #   /work/bookhage/Landsat/P231R078/CORR_os05_bs121_sr08_ms05
 
+    # python /work/bookhage/Landsat/code/slurm_blockmatching/create_runfile_fullscene_blockmatching_mask.py \
+    #   /work/bookhage/Landsat/P231R076/CROP_os05/LC08_L1TP_231076_20130601_20200913_02_T1_B8.TIF \
+    #   /work/bookhage/Landsat/P231R076/CROP_os05/LC09_L1TP_231076_20240725_20240725_02_T1_B8.TIF \
+    #   121 9 5 1 0 \
+    #   /work/bookhage/Landsat/P231R076/CORR_os05_bs121_sr09_ms01 \
+    #   /work/bookhage/Landsat/P231R076/251210_landslide_buffer_P231R076.tif
+
     fname1 = sys.argv[1]
     fname2 = sys.argv[2]
     block_size = int(sys.argv[3])
@@ -274,8 +281,12 @@ if __name__ == "__main__":
     matching_step = int(sys.argv[6])
     cudadevice = int(sys.argv[7])
     tifdirname = sys.argv[8]
+    maskfname = sys.argv[9]
     nthreads_exp = 9
+    Landsat_mask_exists = True
 
+    # cd /work/bookhage/Landsat/P231R076/
+    # conda activate numba
     # fname1 = "/work/bookhage/Landsat/P231R076/CROP_os05/LC08_L1TP_231076_20130601_20200913_02_T1_B8.TIF"
     # fname2 = "/work/bookhage/Landsat/P231R076/CROP_os05/LC09_L1TP_231076_20240725_20240725_02_T1_B8.TIF"
     # block_size = 121
@@ -284,7 +295,9 @@ if __name__ == "__main__":
     # oversampling = 5
     # matching_step = 1
     # tifdirname ='/work/bookhage/Landsat/P231R076/CORR_os05_bs121_sr09_ms01'
-
+    # maskfname='/work/bookhage/Landsat/P231R076/251210_landslide_buffer_P231R076.tif'
+    # maskfname='/work/bookhage/Landsat/P231R076/CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my_cc1e4m2_bbox_filtered_buffered45m_mask_os05.tif'
+    # gdalwarp -tr 3 3 -r nearest -multi -co BIGTIFF=YES -co COMPRESS=DEFLATE -co ZLEVEL=7 251210_landslide_buffer_P231R076.tif landslide_buffer_P231R076_os5.tif
     cuda.select_device(cudadevice)
     logging.info("Using CUDA Device %d" % cudadevice)
     logging.info("Loading Landsat TIFs: %s and %s" % (fname1, fname2))
@@ -302,9 +315,28 @@ if __name__ == "__main__":
         % (length_s, length_s / 60)
     )
 
-    # fname='/work/bookhage/Landsat/P231R076/CORR_os05_bs91_sr06_ms05_corr_dates_sd1_cc30_B_median_velocity_magnitude_my_cc1e4m2_bbox_filtered_buffered45m_mask_os05.tif'
-    # Landsat_mask, Landsat_mask_ds_gt, Landsat_mask_ds_proj, epsg_code = load_mask_tif(fname)
-    # Landsat_mask_exists = True
+    logging.info("Loading mask %s" % maskfname)
+    start0 = time.time()
+    Landsat_mask, Landsat_mask_ds_gt, Landsat_mask_ds_proj, epsg_code = load_mask_tif(
+        maskfname
+    )
+    end = time.time()
+    length_s = end - start0
+    logging.info(
+        "Loading mask took %d seconds or %2.2f minutes" % (length_s, length_s / 60)
+    )
+
+    logging.info(
+        "Size Landsat 1: %d x %d" % (Landsat_B8_1.shape[0], Landsat_B8_1.shape[1])
+    )
+    logging.info(
+        "Size Landsat 2: %d x %d" % (Landsat_B8_2.shape[0], Landsat_B8_2.shape[1])
+    )
+    logging.info(
+        "Size mask     : %d x %d" % (Landsat_mask.shape[0], Landsat_mask.shape[1])
+    )
+    if Landsat_B8_1.shape != Landsat_mask.shape:
+        logging.info("Landsat TIF 1 and mask array have different dimensions.")
 
     year_name1 = os.path.basename(fname1).split("_")[3]
     year_name2 = os.path.basename(fname2).split("_")[3]
@@ -369,37 +401,17 @@ if __name__ == "__main__":
     # logging.info("Extract geotiff information from %s" % (fname1))
     # gt, proj, epsg_code, ys, xs = get_geotiff_info(fname1)
 
-    if matching_step != 1:
-        logging.info("Masking skip steps with matching step of %02d" % matching_step)
-        # apply skip stepsize
-        # find center point: matching_step = 3, one step in and then in 3 steps
+    if matching_step == 1:
+        logging.info("Using mask for nan areas")
         Landsat_B8_mask = np.ones(Landsat_B8_1.shape, dtype=np.bool_)
-        if matching_step == 3:
-            Landsat_B8_mask[1::matching_step, 1::matching_step] = 0
-        elif matching_step == 5:
-            Landsat_B8_mask[2::matching_step, 2::matching_step] = 0
-        elif matching_step == 7:
-            Landsat_B8_mask[3::matching_step, 3::matching_step] = 0
-        elif matching_step == 9:
-            Landsat_B8_mask[4::matching_step, 4::matching_step] = 0
-
-        # make sure to mask out nan area surrounding Landsat image
-        Landsat_B8_mask[Landsat_B8_1 == 0] = 1
-        nr_nan_pixels1 = len(np.where(Landsat_B8_mask == 1)[0])
-        logging.info(
-            "Masked %s nan pixels (%2.1f %%)"
-            % (
-                f"{nr_nan_pixels1:,}",
-                nr_nan_pixels1 / (Landsat_B8_1.shape[0] * Landsat_B8_1.shape[1]) * 100,
-            )
-        )
-    elif matching_step == 1:
-        logging.info("Creating mask for nan areas")
-        Landsat_B8_mask = np.ones(Landsat_B8_1.shape, dtype=np.bool_)
-        # all areas that not 0 (above 0) are set to 0 in the mask - these are processed
+        # all areas that are not 0 (above 0) are set to 0 in the mask - these are processed
         # all values with 1 are masked out
         # we first set all values from the border to 1
-        Landsat_B8_mask[Landsat_B8_1 != 0] = 0
+        if Landsat_mask_exists == False:
+            Landsat_B8_mask[Landsat_B8_1 != 0] = 0
+        elif Landsat_mask_exists == True:
+            # next, we use TIF mask file and set all areas with 1 to 0 (to be processed)
+            Landsat_B8_mask[Landsat_mask == 1] = 0
         nr_nan_pixels1 = np.count_nonzero(Landsat_B8_mask == 1)
         logging.info(
             "Masked %s nan pixels (%2.1f %%)"
@@ -430,10 +442,10 @@ if __name__ == "__main__":
             matching_step,
         ),
     )
-    logging.info("Save geotiff to %s" % (geotiff_fn))
-    save_mask_geotiff(
-        geotiff_fn, Landsat_B8_mask, epsg_code, geotransform=Landsat_1_ds_gt
-    )
+    # logging.info("Save mask geotiff to %s" % (geotiff_fn))
+    # save_mask_geotiff(
+    #     geotiff_fn, Landsat_B8_mask, epsg_code, geotransform=Landsat_1_ds_gt
+    # )
 
     logging.info(
         "Running block matching for %s and %s with block size: %02d and search radius %02d and matching step %02d and nthreads_exp %02d"
@@ -441,7 +453,15 @@ if __name__ == "__main__":
     )
     start = time.time()
     # block_matching_masked_ncc_uint_nonzero(p, q, mask, block_size, search_radius, nthreads_exp=10)
-    u, v, correlation, stddev = block_matching_masked_ncc_uint_nonzero(
+    # u, v, correlation = block_matching_masked_ncc_uint_nonzero(
+    #     Landsat_B8_1,
+    #     Landsat_B8_2,
+    #     Landsat_B8_mask,
+    #     block_size,
+    #     search_radius,
+    #     nthreads_exp=nthreads_exp,
+    # )
+    u, v, stddev, correlation = block_matching_masked_ncc_uint_nonzero(
         Landsat_B8_1,
         Landsat_B8_2,
         Landsat_B8_mask,
