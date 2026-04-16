@@ -19,6 +19,8 @@ tags:
   - Salars 
 ---
 
+Booming lithium demand is driving rapid brine extraction across the Andean salars—but its impact on ground stability remains largely unknown. Using a decade of satellite radar data, this study investigates whether subsidence observed at one site is part of a broader, region-wide response across the Lithium Triangle.
+
 # Introduction
 
 With the global rise in lithium demand for rechargeable battery
