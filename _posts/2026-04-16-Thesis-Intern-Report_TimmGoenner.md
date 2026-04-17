@@ -447,7 +447,7 @@ displacement, while the Salar de Olaroz, with productive brine pumping,
 shows significant subsidence.
 
 <figure>
-<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10.png">
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10_2026-04-13_Combined_TS.png">
 <figcaption><b>Figure 10:</b> Combined vertical displacement time series with all salars.</figcaption>
 </figure>
 
