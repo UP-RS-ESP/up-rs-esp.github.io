@@ -1,6 +1,7 @@
 ---
 title: "Time-Series InSAR Surface Deformation Analysis of Four Lithium Extraction Salars on the Puna Plateau"
 author: "Timm B. Gönner"
+author_profile: false
 date: 2026-04-16
 toc: true
 toc_sticky: true
@@ -18,7 +19,6 @@ tags:
   - Surface Deformation
   - Salars 
 ---
-
 Booming lithium demand is driving rapid brine extraction across the Andean salars—but its impact on ground stability remains largely unknown. Using a decade of satellite radar data, this study investigates whether subsidence observed at one site is part of a broader, region-wide response across the Lithium Triangle.
 
 # Introduction
@@ -49,7 +49,7 @@ four-week internship in early 2026.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png"><img src =/></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
 <figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
 </figure>
 </center>
@@ -206,7 +206,7 @@ component with an amplitude of 1.81 mm.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png>
 <figcaption><b>Figure 2:</b> Vertical displacement time series plot for Salar del Rincón. The reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
 </center>
@@ -216,7 +216,7 @@ is concentrated along the salar margins and surrounding alluvial fans.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png>
 <figcaption><b>Figure 3:</b> Vertical displacement rate map for Salar del Rincón. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
 </center>
@@ -267,7 +267,7 @@ from the first to last epoch of -60.40 mm.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig4_2026-04-13_Olaroz_TS.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig4_2026-04-13_Olaroz_TS.png>
 <figcaption><b>Figure 4:</b> Vertical displacement time series plot for Salar de Olaroz. The reference point is next to the salar at Lat: -23.379° S and Lon: -67.741° West.</figcaption>
 </figure>
 </center>
@@ -291,7 +291,7 @@ displacement.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig5_2026-04-03_Olaroz_vert.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig5_2026-04-03_Olaroz_vert.png>
 <figcaption><b>Figure 5:</b> Vertical displacement rate map for Salar de Olaroz. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.379° S and Lon: -67.741° West.</figcaption>
 </figure>
 </center>
@@ -352,7 +352,7 @@ amplitude of around 0.79 mm.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig6_2026-04-13_Llullaillaco_TS.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig6_2026-04-13_Llullaillaco_TS.png>
 <figcaption><b>Figure 6:</b> Vertical displacement time series plot for the Salar de Llullaillaco. The reference point is next to the salar at Lat: -24.853° S and Lon: -68.245° West.</figcaption>
 </figure>
 </center>
@@ -364,7 +364,7 @@ providing good spatial coverage.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig7_2026-04-03_Llullaillaco_vert.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig7_2026-04-03_Llullaillaco_vert.png>
 <figcaption><b>Figure 7:</b> Vertical displacement rate map for Salar de Llullaillaco. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -24.853° S and Lon: -68.245° West.</figcaption>
 </figure>
 </center>
@@ -417,7 +417,7 @@ periodic signal that appears relatively stable.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig8_2026-04-13_Calientes_TS.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig8_2026-04-13_Calientes_TS.png>
 <figcaption><b>Figure 8:</b> Vertical displacement time series plot for Salar de Aguas Calientes. The reference point is next to the salar at Lat: -23.429° S and Lon: -67.499° West.</figcaption>
 </figure>
 </center>
@@ -431,7 +431,7 @@ noted by Stoertz & Ericksen (1984).
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig9_2026-04-03_Calientes_vert.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig9_2026-04-03_Calientes_vert.png>
 <figcaption><b>Figure 9:</b> Vertical displacement rate map for Salar de Aguas Calientes. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.429° S and Lon: -67.499° West.</figcaption>
 </figure>
 </center>
@@ -466,7 +466,7 @@ shows significant subsidence.
 
 <center>
 <figure>
-<a href="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10.png"><img src =></a>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10.png>
 <figcaption><b>Figure 10:</b> Combined vertical displacement time series with all salars.</figcaption>
 </figure>
 </center>
