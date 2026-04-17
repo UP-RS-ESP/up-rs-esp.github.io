@@ -259,12 +259,10 @@ signal of the four salars. The Theil-Sen trend estimate yields an
 overall mean vertical velocity of -8.16 mm/yr, with a cumulative change
 from the first to last epoch of -60.40 mm.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig4_2026-04-13_Olaroz_TS.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig4_2026-04-13_Olaroz_TS.png">
 <figcaption><b>Figure 4:</b> Vertical displacement time series plot for Salar de Olaroz. The reference point is next to the salar at Lat: -23.379° S and Lon: -67.741° West.</figcaption>
 </figure>
-</center>
 
 The piecewise linear fit identifies a breakpoint in mid-December 2020.
 Prior to this breakpoint, the surface shows comparatively weak
@@ -283,12 +281,10 @@ signal diminishes radially outward, with the northern margins and
 surrounding alluvial fans showing near-zero or slight positive
 displacement.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig5_2026-04-03_Olaroz_vert.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig5_2026-04-03_Olaroz_vert.png">
 <figcaption><b>Figure 5:</b> Vertical displacement rate map for Salar de Olaroz. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.379° S and Lon: -67.741° West.</figcaption>
 </figure>
-</center>
 
 ### Interpretation
 
@@ -344,24 +340,20 @@ time series closely (RMSE 2.24 mm). The sinusoidal fit on the detrended
 residuals suggests only a weak seasonal component, with an annual
 amplitude of around 0.79 mm.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig6_2026-04-13_Llullaillaco_TS.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig6_2026-04-13_Llullaillaco_TS.png">
 <figcaption><b>Figure 6:</b> Vertical displacement time series plot for the Salar de Llullaillaco. The reference point is next to the salar at Lat: -24.853° S and Lon: -68.245° West.</figcaption>
 </figure>
-</center>
 
 The displacement map (Fig. 7) shows broadly positive velocities across
 most of the salar interior, reaching up to approximately +9.6 mm/yr in
 the central area. Coherence is retained over most of the salar surface,
 providing good spatial coverage.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig7_2026-04-03_Llullaillaco_vert.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig7_2026-04-03_Llullaillaco_vert.png">
 <figcaption><b>Figure 7:</b> Vertical displacement rate map for Salar de Llullaillaco. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -24.853° S and Lon: -68.245° West.</figcaption>
 </figure>
-</center>
 
 ### Interpretation
 
@@ -409,12 +401,10 @@ negative trend (-0.72 mm/yr), while the post-breakpoint segment exhibits
 sustained uplift at +2.62 mm/yr. The sinusoidal fit captures an annual
 periodic signal that appears relatively stable.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig8_2026-04-13_Calientes_TS.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig8_2026-04-13_Calientes_TS.png">
 <figcaption><b>Figure 8:</b> Vertical displacement time series plot for Salar de Aguas Calientes. The reference point is next to the salar at Lat: -23.429° S and Lon: -67.499° West.</figcaption>
 </figure>
-</center>
 
 The displacement map (Fig. 9) shows velocities with a maximum of +3.6
 mm/yr. In it are two major clusters of predominantly larger positive
@@ -423,12 +413,10 @@ slightly negative values. A localised anomaly is visible on the western
 margin, potentially spatially coinciding with the spring activity area
 noted by Stoertz & Ericksen (1984).
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig9_2026-04-03_Calientes_vert.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig9_2026-04-03_Calientes_vert.png">
 <figcaption><b>Figure 9:</b> Vertical displacement rate map for Salar de Aguas Calientes. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.429° S and Lon: -67.499° West.</figcaption>
 </figure>
-</center>
 
 ### Interpretation
 
@@ -458,15 +446,13 @@ commercial-scale extraction, all show low-magnitude positive
 displacement, while the Salar de Olaroz, with productive brine pumping,
 shows significant subsidence.
 
-<center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig10.png">
 <figcaption><b>Figure 10:</b> Combined vertical displacement time series with all salars.</figcaption>
 </figure>
-</center>
 
 <center>
-<b>Table 1:</b> Statistical comparison table.</em>
+<b>Table 1:</b> Statistical comparison table.
 
   | Salar              | Velocity (mm/yr)   | Cumulative (mm)   | Breakpoint   | Extraction status |
   | ------------------ | ------------------ | ----------------- | ------------ | --------------------------- |
