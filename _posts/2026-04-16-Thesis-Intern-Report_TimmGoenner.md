@@ -48,7 +48,7 @@ in optical satellite imagery. The analysis was conducted during a
 four-week internship in early 2026.
 
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png">
 <figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
 </figure>
 
@@ -202,22 +202,18 @@ residual scatter around the piecewise trend is moderate (RMSE 5.25 mm)
 and the sinusoidal fit captures an approximately annual periodic
 component with an amplitude of 1.81 mm.
 
-<center>
 <figure>
-<a href="Fig2_2026-04-13_Rincon_TS.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png> </a>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png">
 <figcaption><b>Figure 2:</b> Vertical displacement time series plot for Salar del Rincón. The reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
-</center>
 
 The displacement map (Fig. 3), shows that the retained signal
 is concentrated along the salar margins and surrounding alluvial fans.
 
-<center>
 <figure>
-<a href="Fig3_2026-04-13_Rincon_map.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png> </a>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png">
 <figcaption><b>Figure 3:</b> Vertical displacement rate map for Salar del Rincón. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
-</center>
 
 ### Interpretation
 
