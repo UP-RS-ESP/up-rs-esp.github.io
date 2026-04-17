@@ -7,7 +7,7 @@ toc: true
 toc_sticky: true
 toc_label: "Time-Series InSAR Surface Deformation Analysis of Four Lithium Extraction Salars"
 header:
-  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Llulleillaco_photo.jpg
+  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Llulleillaco_photo.jpg
   overlay_filter: 0.3
   caption: "Salar Arizaro with the stratovolcano Llullaillaco in the far background"
 read_time: false
@@ -49,9 +49,9 @@ four-week internship in early 2026.
 
 <center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
-<figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
+<a href="Fig1_2026-04-13_Overview_V3.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
 </figure>
+<figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
 </center>
 
 *This internship was supervised by Prof. Dr. Bodo Bookhagen.*
