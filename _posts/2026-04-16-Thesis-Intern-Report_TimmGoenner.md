@@ -453,13 +453,12 @@ shows significant subsidence.
 
 <center>
 <b>Table 1:</b> Statistical comparison table.
-
-  | Salar              | Velocity (mm/yr)   | Cumulative (mm)   | Breakpoint   | Extraction status |
-  | ------------------ | ------------------ | ----------------- | ------------ | --------------------------- |
-  | Rincón             | -0.10              | +2.10             | May 2020     | Pre-mining (est. 2028) |
-  | Olaroz             | -8.16              | −60.40            | Dec 2020     | Active since \~2018--2020 |
-  | Llullaillaco       | +3.07              | +21.60            | May 2024     | Production began 2025 |
-  | Aguas Calientes    | +2.22              | +19.63            | Dec 2018     | None (control) |
+| Salar              | Velocity (mm/yr)   | Cumulative (mm)   | Breakpoint   | Extraction status |
+| ------------------ | ------------------ | ----------------- | ------------ | --------------------------- |
+| Rincón             | -0.10              | +2.10             | May 2020     | Pre-mining (est. 2028) |
+| Olaroz             | -8.16              | −60.40            | Dec 2020     | Active since \~2018--2020 |
+| Llullaillaco       | +3.07              | +21.60            | May 2024     | Production began 2025 |
+| Aguas Calientes    | +2.22              | +19.63            | Dec 2018     | None (control) |
 
 </center>
 
