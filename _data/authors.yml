@@ -1,6 +1,16 @@
 # /_data/authors.yml
 
 Florian Josephowitz:
+  name        : "Timm Gönner"
+  bio         : "MSc Student"
+  location    : "University of Potsdam"
+  avatar      : "/images/TimmGoenner.jpg"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:timm.goenner@uni-potsdam.de"
+
+Florian Josephowitz:
   name        : "Florian Josephowitz"
   bio         : "MSc Student"
   location    : "University of Potsdam"

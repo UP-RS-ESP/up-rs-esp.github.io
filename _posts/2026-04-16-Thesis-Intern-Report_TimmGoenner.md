@@ -1,7 +1,7 @@
 ---
 title: "Time-Series InSAR Surface Deformation Analysis of Four Lithium Extraction Salars on the Puna Plateau"
-author: "Timm B. Gönner"
-author_profile: false
+author: "Timm Gönner"
+author_profile: true
 date: 2026-04-16
 toc: true
 toc_sticky: true
