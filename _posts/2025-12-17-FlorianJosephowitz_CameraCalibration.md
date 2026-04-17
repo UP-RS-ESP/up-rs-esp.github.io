@@ -7,7 +7,7 @@ toc: true
 toc_sticky: true
 toc_label: "Camera Calibration with Calib.IO and Metashape"
 header:
-  #overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
+  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/untitled_3_crop.jpg
   overlay_filter: 0.3
   caption: "3D Model generated with SfM"
 read_time: false
@@ -20,6 +20,7 @@ tags:
 Photogrammetric models are widely used in geoscience, but subtle processing errors can significantly distort their geometry. This study investigates the causes of doming errors and outlines practical strategies to improve model accuracy.
 
 # Introduction
+
 High-quality photogrammetric models are essential tools across many scientific disciplines, particularly in the geosciences, where accurate geometry is critical for subsequent analyses. Applications such as roughness estimation, volume calculation, curvature analysis, 3D curve fitting, and data fusion with LiDAR require geometrically reliable models. However, photogrammetric workflows involve multiple complex processing steps and are strongly influenced by user experience, camera hardware, and parameter estimation during bundle adjustment. A common systematic artifact is the so-called doming error, which manifests as a global warping of reconstructed surfaces, especially in ground-based or UAV surveys of relatively flat areas. This report examines the characteristics and underlying causes of doming errors and proposes strategies to mitigate their impact, thereby improving the geometric fidelity of photogrammetric models.
 
 The basis for this work are images from three different cameras. These images are used to analyze the resulting doming error of a ground reconstruction from each camera. A ground scan with different objects such as stones, spheres, and coded targets is used as a testing ground. The scene is reconstructed from every camera image. The photos from all cameras are structured in 4 recording groups with different angles and distances. The four groups of camera orientations used are: High above ground with nadir view, high above ground with oblique view, lower above ground with oblique view, and very low with oblique view and handheld recording.
@@ -33,8 +34,8 @@ The recorded images are processed as described below and further analyzed to det
 
 *This internship was supervised by Prof. Dr. Bodo Bookhagen.*
 
-
 # Camera Calibration Theory
+
 Camera and lens calibration is necessary for image measurements and especially for photogrammetry. Camera calibration determines the deviation of measured image points from a ideal central projective camera model$$^1$$. An ideal central projection would exist in the theoretical case of a pinhole camera and describes a model, in which the beam geometry of an camera is centered in a optical center and the light paths are ideal straight lines between object and camera sensor$$^1$$. This is not the case at all in lens systems, where light is collected and passed trough different glass elements. The goal of camera calibration is to model the geometric deviation of the light beams as accurate as possible and describe it as the inner orientation of the camera system$$^1$$. Besides the inner orientation there are non geometrical errors too. They show up in images as chromatic aberrations or diffraction blur, but these are not part of inner orientation and not considered here. After Luhmann and Maas (2017), the inner orientation of a camera consists of the position of the principle point and the description of the lens errors of the image coordinates in the image plane.
 
 *Principal point position:*
@@ -145,7 +146,6 @@ The cameras main characteristics are summarized in the following table.
   <figcaption><b>Figure 2</b> Monopod setup and image Aquisition for Lens/Camera Calibration.</figcaption>
 </figure>
 
-
 ## Calibration Setup
 Camera Calibration is the central point of the tests done here. Precalibration is carried out for all used cameras before the image acquisition. So the image acquisition started immediately after the calibration of the camera. For the calibration a coded checkerboard (ChAruCo) is used (18x25 \| Checker Size: 15 mm \| Marker Size: 12 mm \| Dictionary: AruCo DICT_5x5). The board is printed on aluminum and has a size of 400 x 300 mm. The advantage of the ChAruCo board in comparison to uncoded checkerboards is, that is allows greater distribution of tie points in the image corners and edges. This is because they can also be used when partly covered since every second rectangle on the board is coded with an identifier. The overall goal of the calibration is to ensure coverage of the entire image plane and use different distances and orientations to the checkerboard. For that, the checkerboard is first photographed from a distance from all 4 edges of board ensuring coverage of all edges. Then close up images and nadir images are taken of the board. The tie board was placed on the ground and the viewer's position changed. For each Camera around 127-224 images were acquired with the ChArUco board: A7R5 224 images, A6000 127 images, S1H 181 images.
 
@@ -248,7 +248,6 @@ All Metashape processing steps are summarized in the following table.
 | **Dense Cloud** | Quality | medium | medium | medium |
 |  | Filtering | mild | mild | mild |
 
-
 After reconstruction the point clouds, a spherical fit and local variance measures are made to determine the geometric quality of the models
 
 ### Determine the doming error
@@ -346,12 +345,10 @@ A deviation between the different approaches for calibration is visible. Overall
 
 To support the pure tabular view on the data of the calibration files, the distortion can also be visualized from the calibration files.
 
-
 <figure>
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A7R5_v2_vs_A7R5_self_and_precalibration_3panel_func1.jpg">
   <figcaption><b>Figure 8</b> Comparison of camera calibration for A7R5. Top panel shows self calibration with Metashape and bottom row shows precalibrated images with ChAruCo board. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
-
 
 *A7R5 (above):* The figures support what is visible from the models too. The A7R5 has a radial distortion, that is especially strong in the outermost corners. Interesting is the difference between precalibration and the internal calibration too: The both calibrations vary especially in the radial distortion in the outer edges. Both are strong there, but the precalibration by CalibIO is underestimating the distortion in the corners compared to Metashape. This will later be visible in the doming as well.
 
@@ -359,7 +356,6 @@ To support the pure tabular view on the data of the calibration files, the disto
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/FlorianJosephowitz_figures/CameraCalibrationFigures/Calibration_A7R5_v2_vs_A7R5_self_and_precalibration_3panel_func1.jpg">
   <figcaption><b>Figure 9</b> Comparison of camera calibration for A6000. Top panel shows self calibration with Metashape and bottom row shows precalibrated images with ChAruCo board. CalibIO calibration on the left, Metashape calibration middle, difference at the right.</figcaption>
 </figure>
-
 
 *A6000 (above):* The A6000 uses the same lens as the A7R5, but is APS-C. So with the 50 mm lens becomes a 75 mm (equivalent) with a roughly 1.5 crop factor. The images profit from the low center distortion of the lens, the distorted corners are cropped away. This becomes visible for all calibrations. The pure amount of correction is way less then for the both full frame cameras. In the example of the A6000 a un-symmetric behavior of the lens is present. This is due to the tangential distortion (P₁,P₂) or the principle point or both. The calibration from CalibIO vary mostly in the radial distortion, but not as extensive a in the A7R5.
 
@@ -409,11 +405,10 @@ It is visible that one camera shows different result then the rest. The A7R5 sho
 Overall the camera calibration show an strong influence on the doming error inside reconstructed models. The radial distortion, especially the K₁ parameter are likely influencing the doming error directly. This is found from the data collected here. In Both cases where the doming radius dropped strongly between internal and precalibration, the K₁ parameter had half its value, wheras K₂ and K₃ stayed nearly unchanged between cases (see Results Calibration). Second, the local quality for these cases was investigated. The results showed a simultaneous occurrence of higher noise with higher doming in 1/3 cameras strongly, other cameras changes are interpreted as nearly unremarkable, further discussion can be made. The overall noise for them is \< 0.1 mm as standard deviation. Besides the results concerning the geometric quality of the reconstructed models, the used equipment proved its strength in the one way or other. In the reconstruction the APS-C sensor format proved to be more as capable for high quality reconstructions. It performed with best RPE and the lowest doming error for the Metashape-only solution. So the cheaper APS-C camera delivered on point and proved it usability. Nevertheless is should be noted that it likely profited from the expensive high-quality lens and the fact that it has a crop sensor on this full-frame lens. The best calibration results together with the most stable lens parameters had reached the 40 year old manual lens. The reason for that has to be clarified with further testing. From the perspective of this report further testing of different lens/camera combinations with the same test area set-up would be highly interesting. Furthermore, as follow-up research more investigation in the role of K₁ for doming is suggested. This can be tested with a synthetic and incremental variation of the K₁ parameter in this real world setting. The resulting doming could be determined and compared to the results in this report.
 
 # References
-1:	Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
+1: Luhmann, Thomas and Maas, Hans-Gerd, Industriephotogrammetrie, Photogrammetrie und Fernerkundung, Springer Berlin Heidelberg, p. 105-155, 2017
 
-2:	Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
+2: Fraser, Clive S. "Digital camera self-calibration", ISPRS Journal of Photogrammetry and Remote Sensing , Vol. 52, No. 4, p. 149-159, 1997
 
-3:	Brown, Duane, Close-Range Camera Calibration, 1971
+3: Brown, Duane, Close-Range Camera Calibration, 1971
 
-4:	Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025 
-
+4: Agisoft, Agisoft Metashape User Manual: Professional Edition, Version 2.2, 2025
