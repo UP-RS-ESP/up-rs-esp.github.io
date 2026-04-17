@@ -49,7 +49,7 @@ four-week internship in early 2026.
 
 <center>
 <figure>
-<a href="Fig1_2026-04-13_Overview_V3.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
+<a href="Fig1_2026-04-13_Overview_V3.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png></a>
 </figure>
 <figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
 </center>
@@ -206,7 +206,7 @@ component with an amplitude of 1.81 mm.
 
 <center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png>
+<a href="Fig2_2026-04-13_Rincon_TS.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig2_2026-04-13_Rincon_TS.png> </a>
 <figcaption><b>Figure 2:</b> Vertical displacement time series plot for Salar del Rincón. The reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
 </center>
@@ -216,7 +216,7 @@ is concentrated along the salar margins and surrounding alluvial fans.
 
 <center>
 <figure>
-<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png>
+<a href="Fig3_2026-04-13_Rincon_map.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig3_2026-04-13_Rincon_map.png> </a>
 <figcaption><b>Figure 3:</b> Vertical displacement rate map for Salar del Rincón. Colormaps were centered on 0 and the reference point is next to the salar at Lat: -23.952° S and Lon: -67.048° West.</figcaption>
 </figure>
 </center>
