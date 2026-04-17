@@ -451,7 +451,6 @@ shows significant subsidence.
 <figcaption><b>Figure 10:</b> Combined vertical displacement time series with all salars.</figcaption>
 </figure>
 
-<center>
 <b>Table 1:</b> Statistical comparison table.
 
 | Salar            | Velocity (mm/yr) | Cumulative (mm) | Breakpoint | Extraction status         |
@@ -460,8 +459,6 @@ shows significant subsidence.
 | Olaroz           | -8.16            | −60.40          | Dec 2020   | Active since \~2018--2020 |
 | Llullaillaco     | +3.07            | +21.60          | May 2024   | Production began 2025     |
 | Aguas Calientes  | +2.22            | +19.63          | Dec 2018   | None (control)            |
-
-</center>
 
 The non-full-commercial-extracting salars all show positive displacement
 at rates within Ruch et al. (2012)'s observed rates of natural halite
