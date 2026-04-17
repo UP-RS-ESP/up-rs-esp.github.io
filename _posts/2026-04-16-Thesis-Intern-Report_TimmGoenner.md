@@ -60,11 +60,11 @@ four-week internship in early 2026.
 
 The Lithium Triangle spans areas of Argentina, Bolivia, and Chile
 across the Altiplano-Puna Plateau - the central Andes - and the second-largest orogenic plateau
-after Tibet (Eckelmann et al., 2013). Although the Altiplano and Puna
+after Tibet (Allmendinger et al., 1997). Although the Altiplano and Puna
 are sometimes used interchangeably, they both describe morphologically
 different areas: the Bolivian Altiplano is a broad and flat region, while
 the Argentine Puna is characterized by internal drainage with
-reverse-fault-bounded basins and ranges (Eckelmann et al., 2013). On
+reverse-fault-bounded basins and ranges (Allmendinger et al., 1997). On
 average, the elevation of the plateau is around 3,750 m, formed
 by non-collisional convergence between the Nazca and South American
 plates at rates of around 10 cm per year (Pardo-Casas & Molnar, 1987;
