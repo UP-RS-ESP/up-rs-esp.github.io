@@ -47,12 +47,10 @@ primarily selected by visual identification of solar evaporation ponds
 in optical satellite imagery. The analysis was conducted during a
 four-week internship in early 2026.
 
-<center>
 <figure>
-<a href="Fig1_2026-04-13_Overview_V3.png"> <img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png></a>
-</figure>
+<img src=https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Fig1_2026-04-13_Overview_V3.png>
 <figcaption><b>Figure 1:</b> Geographic overview of all salars in the study region. Salars that were studied in detail are outlined.</figcaption>
-</center>
+</figure>
 
 *This internship was supervised by Prof. Dr. Bodo Bookhagen.*
 
