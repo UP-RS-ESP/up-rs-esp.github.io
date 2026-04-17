@@ -9,7 +9,7 @@ toc_label: "Time-Series InSAR Surface Deformation Analysis of Four Lithium Extra
 header:
   overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/TimmGoenner_figures/Llulleillaco_photo.jpg
   overlay_filter: 0.3
-  caption: "3D Model generated with SfM"
+  caption: "Salar Arizaro with the stratovolcano Llullaillaco in the far background"
 read_time: false
 tags:
   - InSAR
