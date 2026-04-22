@@ -43,11 +43,12 @@ To evaluate the performance of OpenCV-based change detection and dense displacem
 
 # Study Area
 
-The study area is located in the rural district of La Soledad, municipality of Rosas, Cauca, in southwestern Colombia ([Figure 1](#fig-study-area)). It lies within the upper basin of Chontaduro Creek, in the Patía Valley intermontane depression between the Western and Central Cordilleras of the Colombian Andes. The region is highly susceptible to landslides due to the combination of steep topography, intense rainfall, and soils and deposits derived from volcanic and volcaniclastic materials associated with the Sotará volcanic complex. Previous regional work by the Servicio Geológico Colombiano identified a long history of mass-movement activity in the municipality, highlighting the geomorphic instability of the area.
+The study area is located in the rural district of La Soledad, municipality of Rosas, Cauca, in southwestern Colombia ([Figure 1](#Figure1)). It lies within the upper basin of Chontaduro Creek, in the Patía Valley intermontane depression between the Western and Central Cordilleras of the Colombian Andes. The region is highly susceptible to landslides due to the combination of steep topography, intense rainfall, and soils and deposits derived from volcanic and volcaniclastic materials associated with the Sotará volcanic complex. Previous regional work by the Servicio Geológico Colombiano identified a long history of mass-movement activity in the municipality, highlighting the geomorphic instability of the area.
 
 <figure>
 <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/RosasStudArea.jpg">
 <figcaption><b>Figure 1:</b> Shaded relief map of study area, showing major rivers, towns and a multi-temporal landslide inventory.</figcaption>
+<a href="#Figure1" target="#Figure"></a>
 </figure>
 
 The Rosas landslide triggered in January 2023 is a complex mass movement ([Figure 2](#landslide-detail)). Previous descriptions indicate a rotational failure in the crown area, intense deformation and cracking in the central body, translational movement along the flanks, and earth- and debris-flow processes toward the toe, where material is funneled through lower-slope zones. This internal variability is important for the present study because it provides natural conditions for evaluating image-based methods in sectors with clearly different deformation dynamics.
@@ -55,6 +56,7 @@ The Rosas landslide triggered in January 2023 is a complex mass movement ([Figur
 <figure>
 <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/landslide1.png">
 <figcaption><b>Figure 2:</b> Panoramic view of Rosas landslide.</figcaption>
+<a href="#Figure2" target="_blank"></a>
 </figure>
 
 For the purposes of this research, two contiguous sub-areas were selected from the orthophotos ([Figure 3](#study-areas)). The first corresponds to the more active and rapidly changing part of the landslide, where deformation is stronger and more diffuse, resembling debris-flow behavior. The second, is located on the eastern margin of the landslide and exhibits smaller, slower, and more spatially coherent displacements, more consistent with translational motion. The calculated area of the 'Flow area' covers approximately 5.83 ha and the 'Flank area' about 2.61 ha. The contrast between these two sectors provides the basis for assessing whether the tested algorithms perform equally well in high-activity and low-activity settings.
