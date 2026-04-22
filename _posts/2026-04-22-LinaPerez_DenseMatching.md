@@ -109,7 +109,7 @@ In practical terms, local features were detected within the stable mask using th
 </figure>
 
 After estimating the homography, the target image was warped onto the reference geometry. OpenCV’s geometric transformation routines operate by remapping the pixel grid of one image into the coordinate system of another, which is the basis for the corrected alignment.
-Alignment quality was evaluated by comparing the absolute grayscale residuals over stable terrain before and after alignment ([Figure 6](#residuals)). This validation is summarized through the mean absolute error over stable pixels, so that a successful alignment is indicated by a reduction in residual difference after warping (see the [notebook](https://github.com/LinMaria/Landslide_FeatureTracking/blob/main/Notebooks/Intership2.ipynb)). This evaluation is particularly useful because it provides a direct measure of whether the fine alignment step actually improved comparability between dates.
+Alignment quality was evaluated by comparing the absolute grayscale residuals over stable terrain before and after alignment ([Figure 6](#residuals)). This validation is summarized through the mean absolute error over stable pixels, so that a successful alignment is indicated by a reduction in residual difference after warping (see the [Jupyter notebook](https://github.com/UP-RS-ESP/up-rs-esp.github.io/blob/master/_posts/LinaPerez_DenseMatching_figures/LinaPerez_DenseMatchingInternship.ipynb)). This evaluation is particularly useful because it provides a direct measure of whether the fine alignment step actually improved comparability between dates.
 
 <figure>
 <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/residuals_alignment_figure.jpg">
