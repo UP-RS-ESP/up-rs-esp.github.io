@@ -90,9 +90,10 @@ The orthophotos analyzed in this study were generated from UAV data that were pr
 
 The methodological workflow developed in this study was designed to compare two computer-vision-based products derived from a multitemporal UAV orthophoto series: a binary change mask and a dense displacement field. The analysis was carried out using 12 orthophotos acquired after the Rosas landslide event, focusing on two contiguous sectors with contrasting deformation styles: a rapidly evolving debris-flow-like sector and a slower, more coherent area on the eastern flank of the landslide. The workflow was organized into nine sequential stages: (1) image loading, (2) stable-area alignment, (3) common extent definition, (4) radiometric correction, (5) change detection, (6) dense displacement estimation, (7) uncertainty analysis, (8) temporal analysis by area, and (9) precipitation comparison. This general sequence is consistent with the need to first reduce geometric and radiometric inconsistencies before interpreting apparent surface change. The Rosas case and the earlier point-cloud alignment workflow are described on the project page.
 
-![metho]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/methodology.png>' | relative_url }})
-{: #metho }
-*Figure 4. Methodological workflow adopted for the multitemporal orthophoto analysis, from image preparation and preprocessing to the generation of change and displacement products, uncertainty assessment, temporal analysis, and precipitation comparison.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/methodology.png">
+<figcaption><b>Figure 4:</b> Methodological workflow adopted for the multitemporal orthophoto analysis, from image preparation and preprocessing to the generation of change and displacement products, uncertainty assessment, temporal analysis, and precipitation comparison. </figcaption>
+</figure>
 
 ## Fine-scale Alignment of Images
 
@@ -102,16 +103,18 @@ The alignment was performed using only stable terrain rather than the entire ima
 
 In practical terms, local features were detected within the stable mask using the *Scale-Invariant Feature Transform*, implemented in [OpenCV](https://docs.opencv.org/4.x/d0/de3/citelist.html#CITEREF_lowe04) with the **SIFT** class. **SIFT** identifies distinctive image structures and computes descriptors that can be matched between dates ([Figure 5](#keypoints)). After descriptor matching, a planar transformation was estimated with **findHomography**, using the RANSAC option to reduce the influence of mismatched correspondences. In OpenCV, findHomography computes a perspective transformation between two planes, while RANSAC retains only geometrically consistent matches as inliers (See OpenCV [Documentation](https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html?utm_source=chatgpt.com)).
 
-![Keypoints]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/keypoints.png>' | relative_url }})
-{: #keypoints }
-*Figure 5. SIFT Keypoints detected between two images. Circles represent the scale at which the keypoint wast detected and the lines represent the orientation.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/keypoints.png">
+<figcaption><b>Figure 5:</b> SIFT Keypoints detected between two images. Circles represent the scale at which the keypoint wast detected and the lines represent the orientation. </figcaption>
+</figure>
 
 After estimating the homography, the target image was warped onto the reference geometry. OpenCV’s geometric transformation routines operate by remapping the pixel grid of one image into the coordinate system of another, which is the basis for the corrected alignment.
 Alignment quality was evaluated by comparing the absolute grayscale residuals over stable terrain before and after alignment ([Figure 6](#residuals)). This validation is summarized through the mean absolute error over stable pixels, so that a successful alignment is indicated by a reduction in residual difference after warping (see the [notebook](https://github.com/LinMaria/Landslide_FeatureTracking/blob/main/Notebooks/Intership2.ipynb)). This evaluation is particularly useful because it provides a direct measure of whether the fine alignment step actually improved comparability between dates.
 
-![Residuals]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/residuals_alignment_figure.jpg>' | relative_url }})
-{: #residuals }
-*Figure 6. Absolute grayscale difference before and after alignment of a single pair of images.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/residuals_alignment_figure.jpg">
+<figcaption><b>Figure 6:</b> Absolute grayscale difference before and after alignment of a single pair of images. </figcaption>
+</figure>
 
 ## Pre-Processing
 
@@ -119,9 +122,10 @@ Once the images were aligned, a preprocessing stage was applied to ensure that o
 
 After defining the common extent, the target image was radiometrically harmonized with the reference image through histogram matching (<span style="color: red;">reference</span>). The purpose of this step was to reduce differences caused by illumination changes, exposure variability, and acquisition conditions between dates. In multitemporal orthophoto analysis, such radiometric inconsistencies can generate false detections if the comparison is based directly on pixel values. Therefore, histogram matching (<span style="color: red;">reference</span>) was applied before both the binary change detection and dense displacement estimation, so that the measured signal would be more closely related to surface change than to brightness differences ([Figure 7](#histograms)).
 
-![histogram]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/matching_histogram.jpg>' | relative_url }})
-{: #histograms }
-*Figure 7. Pre- and post-histogram matching of a single image.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/matching_histogram.jpg">
+<figcaption><b>Figure 7:</b> Pre- and post-histogram matching of a single image.</figcaption>
+</figure>
 
 ## Change Detection
 
@@ -137,9 +141,10 @@ The preliminary binary result was then refined through morphological processing,
 
 Finally, the binary mask was further refined by area filtering, so that very small connected patches interpreted as residual noise were removed from the final result using `cv2.findContours`. This stage is conceptually important, because thresholding and morphology alone may still leave tiny detections caused by residual registration error, local illumination mismatch, or texture effects ([Figure 8](#changemask)).
 
-![changemask]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/change_detection_triptych.jpg>' | relative_url }})
-{: #changemask }
-*Figure 8. Example of the binary change-detection workflow for one image pair: (left) reference orthophoto, (middle) absolute grayscale difference after alignment and radiometric harmonization, and (right) final binary change mask overlaid on the reference image after thresholding and morphological filtering.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/change_detection_triptych.jpg">
+<figcaption><b>Figure 8:</b> Example of the binary change-detection workflow for one image pair: (left) reference orthophoto, (middle) absolute grayscale difference after alignment and radiometric harmonization, and (right) final binary change mask overlaid on the reference image after thresholding and morphological filtering. </figcaption>
+</figure>
 
 ## Dense Displacement Field
 
@@ -149,9 +154,10 @@ In this study, dense motion was estimated with the **Farnebäck algorithm**, imp
 
 The function was applied to the consecutive aligned corrected grayscale orthophotos pairs (see one exxample in [Figure 9](#opticalflow)), so that the estimated motion would reflect terrain changes rather than geometric or illumination inconsistencies. The resulting flow fields contains two components at each pixel: a horizontal displacement component (u) and a vertical displacement component (v), both expressed in pixel units. In OpenCV-based workflows, the conversion from Cartesian flow components to **magnitude** and **direction** can be done either analytically using the Euclidean norm and `arctan2`, or directly with `cv2.cartToPolar`, which computes vector magnitude and angle for every pixel (see documentation [here](https://docs.opencv.org/4.x/d2/de8/group__core__array.html?)).
 
-![opticalflow]({{ '<https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/dense_optical_flow.jpg>' | relative_url }})
-{: #opticalflow }
-*Figure 9. Low-uncertainty dense-displacement products for a representative orthophoto pair. Displacement magnitude after uncertainty filtering (upper left). Displacement direction derived from the horizontal and vertical flow components (upper right).Coarse quiver vectors summarizing the reliable motion field  (lower left). Direction map overlaid on the grayscale orthophoto for spatial interpretation of the estimated movement patterns (lower right).*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/dense_optical_flow.jpg">
+<figcaption><b>Figure 9:</b> Low-uncertainty dense-displacement products for a representative orthophoto pair. Displacement magnitude after uncertainty filtering (upper left). Displacement direction derived from the horizontal and vertical flow components (upper right).Coarse quiver vectors summarizing the reliable motion field  (lower left). Direction map overlaid on the grayscale orthophoto for spatial interpretation of the estimated movement patterns (lower right).</figcaption>
+</figure>
 
 In this study, displacement magnitude was derived as the Euclidean norm of the two flow components, whereas direction was derived from the arctangent of the vertical and horizontal components and then expressed in degrees. The pixel-based displacement estimates were additionally converted to metric units using the orthophoto ground sampling distance (see [Table 1](#table1)), making it possible to interpret the motion field in terms of approximate ground displacement.
 
@@ -181,9 +187,10 @@ In addition to the pointwise filtering, **coarse uncertainty-aware layers** is b
 
 Finally, uncertainty over stable terrain was summarized statistically through metrics such as RMSE, median displacement, and the 95th percentile of displacement magnitude. These statistics serve as reference levels for interpreting the active sectors: estimated displacement in the flux or flank areas becomes more credible when it is clearly larger than the residual motion measured over stable terrain. In this sense, the uncertainty framework supports both **quality control** and **comparative interpretation**, allowing the two sectors to be evaluated not only by the size of their signal but also by how strongly that signal rises above the local noise floor.
 
-![uncertainty](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/uncertainty_diagnostics_4panel.jpg)
-{: #uncertainty}
-*Figure 10. Example of the uncertainty-estimation workflow for a representative orthophoto pair. **(a)** Forward–backward flow inconsistency, used as a pointwise uncertainty indicator. **(b)** Stable terrain used to characterize the background uncertainty distribution and define the 95th-percentile threshold. **(c)** Reliable-motion mask obtained after retaining only low-uncertainty, non-stable pixels. **(d)** Coarse aggregated displacement product derived from the filtered vectors for spatial interpretation.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/uncertainty_diagnostics_4panel.jpg">
+<figcaption><b>Figure 10:</b> Example of the uncertainty-estimation workflow for a representative orthophoto pair. **(a)** Forward–backward flow inconsistency, used as a pointwise uncertainty indicator. **(b)** Stable terrain used to characterize the background uncertainty distribution and define the 95th-percentile threshold. **(c)** Reliable-motion mask obtained after retaining only low-uncertainty, non-stable pixels. **(d)** Coarse aggregated displacement product derived from the filtered vectors for spatial interpretation.</figcaption>
+</figure>
 
 In order to distinguish meaningful motion from background residual displacement, a pair-specific significance threshold was derived from stable terrain. For each orthophoto pair, displacement magnitude was evaluated over stable and valid pixels, and the 95th percentile of that distribution was used as the threshold for significant displacement. A pixel was considered to exhibit significant displacement only if it belonged to the reliable-motion set after uncertainty filtering and if its displacement magnitude exceeded the stable-terrain 95th percentile for that image pair. This definition makes the displacement criterion adaptive to the noise level of each comparison.
 
@@ -223,23 +230,26 @@ As shown in [Figure 11](#seriespslc) (top), the overall values of $\mathbf{P(D \
 
 Overall, these results suggest that the change-detection algorithm has limited ability to isolate physically meaningful change in the early image pairs and, in several cases, appears to confuse shadow variations with actual terrain change. As illustrated in [Figure 12](#chavsdis), the first six dates show only a small number of pixels classified as having significant displacement (blue and red classes). However, for the pair 2023-02-03 to 2023-02-06, there is a noticeable increase in the area classified as changed without significant displacement. This pattern is consistent with false detections caused by shadow changes or illumination differences rather than by real surface motion. In contrast, the dense displacement algorithm performed more robustly in this case, as it did not indicate significant movement where no meaningful displacement was present.
 
-![seriesPSlC](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/P_SlC_timeline.png)
-{: #seriespslc}
-*Figure 11. Time series of the conditional overlap metrics (P(D \mid C)) and (P(C \mid D)) in the flank and flux sectors.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/P_SlC_timeline.png">
+<figcaption><b>Figure 11:</b> Time series of the conditional overlap metrics (P(D \mid C)) and (P(C \mid D)) in the flank and flux sectors.</figcaption>
+</figure>
 
 Regarding $\mathbf{P(C \mid D)}$, the first six image pairs exhibit low values, reflecting the small number of pixels with significant displacement during this period. For the later dates, when the area affected by significant movement increased, $\mathbf{P(C \mid D)}$ also increased, indicating that more of the significantly displaced pixels were simultaneously identified as changed. Nevertheless, the values remained mostly below 0.5, which points to a generally low spatial correspondence between the change-detection and dense-displacement results. The only clear exception is the second-to-last image pair, where the correlation becomes comparatively high. This is also evident in [Figure 12](#chavsdis), where a large proportion of pixels were classified both as changed and as presenting significant displacement. This agreement is especially marked in the flank zone, where both methods appear to capture the same active pattern more consistently.
 
-![chavsdis](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/Change_vs_displacemen_area_by_date.png)
-{: #chavsdis}
-*Figure 12. Pairwise composition of the four agreement classes between the binary change mask and the significant-displacement mask in the flank and flux areas. The bars show the proportion of pixels classified as (i) changed and significantly displaced, (ii) changed but not significantly displaced, (iii) unchanged but significantly displaced, and (iv) neither changed nor significantly displaced.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/Change_vs_displacemen_area_by_date.png">
+<figcaption><b>Figure 12:</b> Pairwise composition of the four agreement classes between the binary change mask and the significant-displacement mask in the flank and flux areas. The bars show the proportion of pixels classified as (i) changed and significantly displaced, (ii) changed but not significantly displaced, (iii) unchanged but significantly displaced, and (iv) neither changed nor significantly displaced.</figcaption>
+</figure>
 
 When comparing the two analysis areas, only one consistent pattern clearly stands out. The correlation between pixels with significant displacement that were also classified as changed, $\mathbf{P(C \mid D)}$, was systematically higher in the flank than in the flux area ([Figure 11](#seriespslc)). This suggests that, in the flank zone, the two methods were more likely to identify the same pixels as active.
 
 A likely explanation is the different spatial character of deformation in the two sectors. In the flank area, both the change mask and the dense displacement field tend to be concentrated in more coherent and spatially confined regions. In contrast, in the flux area, the pixels identified by both methods appear more scattered and diffuse. This difference can be seen, for example, in [Figure 13](#scatteredflux), where the detected activity in the flux sector is spatially dispersed rather than concentrated in a well-defined pattern.
 
-![scatteredflux](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/change_displacement_summary_3x2_2023-03-06_to_2023-03-21.jpg)
-{: #scatteredflux}
-*Figure 13. Example of the spatial comparison between binary change detection and dense displacement for a representative image pair. The panels show the binary change mask, coarse displacement magnitude, coarse displacement direction, and quiver vectors, illustrating the contrast between the extent of detected change and the spatial structure of the estimated motion field.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/change_displacement_summary_3x2_2023-03-06_to_2023-03-21.jpg">
+<figcaption><b>Figure 13:</b> Example of the spatial comparison between binary change detection and dense displacement for a representative image pair. The panels show the binary change mask, coarse displacement magnitude, coarse displacement direction, and quiver vectors, illustrating the contrast between the extent of detected change and the spatial structure of the estimated motion field. </figcaption>
+</figure>
 
 ## Uncertanty
 
@@ -247,17 +257,19 @@ The uncertainty analysis was evaluated using two complementary approaches. First
 
 In contrast, [Figure 14](#noisetoratio) (bottom) presents a measure of motion strength relative to residual displacement in stable terrain, based on the ratio between the 95th percentile displacement in the change zone and the 95th percentile displacement over the stable area. This plot shows that, from the second to the fifth image pair, the displacement field is relatively noisy, with values close to or only slightly above 1. This again agrees with the general observation that little movement was detected during those dates. For the remaining pairs, the ratio is generally above 1, which indicates that the upper range of motion in the active areas exceeds the stable-area residual motion. However, the values are still not consistently high, suggesting that the displacement estimates remain affected by a non-negligible level of noise relative to the stable reference. With respect to the two analysis areas, no clear systematic difference is observed between the flux and the flank. In some image pairs, one area appears less uncertain, whereas in others the opposite occurs and neither sector shows consistently lower uncertainty throughout the series.
 
-![noisetoratio](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/NoiseToRatio.png)
-{: #noisetoratio}
-*Figure 14. Pairwise signal-to-noise ratios for the change-detection and dense-displacement products. Top: ratio between detected change area and stable-area false change area. Bottom: ratio between the 95th percentile displacement magnitude in the changed zone and the 95th percentile displacement magnitude over stable terrain. Values above 1 indicate that the detected signal exceeds the background level measured in stable terrain.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/NoiseToRatio.png">
+<figcaption><b>Figure 14:</b> Pairwise signal-to-noise ratios for the change-detection and dense-displacement products. Top: ratio between detected change area and stable-area false change area. Bottom: ratio between the 95th percentile displacement magnitude in the changed zone and the 95th percentile displacement magnitude over stable terrain. Values above 1 indicate that the detected signal exceeds the background level measured in stable terrain. </figcaption>
+</figure>
 
 Regarding the forward–backward analysis, [Figure 15](#uncertres) (top left and top right) shows that, for most image pairs, the 95th percentile of forward–backward inconsistency in the stable area is well above zero, indicating that a subset of stable pixels exhibits relatively high uncertainty. In contrast, the median inconsistency remains much lower for most dates, which suggests that the majority of stable pixels are characterized by low uncertainty, while the high values in the 95th percentile are driven by a smaller proportion of problematic pixels. This pattern is consistent with localized errors rather than with a uniformly poor displacement field. One likely explanation is that image deformation near the external borders, where geometric distortions and resampling effects are stronger, is being erroneously interpreted by the model as movement. The median values are mostly below 1 px, which can be considered relatively low inconsistency given that the ideal value on stable terrain would be zero. The main exception is the last pair of dates, which shows elevated inconsistency in both the 95th percentile and the median, indicating a more generalized decrease in flow reliability for that pair.
 
 As for the bottom left and bottom right panels in [Figure 15](#uncertres), these plots show the fraction of pixels classified as low-uncertainty after the forward–backward filtering. The lower left panel summarizes this fraction over all valid pixels, whereas the lower right panel shows the same metric separately for the two analysis areas. In general, all image pairs remain above 70%, and most are above 85%, except for the first pair, which presents a lower proportion of low-uncertainty pixels. This indicates that, despite the elevated upper-tail inconsistency observed in some dates, most pixels are still retained as reliable after filtering. With respect to the two analysis areas, the flux behaves as well as or slightly better than the flank in seven of the eleven image pairs, showing a greater proportion of low-uncertainty pixels during those dates.
 
-![uncertres](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/uncertanty_results.png)
-{: #uncertres}
-*Figure 15. Pairwise uncertainty summary for the dense displacement field based on forward–backward consistency, including stable-area inconsistency metrics and the fraction of pixels retained as low-uncertainty in the full valid domain and in the active analysis areas.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/uncertanty_results.png">
+<figcaption><b>Figure 15:</b> Pairwise uncertainty summary for the dense displacement field based on forward–backward consistency, including stable-area inconsistency metrics and the fraction of pixels retained as low-uncertainty in the full valid domain and in the active analysis areas. </figcaption>
+</figure>
 
 ## Temporal Behavior
 
@@ -267,21 +279,24 @@ A different behavior emerges in the second part of the series, beginning with th
 
 With respect to precipitation, the relationship between rainfall and slope activity is not straightforward. In general, the rainfall pattern cannot be linked directly and consistently to the observed movement in the two study areas. The clearest possible association is the final major peak of activity between 2023-03-21 and 2023-03-30, which was preceded by approximately one month with many consecutive rainy days. This suggests that antecedent rainfall may have contributed to the increase in movement during that period, although the available results do not support a simple one-to-one correspondence between rainfall peaks and displacement peaks throughout the full series.
 
-![timeseries](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/timeseries.jpg)
-{: #timeseries}
-*Figure 16. Time-series comparison of rainfall and landslide activity indicators in the flux and flank sectors. The panels show precipitation, detected change area, and displacement magnitude statistics (mean and 95th percentile) derived from the dense displacement field.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/timeseries.jpg">
+<figcaption><b>Figure 16:</b> Time-series comparison of rainfall and landslide activity indicators in the flux and flank sectors. The panels show precipitation, detected change area, and displacement magnitude statistics (mean and 95th percentile) derived from the dense displacement field.</figcaption>
+</figure>
 
 Regarding movement direction, [Figure 17](#directionhist) shows that the flank presents a consistent dominant orientation toward the **west-southwest (WSW)**. This pattern is geomorphologically plausible, since the slope in that sector faces approximately the same direction, and the displacement vectors would therefore be expected to contain a strong westward component. By contrast, the flux area also shows an overall tendency toward the west, but with a second important component in the opposite direction, toward the east. Since the debris-flow path is directed mainly toward the south, a stronger southward to southwestward displacement would have been expected. However, the algorithm detects very little motion in the north-south direction. This suggests that the method may be capturing lateral changes associated with the wandering of the river-bed channels, while failing to resolve rapid motion in the main flow direction.
 
-![directionhist](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/RoseDiagram.png)
-{: #directionhist}
-*Figure 17. Direction histograms of the displacement vectors for the flank and flux sectors.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/RoseDiagram.png">
+<figcaption><b>Figure 17:</b> Direction histograms of the displacement vectors for the flank and flux sectors.</figcaption>
+</figure>
 
 The temporal evolution of movement direction, shown in [Figure 18](#direction), indicates that directionality becomes clearer during the periods of stronger displacement. When higher magnitudes are detected, the estimated vectors are concentrated within a narrower directional range, with less scatter toward other azimuths. This suggests that the algorithm identifies movement direction more consistently when the deformation signal is stronger, whereas periods of weak displacement are associated with noisier and more dispersed directional estimates.
 
-![direction](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/direction.png)
-{: #direction}
-*Figure 18. Temporal evolution of displacement-vector direction in the flank and flux areas.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/direction.png">
+<figcaption><b>Figure 18:</b> Temporal evolution of displacement-vector direction in the flank and flux areas. </figcaption>
+</figure>
 
 ## Spatial Behavior
 
@@ -289,9 +304,10 @@ To analyze the spatial behavior of both the changed areas and the displacement f
 
 For the **flank area**, [Figure 19](#recurrence) (upper row) shows that the recurrence of changed pixels is concentrated mainly in the upper part of the slope, corresponding to the crown of the landslide. This pattern reflects the progressive retreat or advance of the crown, although it is also likely influenced by false detections related to shadows, to which the change-detection algorithm is particularly sensitive. In terms of displacement magnitude, a main zone of high values is concentrated downslope from the crown and corresponds to the body of the landslide developed in this sector. The temporal variability is also high in this same area, which is consistent with alternating periods of stronger and weaker activity through time. Thus, in the flank, the spatial coincidence between high mean displacement and high temporal variability highlights the sector where deformation was most persistent and dynamically variable.
 
-![recurrence](..https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/recurrenceSpatial.jpg)
-{: #recurrence}
-*Figure 19. Spatial summary of landslide activity in the flank and flux sectors. For each area, the figure shows change recurrence, mean displacement magnitude, and temporal variability of displacement, allowing comparison between the persistence, intensity, and temporal variability of the detected deformation patterns.*
+<figure>
+<img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/LinaPerez_DenseMatching_figures/recurrenceSpatial.jpg">
+<figcaption><b>Figure 19:</b> Spatial summary of landslide activity in the flank and flux sectors. For each area, the figure shows change recurrence, mean displacement magnitude, and temporal variability of displacement, allowing comparison between the persistence, intensity, and temporal variability of the detected deformation patterns.</figcaption>
+</figure>
 
 In the **flux** sector, [Figure 19](#recurrence) (lower row) shows that recurrently changed pixels are concentrated mainly along the lateral margins of the flow path. This suggests that the binary change mask is particularly sensitive to repeated variations in the width and edges of the channelized zone. In contrast, the highest mean displacement magnitudes are concentrated within the active channel itself, where material transport appears to have been more intense during the observation period. The temporal variability map shows a similar concentration in this same area, supporting the interpretation that these zones correspond to the parts of the debris-flow system where movement was most active and variable through time.
 
