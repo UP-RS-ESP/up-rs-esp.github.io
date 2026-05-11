@@ -17,7 +17,7 @@ tags:
   - CAndes
 ---
 
-UAV photogrammetry enables detailed monitoring of landslide evolution, but comparing multi-temporal data remains challenging. Using the Rosas landslide in Colobmima, this study tests image-based methods and shows that their performance depends strongly on deformation style.
+UAV photogrammetry enables detailed monitoring of landslide evolution, but comparing multi-temporal data remains challenging. Using the Rosas landslide in Colombia, this study tests image-based methods and shows that their performance depends strongly on deformation style.
 
 # Introduction
 
