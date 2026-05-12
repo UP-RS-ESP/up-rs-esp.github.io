@@ -12,7 +12,9 @@ header:
   caption: "Barchan Dunes in Morocco (source: Google Earth)"
 read_time: false
 tags:
-  - 
+  - pixel tracking
+  - Morocco
+  - Segment Anything Model
 ---
 
 # Introduction
@@ -24,6 +26,8 @@ In Morocco, the rapid movement of barchan dunes is considered an environmental a
 Remote sensing methods are often useful for investigating vast areas like the Moroccan desert. Consequently, various studies have already investigated dune morphology and movement using satellite imagery and aerial photographs (Ben Kacem et al., 2025; Dakir et al., 2016; Elbelrhiti et al., 2008; Mahmoud, 2022). A few of these studies implemented workflows for the automatic extraction of dunes and their movements using machine learning approaches. However, these approaches still rely on manual input, either during the collection of training data (Mahmoud, 2022) or during post-classification refinement steps (Dakir et al., 2016).
 
 Against this background, the aim of this internship was to develop a more automated workflow for identifying and delineating dune features, with a focus on the Atlantic Sahara region of Morocco. In particular, the potential of the Segment Anything Model 2, developed by Meta Platforms, was investigated and tested on Sentinel-2 imagery. Segment Anything is a pre-trained image segmentation algorithm, making it very efficient to use. The question to investigate is whether this generally trained model can complete such a specific segmentation task.
+
+*This internship was supervised by Prof. Dr. Bodo Bookhagen.*
 
 # Regional Settings
 
