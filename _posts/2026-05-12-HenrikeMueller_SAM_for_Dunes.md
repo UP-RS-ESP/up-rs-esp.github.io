@@ -7,15 +7,16 @@ toc: true
 toc_sticky: true
 toc_label: "Dune Detection using SAM2"
 header:
-  overlay_image:"https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/Google_earth.jpg?raw=true"
+  overlay_image: https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/Google_earth.jpg
   overlay_filter: 0.3
-  caption: "Barchan Dunes in Morocco (source: Google Earth)"
+  caption: 'Barchan Dunes in Morocco (source: Google Earth)'
 read_time: false
 tags:
   - pixel tracking
   - Morocco
   - Segment Anything Model
 ---
+This study explores the potential of the Segment Anything Model (SAM) for automated dune detection in satellite imagery, focusing on the Atlantic Sahara region of Morocco.
 
 # Introduction
 
@@ -36,7 +37,7 @@ The selected study area is part of the Atlantic Sahara region and the Tarfaya-La
 In Morocco’s coastal regions, beaches are the primary source of sand. However, these are frequently interrupted by coastal cliffs, which act as barriers and limit the transport of sand inland (Elbelrhiti et al., 2023). One of the main sediment sources feeding the dune corridors of the Atlantic Sahara is Cap Juby, located north of Tarfaya, where sand is mobilized by wind, initiating the formation of proto-dunes (Elbelrhiti, 2012). With a resultant drift potential of 0.91, the region exhibits one of the most unimodal wind regimes worldwide (Elbelrhiti, 2012). The dominant winds come from the northwest (337°) and largely match the observed direction of dune migration in this region (Elbelrhiti et al., 2008). Another essential condition is provided by the hard, vegetation-free surface that characterizes the area. The platform, known as the Dalle Moghrébienne, consists of a Plio-Pleistocene sandy limestone that facilitates the migration of barchan dunes (Elbelrhiti et al., 2023).
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/study_area.png?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/study_area.png">
   <figcaption><b>Figure 1</b> Cropped Sentinel image of the study area with regional context provided by an OpenStreetMap basemap.</figcaption>
 </figure>
 
@@ -63,14 +64,14 @@ The functionality of the Segment Anything Model requires a few preprocessing ste
 Dunes often show very subtle intensity or texture differences compared to their surroundings. To better distinguish between dune and background, adaptive histogram equalization was applied to each tile. CLAHE (Contrast Limited Adaptive Histogram Equalization) separates the image into 8x8 tiles and applies histogram equalization to each of these blocks. To avoid over-amplifying noise signals, a contrast limit is set, distributing every bin that is above that limit uniformly to other bins. In a final step, the equalized blocks are combined using bilinear interpolation to remove borders (OpenCV). The results of this filtering step are exemplified in Figure 2.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/clahe.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/clahe.jpg">
   <figcaption><b>Figure 2</b> Comparison between (A) original image and (B) contrast-enhanced image.</figcaption>
 </figure>
 
 For method development, a limited number of tiles were chosen due to the heterogeneity of the general area of interest. The aim of this work is to develop a workflow for the detection of barchan dunes and to lay the groundwork for possible tracking. However, the chosen area of interest includes dunes in different states, including many coalescent dunes, as well as various non-dune objects. This approach allows for a more controlled evaluation of the segmentation methodology by reducing potential sources of systematic error. The three tiles were chosen by visual inspection and represent different complexities of dune structure and background (Figure 3).
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/tile_examples_selection.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/tile_examples_selection.jpg">
   <figcaption><b>Figure 3</b> Three sample tiles chosen for method development.</figcaption>
 </figure>
 
@@ -95,7 +96,7 @@ Looking at the filtered mask outputs in Figure 4, they show that there is no sig
 In general, it can therefore be summarized that detection works very reliably if the dunes are clearly distinguishable from the background and are fairly isolated from each other.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/automatic_mask_generator_results.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/automatic_mask_generator_results.jpg">
   <figcaption><b>Figure 4</b> Comparison of different mask outputs generated with the Automatic Mask Generator: (A) 32x32 input points for tile 145, (B) 64x64 input points for tile 145, (C) 32x32 input points for tile 240, (D) 64x64 input points for tile 240, (E) 32x32 input points for tile 243, (F) 64x64 input points for tile 243.</figcaption>
 </figure>
 
@@ -108,7 +109,7 @@ In comparison with the output of the Automatic Mask Generator, the results for t
 Considering the major improvements in tile 243 and the consistency of the output in tile 145, the conclusion can be drawn that when the input points are located on the dunes, SAM produces results of higher quality, at least when examining them visually.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/masks_clicked_points.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/masks_clicked_points.jpg">
   <figcaption><b>Figure 5</b> Comparison of the mask outputs using manually clicked points as input points for SAM; each row shows 1. the selected points, 2. second mask output of multimasks, and 3. third output of multimasks.</figcaption>
 </figure>
 
@@ -119,14 +120,14 @@ Selecting input points on a few tiles, as in the examples shown before, is fast 
 In a first step, it was necessary to distinguish the dunes from the background and therefore minimize the influence of noise that resembles structures. Applying a Gaussian filter to the image produces an approximation of the background (Figure 6B), which was then subtracted from the original input image (Figure 6C). A grayscale image was then computed as the mean of the RGB channels, enhancing intensity-based edges (Figure 6D). On this grayscale image, a Laplacian filter was applied to identify the previously enhanced edges (Figure 6E). High Laplacian responses (both negative and positive) were thresholded to obtain a binary mask. Next, a binary closing operation was performed on the extracted values, connecting nearby pixels by bridging gaps and filling smaller holes (Figure 6F). In a last processing step, the now connected objects were labeled and filtered for features smaller than 50 pixels to remove fragments (Figure 6G). The remaining regions were assumed to be the candidate dune features, and for each one, the pixel with maximum Laplacian response was selected as the seed point for SAM (Figure 6H).
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/seed_point_workflow.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/seed_point_workflow.jpg">
   <figcaption><b>Figure 6</b> Workflow for automatic seed point generation</figcaption>
 </figure>
 
 Having generated seed points for all three example tiles, they were fed into Segment Anything. As shown in Figure 7, the results show a high resemblance to the masks with the manually clicked points.
 
 <figure>
-  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/seed_point_masks.jpg?raw=true">
+  <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/HenrikeM_figures/seed_point_masks.jpg">
   <figcaption><b>Figure 7</b> Automatically generated seed points for each tile (A, C and E) and the resulting best mask output (B, D and F)</figcaption>
 </figure>
 
