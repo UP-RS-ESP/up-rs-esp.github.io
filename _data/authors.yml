@@ -1,5 +1,15 @@
 # /_data/authors.yml
 
+Henrike Müller:
+  name        : "Hernike Müller"
+  bio         : "MSc Student"
+  location    : "University of Potsdam"
+  avatar      : "/images/HenrikeMueller.jpg"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:henrike.mueller@uni-potsdam.de"
+
 Timm Gönner:
   name        : "Timm B. Gönner"
   bio         : "MSc Student"
