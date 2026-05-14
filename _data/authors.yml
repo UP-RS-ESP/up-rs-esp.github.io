@@ -4,7 +4,7 @@ Henrike Müller:
   name        : "Henrike Müller"
   bio         : "MSc Student"
   location    : "University of Potsdam"
-  avatar      : "/images/HenrikeMueller.jpg"
+  avatar      : "/images/HenrikeMueller.jpeg"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
