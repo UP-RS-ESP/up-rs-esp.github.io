@@ -500,7 +500,7 @@ Chen, T., & Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System. Proce
 
 Damcı, E., Temür, R., Kanbir, Z., Şekerci, Ç., & Öztorun Köroğlu, E. (2025). Comprehensive investigation of damage due to 2023 Kahramanmaraş Earthquakes in Türkiye: Causes, consequences, and mitigation. Journal of Building Engineering, 99, 111420. https://doi.org/10.1016/j.jobe.2024.111420
 
-HOTOSM Turkey Destroyed Buildings (OpenStreetMap Export) | Humanitarian Dataset | HDX. (n.d.). Retrieved 24 May 2026, from https://data.humdata.org/dataset/hotosm_tur_destroyed_buildings
+HOTOSM Turkey Destroyed Buildings (OpenStreetMap Export), Humanitarian Dataset, HDX. (n.d.). Retrieved 24 May 2026, from https://data.humdata.org/dataset/hotosm_tur_destroyed_buildings
 
 Imtiaz, A., Saloustros, S., Beqiraj, M., Cortés, G., Devaux, M., Lattion, E., Zhu, Y., & Sehaqui, H. (2025). Understanding building damage through the lens of the Swiss post-seismic reconnaissance mission of 2023 Al Haouz, Morocco, earthquake. Scientific Reports, 15(1), 16587. https://doi.org/10.1038/s41598-025-00659-2
 
@@ -513,7 +513,7 @@ Olen, S., & Bookhagen, B. (2018). Mapping Damage-Affected Areas after Natural Ha
 
 Tobita, T., Kiyota, T., Torisu, S., Cinicioglu, O., Tonuk, G., Milev, N., Contreras, J., Contreras, O., & Shiga, M. (2024). Geotechnical damage survey report on February 6, 2023 Turkey-Syria Earthquake, Turkey. Soils and Foundations, 64(3), 101463. https://doi.org/10.1016/j.sandf.2024.101463
 
-Turkey Buildings (OpenStreetMap Export) | Humanitarian Dataset | HDX. (n.d.). Retrieved 24 May 2026, from https://data.humdata.org/dataset/hotosm_tur_buildings
+Turkey Buildings (OpenStreetMap Export), Humanitarian Dataset, HDX. (n.d.). Retrieved 24 May 2026, from https://data.humdata.org/dataset/hotosm_tur_buildings
 
 Wang, C., Zhang, Y., Xie, T., Guo, L., Chen, S., Li, J., & Shi, F. (2022). A Detection Method for Collapsed Buildings Combining Post-Earthquake High-Resolution Optical and Synthetic Aperture Radar Images. Remote Sensing, 14(5), 1100. https://doi.org/10.3390/rs14051100
 
