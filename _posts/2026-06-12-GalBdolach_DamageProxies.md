@@ -71,6 +71,12 @@ The calculation of Sentinel-1 coherence required earlier imagery in addition to 
 
 In addition to the Sentinel imagery, high-resolution imagery from Google Earth Pro and 3m PlanetScope imagery were used for the creation and validation of the training and validation datasets. 
 
+<center>
+
+<b>Table 1</b> Sentinel-2 bands
+
+</center>
+
 
 | Band Number | Sentinel-2 Band Name | Common Name        | Spatial Resolution |
 |--------------|----------------------|--------------------|-------------------|
@@ -89,11 +95,11 @@ In addition to the Sentinel imagery, high-resolution imagery from Google Earth P
 | B12          | Shortwave Infrared   | SWIR 2             | 20 m              |
 
 
-**Table 1** Sentinel-2 bands
+
 
 <center>
 
-**Table 2** Acquisition dates of satellite images
+<b>Table 2</b> Acquisition dates of satellite images
 
 </center>
 
@@ -113,7 +119,7 @@ In addition to the Sentinel imagery, high-resolution imagery from Google Earth P
 
 ## Training Data
 
-The training data contains both intact and destroyed buildings from the city of Antakya and the surrounding area and was based on a publicly available dataset created and provided by the Humanitarian OpenStreetMap Team (HOTOSM Turkey Destroyed Buildings (OpenStreetMap Export) | Humanitarian Dataset | HDX, n.d.). The dataset served as the initial source for collapsed/destroyed building polygons.
+The training data contains both intact and destroyed buildings from the city of Antakya and the surrounding area and was based on a publicly available dataset created and provided by the Humanitarian OpenStreetMap Team (HOTOSM Turkey Destroyed Buildings (OpenStreetMap Export), Humanitarian Dataset, HDX, n.d.). The dataset served as the initial source for collapsed/destroyed building polygons.
 
 Using high-resolution imagery available through Google Earth Pro from before and directly after the earthquake, the Humanitarian OpenStreetMap Team (HOT) dataset was manually validated and corrected. Buildings labeled as collapsed but without visible evidence of destruction were removed, and additional evidently collapsed buildings missing from the dataset were manually added. The creation and correction of polygons was done using 3 m PlanetScope imagery. In Figure 4, an example from the training dataset is visualized, highlighting the high density of destruction in the center of Antakya. 
 
@@ -157,7 +163,7 @@ The tested attributes included:
 - Median difference
 - Percentile range (90-10) difference
 
-A $3 x 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
+A 3 x 3 window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
 
 Each attribute was calculated for each band for every model. In models that contained the required bands, NDVI and NDBI were calculated and treated as separate bands, meaning that the different attributes were also calculated for them. 
 
@@ -165,7 +171,7 @@ Each attribute was calculated for each band for every model. In models that cont
 
 In order to accurately compare the bands and their impact on the model, the importance and impact of the derived attributes had to be determined. This was done through the creation of 15 models based on different combinations of both optical and radar-derived bands for which all considered attributes were calculated. Feature importance was evaluated using both SHAP values and XGBoost gain. Gain measures how useful a feature is for reducing model error during tree splitting (Chen & Guestrin, 2016), while SHAP values measure how strongly a feature contributes to the final predictions across all samples (Lundberg & Lee, 2017).
 
-Features with consistently low contributions across all models, defined as having an average SHAP value below 0.02 and an average gain below 0.005, were removed from subsequent experiments. However, Local Mean ($3 x 3$) was retained despite its low contribution in order to preserve local spatial context and avoid excessive smoothing of the models.
+Features with consistently low contributions across all models, defined as having an average SHAP value below 0.02 and an average gain below 0.005, were removed from subsequent experiments. However, Local Mean (3 x 3) was retained despite its low contribution in order to preserve local spatial context and avoid excessive smoothing of the models.
 
 ## Model Training
 
@@ -202,7 +208,7 @@ A pixel was classified as destroyed when the model probability exceeded 90%. A r
 
 ## Feature Selection
 
-In total, 6 attributes fell below the thresholds of 0.02 SHAP and 0.005 gain (Figs. 6 & 7). The features Difference (raw), Top-Hat Transform, Sobel Edge, Relative Change, and the Morphological Gradient were removed due to their low impact on the models. Local Mean ($3 x 3$), which also fell below the thresholds, was not removed in order to preserve fine-scale spatial context and avoid excessive smoothing of building-level signals.
+In total, 6 attributes fell below the thresholds of 0.02 SHAP and 0.005 gain (Figs. 6 & 7). The features Difference (raw), Top-Hat Transform, Sobel Edge, Relative Change, and the Morphological Gradient were removed due to their low impact on the models. Local Mean (3 x 3), which also fell below the thresholds, was not removed in order to preserve fine-scale spatial context and avoid excessive smoothing of building-level signals.
 
 <figure>
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/Gal_Bdolach_figures/a2232d26-9832-4008-9154-6d7c268c3115.png">
@@ -222,7 +228,7 @@ Additional experiments using 3D variance ($5 x 5 x \text{bands}$), meaning varia
 
 <center>
 
-**Table 3** Impact of attribute selection on F1 score in Antakya
+<b>Table 3</b> Impact of attribute selection on F1 score in Antakya
 
 </center>
 
@@ -235,7 +241,7 @@ Additional experiments using 3D variance ($5 x 5 x \text{bands}$), meaning varia
 
 <center>
 
-**Table 4** Impact of attribute selection on true positives in Iskenderun
+<b>Table 4</b> Impact of attribute selection on true positives in Iskenderun
 
 </center>
 
@@ -249,15 +255,15 @@ Additional experiments using 3D variance ($5 x 5 x \text{bands}$), meaning varia
 As a result of the discussed feature selection, the models discussed and analyzed in the following sections contained only the following attributes: 
 Raw bands (both pre- and post-earthquake)
 - Normalized Difference
-- Local Mean Difference ($3 x 3$, $5 x 5$, $7 x 7$)
-- Variance Difference ($3 x 3$, $5 x 5$, $7 x 7$)
-- Entropy Difference ($3 x 3$)
-- Closing Difference ($3 x 3$)
-- Opening Difference ($3 x 3$)
-- Median Difference ($3 x 3$)
-- Percentile Range (90-10) Difference ($3 x 3$)
+- Local Mean Difference (3 x 3, 5 x 5, 7 x 7)
+- Variance Difference (3 x 3, 5 x 5, 7 x 7)
+- Entropy Difference (3 x 3)
+- Closing Difference (3 x 3)
+- Opening Difference (3 x 3)
+- Median Difference (3 x 3)
+- Percentile Range (90-10) Difference (3 x 3)
 
-A $3 x 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
+A 3 x 3 window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
 
 ## Optical Imagery 
 
@@ -265,7 +271,7 @@ Ten models containing only Sentinel-2 bands were trained and validated in order 
 
 <center>
 
-**Table 5** Results of optical imagery based models
+<b>Table 5</b> Results of optical imagery based models
 
 </center>
 
@@ -293,9 +299,10 @@ Four additional optical models were tested in order to better isolate the impact
 
 <center>
 
-#### Table 6. Results of optical SWIR based models
+<b>Table 6</b> Results of optical SWIR based models
 
 </center>
+
 
 | Model                                           | TP | FN | Spillover FP | Isolated FP | Recall | Precision | F1 Score | Isolated False Alarms / 1000 Buildings |
 | :---------------------------------------------- | -: | -: | -----------: | ----------: | -----: | --------: | -------: | -------------------------------------: |
@@ -315,7 +322,7 @@ Overall, the tested optical models demonstrate the importance of infrared wavele
 
 <center>
 
-**Table 7** Results of radar based models
+<b>Table 7</b> Results of radar based models
 
 </center>
 
@@ -338,7 +345,7 @@ Additionally, the independence of radar imagery from cloud cover and illuminatio
 
 <center>
 
-**Table 8** Results of optical and radar combined models
+<b>Table 8</b> Results of optical and radar combined models
 
 </center>
 
@@ -369,7 +376,7 @@ This effect can also explain the relatively disappointing performance of the Inf
 
 <center>
 
-**Table 9** Results of thin infrared + coherence & backscatter model
+<b>Table 9</b> Results of thin infrared + coherence & backscatter model
 
 </center>
 
@@ -386,7 +393,7 @@ Feature importance analysis was performed using both XGBoost gain and SHAP value
 
 <center>
 
-**Table 10** Feature importance of two models
+<b>Table 10</b> Feature importance of two models
 
 </center>
 
