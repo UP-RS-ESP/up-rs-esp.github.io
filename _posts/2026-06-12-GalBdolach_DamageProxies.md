@@ -71,11 +71,6 @@ The calculation of Sentinel-1 coherence required earlier imagery in addition to 
 
 In addition to the Sentinel imagery, high-resolution imagery from Google Earth Pro and 3m PlanetScope imagery were used for the creation and validation of the training and validation datasets. 
 
-<center>
-
-**Table 1** Sentinel-2 bands
-
-</center>
 
 | Band Number | Sentinel-2 Band Name | Common Name        | Spatial Resolution |
 |--------------|----------------------|--------------------|-------------------|
@@ -93,6 +88,8 @@ In addition to the Sentinel imagery, high-resolution imagery from Google Earth P
 | B11          | Shortwave Infrared   | SWIR 1             | 20 m              |
 | B12          | Shortwave Infrared   | SWIR 2             | 20 m              |
 
+
+**Table 1** Sentinel-2 bands
 
 <center>
 
