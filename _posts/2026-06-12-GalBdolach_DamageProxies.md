@@ -131,9 +131,9 @@ To prevent spatial leakage, pixels originating from the same building polygon we
   <figcaption><b>Figure 4</b> Extract of the Antakya validation dataset, displayed over a post-earthquake Sentinel-2 imagery background.</figcaption>
 </figure>
 
-## Validation Data 
+## Validation Data
 
-Apart from the internal validation performed in Antakya, the city of Iskenderun was selected as the primary independent validation area. Compared to Antakya, Iskenderun experienced lower destruction density (Tobita et al., 2024) and contained more reliable pre-earthquake building footprints from OpenStreetMap (Turkey Buildings (OpenStreetMap Export) | Humanitarian Dataset | HDX, n.d.), making it more suitable for object-based assessment (Fig. 5). The collapsed buildings in Iskenderun were all manually mapped and validated using the same methodology as in Antakya. These polygons were merged with the available OpenStreetMap data. In case of an overlap between a collapsed polygon and an intact building footprint, the intact polygons were removed.
+Apart from the internal validation performed in Antakya, the city of Iskenderun was selected as the primary independent validation area. Compared to Antakya, Iskenderun experienced lower destruction density (Tobita et al., 2024) and contained more reliable pre-earthquake building footprints from OpenStreetMap (Turkey Buildings (OpenStreetMap Export),  Humanitarian Dataset, HDX, n.d.), making it more suitable for object-based assessment (Fig. 5). The collapsed buildings in Iskenderun were all manually mapped and validated using the same methodology as in Antakya. These polygons were merged with the available OpenStreetMap data. In case of an overlap between a collapsed polygon and an intact building footprint, the intact polygons were removed.
 
 The Iskenderun dataset contained 97 collapsed building polygons, some of which covered a number of buildings that, due to the resolution, could not be individually mapped, and 33,434 buildings from OSM. Out of the 33,434 OSM buildings, 33,275 remained after the removal of overlapping buildings. 
 
@@ -150,8 +150,8 @@ The tested attributes included:
 - Absolute difference
 - Normalized difference
 - Relative change
-- Local mean difference ($3 \times 3$, $5 \times 5$, and $7 \times 7$ windows)
-- Local variance difference ($3 \times 3$, $5 \times 5$, and $7 \times 7$ windows)
+- Local mean difference (3 x 3, 5 x 5, and 7 x 7 windows)
+- Local variance difference (3 x 3, 5 x 5, and 7 x 7 windows)
 - Entropy difference
 - Sobel edge magnitude difference
 - Morphological gradient difference
@@ -160,7 +160,7 @@ The tested attributes included:
 - Median difference
 - Percentile range (90-10) difference
 
-A $3 \times 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
+A $3 x 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
 
 Each attribute was calculated for each band for every model. In models that contained the required bands, NDVI and NDBI were calculated and treated as separate bands, meaning that the different attributes were also calculated for them. 
 
@@ -168,7 +168,7 @@ Each attribute was calculated for each band for every model. In models that cont
 
 In order to accurately compare the bands and their impact on the model, the importance and impact of the derived attributes had to be determined. This was done through the creation of 15 models based on different combinations of both optical and radar-derived bands for which all considered attributes were calculated. Feature importance was evaluated using both SHAP values and XGBoost gain. Gain measures how useful a feature is for reducing model error during tree splitting (Chen & Guestrin, 2016), while SHAP values measure how strongly a feature contributes to the final predictions across all samples (Lundberg & Lee, 2017).
 
-Features with consistently low contributions across all models, defined as having an average SHAP value below 0.02 and an average gain below 0.005, were removed from subsequent experiments. However, Local Mean ($3 \times 3$) was retained despite its low contribution in order to preserve local spatial context and avoid excessive smoothing of the models.
+Features with consistently low contributions across all models, defined as having an average SHAP value below 0.02 and an average gain below 0.005, were removed from subsequent experiments. However, Local Mean ($3 x 3$) was retained despite its low contribution in order to preserve local spatial context and avoid excessive smoothing of the models.
 
 ## Model Training
 
@@ -205,7 +205,7 @@ A pixel was classified as destroyed when the model probability exceeded 90%. A r
 
 ## Feature Selection
 
-In total, 6 attributes fell below the thresholds of 0.02 SHAP and 0.005 gain (Figs. 6 & 7). The features Difference (raw), Top-Hat Transform, Sobel Edge, Relative Change, and the Morphological Gradient were removed due to their low impact on the models. Local Mean ($3 \times 3$), which also fell below the thresholds, was not removed in order to preserve fine-scale spatial context and avoid excessive smoothing of building-level signals.
+In total, 6 attributes fell below the thresholds of 0.02 SHAP and 0.005 gain (Figs. 6 & 7). The features Difference (raw), Top-Hat Transform, Sobel Edge, Relative Change, and the Morphological Gradient were removed due to their low impact on the models. Local Mean ($3 x 3$), which also fell below the thresholds, was not removed in order to preserve fine-scale spatial context and avoid excessive smoothing of building-level signals.
 
 <figure>
   <img src="https://github.com/UP-RS-ESP/up-rs-esp.github.io/raw/master/_posts/Gal_Bdolach_figures/a2232d26-9832-4008-9154-6d7c268c3115.png">
@@ -220,7 +220,7 @@ In total, 6 attributes fell below the thresholds of 0.02 SHAP and 0.005 gain (Fi
 
 The removal of the low-contributing attributes did not reduce the accuracy of the models and in some cases even improved the recall (Table 3). The tested models included a model containing all Sentinel-2 bands, a model containing all radar-derived bands, and a model consisting of a mixture of the two. The results indicate that many of the removed attributes mainly introduced noise rather than important information, and that reducing the number of attributes can even improve model performance.
 
-Additional experiments using 3D variance ($5 \times 5 \times \text{bands}$), meaning variance calculated both spatially and spectrally across selected band groups, did not significantly improve the results compared to using only traditional spatial variance (Table 4). This suggests that while spectral-spatial texture contains useful information, the additional complexity introduced by the 3D variance calculation did not substantially improve the delineation capability of the models at Sentinel resolution and in some cases even reduced it.
+Additional experiments using 3D variance ($5 x 5 x \text{bands}$), meaning variance calculated both spatially and spectrally across selected band groups, did not significantly improve the results compared to using only traditional spatial variance (Table 4). This suggests that while spectral-spatial texture contains useful information, the additional complexity introduced by the 3D variance calculation did not substantially improve the delineation capability of the models at Sentinel resolution and in some cases even reduced it.
 
 
 <center>
@@ -252,15 +252,15 @@ Additional experiments using 3D variance ($5 \times 5 \times \text{bands}$), mea
 As a result of the discussed feature selection, the models discussed and analyzed in the following sections contained only the following attributes: 
 Raw bands (both pre- and post-earthquake)
 - Normalized Difference
-- Local Mean Difference ($3 \times 3$, $5 \times 5$, $7 \times 7$)
-- Variance Difference ($3 \times 3$, $5 \times 5$, $7 \times 7$)
-- Entropy Difference ($3 \times 3$)
-- Closing Difference ($3 \times 3$)
-- Opening Difference ($3 \times 3$)
-- Median Difference ($3 \times 3$)
-- Percentile Range (90-10) Difference ($3 \times 3$)
+- Local Mean Difference ($3 x 3$, $5 x 5$, $7 x 7$)
+- Variance Difference ($3 x 3$, $5 x 5$, $7 x 7$)
+- Entropy Difference ($3 x 3$)
+- Closing Difference ($3 x 3$)
+- Opening Difference ($3 x 3$)
+- Median Difference ($3 x 3$)
+- Percentile Range (90-10) Difference ($3 x 3$)
 
-A $3 \times 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
+A $3 x 3$ window was used for entropy, morphological, and robust statistical features in order to preserve localized building-scale changes and reduce excessive spatial smoothing. Larger windows were avoided since the 10 m Sentinel resolution already introduces substantial spatial mixing in dense urban environments.
 
 ## Optical Imagery 
 
