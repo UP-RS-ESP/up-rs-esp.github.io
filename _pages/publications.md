@@ -20,7 +20,6 @@ Chan, V., Rheinwal, A., Bookhagen, B. | 2026 | OrthoSAM: multi-scale extension o
 Svintsov, S., Pradhan, P., Smith, T., and Rybski, D. | 2026 | Integrating agriculture into European urban landscapes matters: A systematic assessment | _Sustainable Cities and Society_ | [DOI](https://doi.org/10.1016/j.scs.2026.107422)
 Liu, T., Morr, A., Bathiany, S., Blaschke, L., Qian, Z., Diao, C., Smith, T., and Boers, N. | 2026 | Data gaps and outliers distort critical slowing down-based resilience indicators | _Science Advances_ | [DOI](https://doi.org/10.1126/sciadv.aee1916)
 Smith, T., Morr, A., Bookhagen, B. and Boers, N. | 2026 | Predicting instabilities in transient landforms and interconnected ecosystems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-68944-w)
-
 | | **[2025]** | | |
 Smith, T. and Bookhagen, B. | 2025 | Strongly Heterogeneous Surface-Water Warming Trends in High Mountain Asia | _Geophysical Research Letters_ | [DOI](https://doi.org/10.1029/2025GL119418)
 Peña, C., Heidbach, O., Metzger, S., Schurr, B., Moreno, M., Bedford, J., Oncken, O. & Faccenna, C. | 2025 | Pore-pressure diffusion controls upper-plate aftershocks of the 2014 Iquique earthquake | _Nature communications_ | [DOI](https://www.nature.com/articles/s41467-025-65013-6)
