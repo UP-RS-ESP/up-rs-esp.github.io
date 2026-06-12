@@ -73,7 +73,7 @@ In addition to the Sentinel imagery, high-resolution imagery from Google Earth P
 
 <center>
 
-#### Table 1. Sentinel-2 bands
+**Table 1** Sentinel-2 bands
 
 </center>
 
@@ -96,7 +96,7 @@ In addition to the Sentinel imagery, high-resolution imagery from Google Earth P
 
 <center>
 
-#### Table 2. Acquisition dates of satellite images
+**Table 2** Acquisition dates of satellite images
 
 </center>
 
@@ -225,7 +225,7 @@ Additional experiments using 3D variance ($5 \times 5 \times \text{bands}$), mea
 
 <center>
 
-#### Table 3. Impact of attribute selection on F1 score in Antakya
+**Table 3** Impact of attribute selection on F1 score in Antakya
 
 </center>
 
@@ -238,7 +238,7 @@ Additional experiments using 3D variance ($5 \times 5 \times \text{bands}$), mea
 
 <center>
 
-#### Table 4. Impact of attribute selection on true positives in Iskenderun
+**Table 4** Impact of attribute selection on true positives in Iskenderun
 
 </center>
 
@@ -268,7 +268,7 @@ Ten models containing only Sentinel-2 bands were trained and validated in order 
 
 <center>
 
-#### Table 5. Results of optical imagery based models
+**Table 5** Results of optical imagery based models
 
 </center>
 
@@ -318,7 +318,7 @@ Overall, the tested optical models demonstrate the importance of infrared wavele
 
 <center>
 
-#### Table 7. Results of radar based models
+**Table 7** Results of radar based models
 
 </center>
 
@@ -341,7 +341,7 @@ Additionally, the independence of radar imagery from cloud cover and illuminatio
 
 <center>
 
-#### Table 8. Results of optical and radar combined models
+**Table 8** Results of optical and radar combined models
 
 </center>
 
@@ -372,7 +372,7 @@ This effect can also explain the relatively disappointing performance of the Inf
 
 <center>
 
-#### Table 9. Results of thin infrared + coherence & backscatter model
+**Table 9** Results of thin infrared + coherence & backscatter model
 
 </center>
 
@@ -389,7 +389,7 @@ Feature importance analysis was performed using both XGBoost gain and SHAP value
 
 <center>
 
-#### Table 10. Feature importance of two models
+**Table 10** Feature importance of two models
 
 </center>
 
