@@ -1,6 +1,16 @@
 # /_data/authors.yml
 
 Henrike Müller:
+  name        : "Gal Bdolach"
+  bio         : "MSc Student"
+  location    : "University of Potsdam"
+  avatar      : "/images/GalBdolach.jpg"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:gal.bdolach@uni-potsdam.de"
+
+Henrike Müller:
   name        : "Henrike Müller"
   bio         : "MSc Student"
   location    : "University of Potsdam"
