@@ -47,10 +47,10 @@ PhD_students1:
     alt: Valentina Armeni
     title: Valentina Armeni
     excerpt: 'Vulcanology, UAV, Airphoto Photogrammetry'
-  - image_path: /images/mueting.jpg
-    title: Ariane Mueting
-    excerpt: 'Digital Elevation Models, Satellite Photogrammetry'
-    url: 'https://arimue.github.io/'
+  - image_path: /images/Valentina.jpg
+    alt: Anarda Luísa Sousa Simões
+    title: Anarda Luísa Sousa Simões
+    excerpt: 'Cosmogenic Nuclides (visiting PhD student'
 PhD_students2:
   - image_path: /images/AnnaRosner.jpg
     alt: Anna Rosner
@@ -94,10 +94,15 @@ MSc_students1:
     title: Lina Maria Peréz
     excerpt: 'UAV, Landslide mapping, point clouds'
     url: 'https://linmaria.github.io/LintheMoment/'
-  - image_path: /images/Hersh.jpg
-    alt: David Hersh
-    title: David Hersh
-    excerpt: 'Terrestrial Lidar (TLS) and Vegetation detection'
+  - image_path: /images/TimmGoenner.jpg
+    alt: Timm Gönner
+    title: Timm Gönner
+    excerpt: 'Radar Interferometry in the Central Puna'
+  - image_path: /images/HenrikeMueller.jpeg
+    alt: Henrike Müller 
+    title: Henrike Müller
+    excerpt: 'Dune Detection and Tracking'
+
 ---
 
 # Researchers
@@ -128,6 +133,7 @@ MSc_students1:
 
 # Past Members
 
+- Dr. Ariane Mueting (now at Geospatial Services Engineer at ESA)
 - Dr. Manudeo Singh (now Newton fellow at Aberystwyth University, UK)
 - Dr. Stefanie Tofelde (now at FU Berlin)
 - Dr. Nikolaos Antonoglou (now at German Aerospace Center, DLR)
@@ -145,6 +151,8 @@ MSc_students1:
 - Dr. Lisa Luna (now at USGS)
 
 # Past MSc Students
+- Ben Lefebvre (now PhD student at Universität Greifswald)
+- David Hersh (Geospatial engineer, https://geospatialcatalog.com/)
 - VictoriaDergunova (now GFZ Potsdam)
 - Yiğit Özlan
 - Man Tuen Chan (now PhD student at the Humboldt-Universität zu Berlin)
