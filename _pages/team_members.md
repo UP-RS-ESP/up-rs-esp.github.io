@@ -47,7 +47,7 @@ PhD_students1:
     alt: Valentina Armeni
     title: Valentina Armeni
     excerpt: 'Vulcanology, UAV, Airphoto Photogrammetry'
-  - image_path: /images/2000px-Universität_Potsdam_logo.svg.png
+  - image_path: /images/Anarda.jpeg
     alt: Anarda Luísa Sousa Simões
     title: Anarda Luísa Sousa Simões
     excerpt: 'Cosmogenic Nuclides (visiting PhD student'
