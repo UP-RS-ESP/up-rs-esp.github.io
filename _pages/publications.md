@@ -14,6 +14,7 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2026]** | | |
+Fritz, S.C. et al. | 2026 | Initial results from a Trans-Amazon Drilling Project core from the Acre Basin of Brazil | *Scientific Drilling* | [DOI](https://sd.copernicus.org/articles/35/127/2026/)
 Tofelde, S., Clubb, F. J., Bookhagen, B. | 2026 | Controls on Valley-Floor Width in the Western Andes | _JGR Earth Surface_ | [DOI](https://doi.org/10.1029/2025JF00868a3)
 Hongn, F., Montero-López, C., Aramayo, A., Camardelli, C., Guevara, A., Bookhagen, B., Strecker, M.R. | 2026 | Localized deformation, uplift and fluvial processes of the proximal Bermejo megafan in the Andean foreland: Topographic growth of the Lomas de Olmedo anticline of NW Argentina | _Journal of South American Earth Sciences_ | [DOI](https://doi.org/10.1016/j.jsames.2026.106014)
 Chan, V., Rheinwalt, A., Bookhagen, B. | 2026 | OrthoSAM: multi-scale extension of the Segment Anything Model for river pebble delineation from large orthophotos | _Earth Surface Dynamics_ | [DOI](https://esurf.copernicus.org/articles/14/391/2026/#bib1.bibx26)
