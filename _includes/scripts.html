@@ -19,6 +19,7 @@
 {% endif %}
 
 {% include analytics.html %}
+{% if site.analytics.provider == "google-gtag" %}{% include consent-banner.html %}{% endif %}
 {% include /comments-providers/scripts.html %}
 
 {% if site.after_footer_scripts %}
