@@ -15,7 +15,7 @@ Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2026]** | | |
 Smith, T., Morr, A, Schötz, C and Boers, N. | 2026 | Estimating the Resilience of Non-Stationary Systems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-78489-7)
-Guo, Z, Wang, J, Smith, T, Li, W, Zhang, K, Wu, J, Zhou, Y, and Gong, P. | Widespread reversal of vegetation resilience in permafrost ecosystems | 2026 | _Nature Plants_ } [DOI](https://doi.org/10.1038/s41477-026-02462-x)
+Guo, Z, Wang, J, Smith, T, Li, W, Zhang, K, Wu, J, Zhou, Y, and Gong, P. | 2026 | Widespread reversal of vegetation resilience in permafrost ecosystems | 2026 | _Nature Plants_ } [DOI](https://doi.org/10.1038/s41477-026-02462-x)
 Smith, T and Bookhagen, B | 2026 | Discharge deficits in the Central Himalaya linked to greening and warming | _Scientific Reports_ | [DOI](https://doi.org/10.1038/s41598-026-68997-3)
 Viotto, S. Bookhagen, B. | 2026 | Strategies for Mitigating the Impact of Ionospheric and Tropospheric Delay on Sentinel-1 Interferograms in Northwestern Argentina | *Earth and Space Sciences* | [DOI](https://doi.org/10.1029/2026EA005014)
 Mueting, A., Charrier, L., Bookhagen B. | 2026 | Challenges in reconstructing seasonally driven landslide motion from optical satellite data: insights from the Del Medio catchment, NW Argentina | *Earth Surface Dynamics* | [DOI](https://doi.org/10.5194/esurf-14-781-2026, 2026)
