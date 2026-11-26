@@ -19,7 +19,6 @@ Guo, Z, Wang, J, Smith, T, Li, W, Zhang, K, Wu, J, Zhou, Y, and Gong, P. | Wides
 Smith, T and Bookhagen, B | 2026 | Discharge deficits in the Central Himalaya linked to greening and warming | _Scientific Reports_ | [DOI](https://doi.org/10.1038/s41598-026-68997-3)
 Viotto, S. Bookhagen, B. | 2026 | Strategies for Mitigating the Impact of Ionospheric and Tropospheric Delay on Sentinel-1 Interferograms in Northwestern Argentina | *Earth and Space Sciences* | [DOI](https://doi.org/10.1029/2026EA005014)
 Mueting, A., Charrier, L., Bookhagen B. | 2026 | Challenges in reconstructing seasonally driven landslide motion from optical satellite data: insights from the Del Medio catchment, NW Argentina | *Earth Surface Dynamics* | [DOI](https://doi.org/10.5194/esurf-14-781-2026, 2026)
->>>>>>> af127c499d6fefb8aaca7a2414ca78dc92cf3c53
 Ma, S., Zhou, S., Ellison, D., Staal, A., Smith, T., Smith, C., and Teuling, A. J. | 2026 | Targeted tropical forest restoration can offset deforestation-induced water flux losses. | _Nature Climate Change_ | [DOI](https://doi.org/10.1038/s41558-026-02709-7)
 Fritz, S.C. et al. | 2026 | Initial results from a Trans-Amazon Drilling Project core from the Acre Basin of Brazil | *Scientific Drilling* | [DOI](https://sd.copernicus.org/articles/35/127/2026/)
 Tofelde, S., Clubb, F. J., Bookhagen, B. | 2026 | Controls on Valley-Floor Width in the Western Andes | _JGR Earth Surface_ | [DOI](https://doi.org/10.1029/2025JF00868a3)
