@@ -14,12 +14,16 @@ Publications of the University of Potsdam Remote Sensing - Earth Surface Process
 Author(s) | Year | Title | _Journal_ | DOI
 | :--- | :---: | --- | :---: | :---:
 | | **[2026]** | | |
+Smith, T., Morr, A, Schötz, C and Boers, N. | 2026 | Estimating the Resilience of Non-Stationary Systems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-78489-7)
+Guo, Z, Wang, J, Smith, T, Li, W, Zhang, K, Wu, J, Zhou, Y, and Gong, P. | Widespread reversal of vegetation resilience in permafrost ecosystems | 2026 | _Nature Plants_ } [DOI](https://doi.org/10.1038/s41477-026-02462-x)
+Smith, T and Bookhagen, B | 2026 | Discharge deficits in the Central Himalaya linked to greening and warming | _Scientific Reports_ | [DOI](https://doi.org/10.1038/s41598-026-68997-3)
 Ma, S., Zhou, S., Ellison, D., Staal, A., Smith, T., Smith, C., and Teuling, A. J. | 2026 | Targeted tropical forest restoration can offset deforestation-induced water flux losses. | _Nature Climate Change_ | [DOI](https://doi.org/10.1038/s41558-026-02709-7)
 Fritz, S.C. et al. | 2026 | Initial results from a Trans-Amazon Drilling Project core from the Acre Basin of Brazil | *Scientific Drilling* | [DOI](https://sd.copernicus.org/articles/35/127/2026/)
 Tofelde, S., Clubb, F. J., Bookhagen, B. | 2026 | Controls on Valley-Floor Width in the Western Andes | _JGR Earth Surface_ | [DOI](https://doi.org/10.1029/2025JF00868a3)
 Hongn, F., Montero-López, C., Aramayo, A., Camardelli, C., Guevara, A., Bookhagen, B., Strecker, M.R. | 2026 | Localized deformation, uplift and fluvial processes of the proximal Bermejo megafan in the Andean foreland: Topographic growth of the Lomas de Olmedo anticline of NW Argentina | _Journal of South American Earth Sciences_ | [DOI](https://doi.org/10.1016/j.jsames.2026.106014)
 Chan, V., Rheinwalt, A., Bookhagen, B. | 2026 | OrthoSAM: multi-scale extension of the Segment Anything Model for river pebble delineation from large orthophotos | _Earth Surface Dynamics_ | [DOI](https://esurf.copernicus.org/articles/14/391/2026/#bib1.bibx26)
 Svintsov, S., Pradhan, P., Smith, T., and Rybski, D. | 2026 | Integrating agriculture into European urban landscapes matters: A systematic assessment | _Sustainable Cities and Society_ | [DOI](https://doi.org/10.1016/j.scs.2026.107422)
+Wang, J, Zhang, C, Pan, Y, Su, Y, Ciais, P, Smith, T, Shang, J, Liu, J, Chen, J.M., Cescatti, A, Zhang, Y, Laurance, WF, Senf, C, Zuo, Z, Liao, J, Lafortezza, R, Yan, K, Zhu, P, Guan, X, Li, X, Xue, M, Yuan, W, Chen, W & Zhou W | The safety margin of small-scale tree cover loss in global fragmented forests | 2026 | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-71480-2)
 Liu, T., Morr, A., Bathiany, S., Blaschke, L., Qian, Z., Diao, C., Smith, T., and Boers, N. | 2026 | Data gaps and outliers distort critical slowing down-based resilience indicators | _Science Advances_ | [DOI](https://doi.org/10.1126/sciadv.aee1916)
 Smith, T., Morr, A., Bookhagen, B. and Boers, N. | 2026 | Predicting instabilities in transient landforms and interconnected ecosystems | _Nature Communications_ | [DOI](https://doi.org/10.1038/s41467-026-68944-w)
 | | **[2025]** | | |
